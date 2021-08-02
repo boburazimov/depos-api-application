@@ -49,8 +49,8 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:postgresql://localhost:5432/DeposApi
-    username: DeposApi
-    password:
+    username: postgres
+    password: q7111
     hikari:
       poolName: Hikari
       auto-commit: false
