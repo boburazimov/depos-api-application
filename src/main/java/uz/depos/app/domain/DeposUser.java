@@ -1,17 +1,14 @@
 package uz.depos.app.domain;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "depos_user")
 public class DeposUser extends User {
 
     @Size(max = 50)
@@ -27,7 +24,6 @@ public class DeposUser extends User {
     @Column(length = 14, unique = true)
     private String pinfl;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private UserGroupEnum groupEnum;
 
