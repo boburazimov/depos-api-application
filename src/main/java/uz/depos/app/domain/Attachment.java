@@ -1,7 +1,7 @@
 package uz.depos.app.domain;
 
 import javax.persistence.*;
-import lombok.*;
+import lombok.EqualsAndHashCode;
 
 /**
  * Для хранение данных о файлах а именно тип файла и его размер,
@@ -9,10 +9,6 @@ import lombok.*;
  **/
 
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Attachment extends AbstractAuditingEntity {
 
@@ -32,4 +28,50 @@ public class Attachment extends AbstractAuditingEntity {
     // Размер файла - bytea
     @Column(nullable = false)
     private Long size;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    public Long getSize() {
+        return size;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public Attachment() {}
+
+    public Attachment(Long id, String name, String contentType, Long size) {
+        this.id = id;
+        this.name = name;
+        this.contentType = contentType;
+        this.size = size;
+    }
+
+    @Override
+    public String toString() {
+        return "Attachment{" + "id=" + id + ", name='" + name + '\'' + ", contentType='" + contentType + '\'' + ", size=" + size + '}';
+    }
 }

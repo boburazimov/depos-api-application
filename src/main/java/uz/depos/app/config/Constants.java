@@ -11,5 +11,11 @@ public final class Constants {
     public static final String SYSTEM = "system";
     public static final String DEFAULT_LANGUAGE = "ru";
 
+    public static final String DEFAULT_PAGE = "0";
+    public static final String DEFAULT_SIZE = "10";
+    public static final int MAX_SIZE = 20;
+    public static final String DEFAULT_BEGIN_DATE = "1970-01-01 01:00:49.841000";
+    public static final String DEFAULT_END_DATE = "2100-01-01 01:00:49.841000";
+
     private Constants() {}
 }

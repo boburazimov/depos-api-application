@@ -16,10 +16,13 @@ import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import uz.depos.app.config.Constants;
+import uz.depos.app.domain.enums.UserAuthTypeEnum;
+import uz.depos.app.domain.enums.UserGroupEnum;
 
 /**
  * A user.
  */
+
 @Entity
 @Table(name = "jhi_user")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
@@ -92,6 +95,42 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @BatchSize(size = 20)
     private Set<Authority> authorities = new HashSet<>();
+
+    @Size(max = 50)
+    @Column(name = "full_name", length = 50)
+    private String fullName;
+
+    // Require to LowerCase
+    @Size(max = 50)
+    @Column(length = 9)
+    private String passport;
+
+    @Size(max = 50)
+    @Column(length = 14, unique = true)
+    private String pinfl;
+
+    @Enumerated(EnumType.STRING)
+    private UserGroupEnum groupEnum;
+
+    // Способ регистрации/авторизации
+    @Enumerated(EnumType.STRING)
+    private UserAuthTypeEnum authTypeEnum;
+
+    // Страна (будет условия по Узб)
+    @Column(length = 64)
+    private String country;
+
+    // Является ли страна Узб для ввода ИНН
+    @Column(name = "is_uzb")
+    private Boolean isUzb;
+
+    // Номер ИНН
+    @Column(length = 9, unique = true)
+    private Integer inn;
+
+    // Номер телефона
+    @Column(unique = true, length = 13, name = "phone_number")
+    private String phoneNumber;
 
     public Long getId() {
         return id;
@@ -198,6 +237,78 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.authorities = authorities;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String middleName) {
+        this.fullName = middleName;
+    }
+
+    public String getPassport() {
+        return passport;
+    }
+
+    public void setPassport(String passport) {
+        this.passport = passport.toUpperCase();
+    }
+
+    public String getPinfl() {
+        return pinfl;
+    }
+
+    public void setPinfl(String pinfl) {
+        this.pinfl = pinfl;
+    }
+
+    public UserGroupEnum getGroupEnum() {
+        return groupEnum;
+    }
+
+    public void setGroupEnum(UserGroupEnum groupEnum) {
+        this.groupEnum = groupEnum;
+    }
+
+    public UserAuthTypeEnum getAuthTypeEnum() {
+        return authTypeEnum;
+    }
+
+    public void setAuthTypeEnum(UserAuthTypeEnum authTypeEnum) {
+        this.authTypeEnum = authTypeEnum;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Boolean getUzb() {
+        return isUzb;
+    }
+
+    public void setUzb(Boolean uzb) {
+        isUzb = uzb;
+    }
+
+    public Integer getInn() {
+        return inn;
+    }
+
+    public void setInn(Integer inn) {
+        this.inn = inn;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -219,14 +330,28 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-            "login='" + login + '\'' +
+            "id=" + id +
+            ", login='" + login + '\'' +
+            ", password='" + password + '\'' +
             ", firstName='" + firstName + '\'' +
             ", lastName='" + lastName + '\'' +
             ", email='" + email + '\'' +
-            ", imageUrl='" + imageUrl + '\'' +
-            ", activated='" + activated + '\'' +
+            ", activated=" + activated +
             ", langKey='" + langKey + '\'' +
+            ", imageUrl='" + imageUrl + '\'' +
             ", activationKey='" + activationKey + '\'' +
-            "}";
+            ", resetKey='" + resetKey + '\'' +
+            ", resetDate=" + resetDate +
+            ", authorities=" + authorities +
+            ", middleName='" + fullName + '\'' +
+            ", passport='" + passport + '\'' +
+            ", pinfl='" + pinfl + '\'' +
+            ", groupEnum=" + groupEnum +
+            ", authTypeEnum=" + authTypeEnum +
+            ", country='" + country + '\'' +
+            ", isUzb=" + isUzb +
+            ", inn=" + inn +
+            ", phoneNumber='" + phoneNumber + '\'' +
+            '}';
     }
 }

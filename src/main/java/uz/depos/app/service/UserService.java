@@ -21,8 +21,11 @@ import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
-import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.UserDTO;
+import uz.depos.app.service.dto.*;
+import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
+import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
+import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
+import uz.depos.app.web.rest.errors.PhoneNumberAlreadyUsedException;
 
 /**
  * Service class for managing users.
@@ -97,6 +100,97 @@ public class UserService {
                     return user;
                 }
             );
+    }
+
+    public Boolean isEmailAlreadyUsed(String email) {
+        boolean present = userRepository.findOneByEmailIgnoreCase(email).isPresent();
+        if (!present) {
+            return true;
+        } else throw new EmailAlreadyUsedException();
+    }
+
+    public ApiResponse generateLogin(DeposUserLoginDTO userLoginDTO) {
+        if (userLoginDTO.getInn() != null && userLoginDTO.getLogin().isEmpty()) {
+            // Generate new login from @INN by adding to begin bit-word "UZ-"
+            String bitWord = "UZ-";
+            StringBuilder newLogin = new StringBuilder();
+            newLogin.insert(0, bitWord);
+            newLogin.insert(1, userLoginDTO.getLogin());
+            return new ApiResponse("Generated new login", true);
+        } else {
+            return new ApiResponse("INN to already user or Login is not Empty", false);
+        }
+    }
+
+    public User createDeposUser(DeposUserDTO userDTO) {
+        // Create new User object
+        User newUser = new User();
+
+        // Checking field @Login, @Passport, @PhoneNumber and @INN to already used
+        userRepository
+            .findOneByLogin(userDTO.getLogin().toLowerCase())
+            .ifPresent(
+                user -> {
+                    throw new LoginAlreadyUsedException();
+                }
+            );
+        userRepository
+            .findOneByInn(userDTO.getInn())
+            .ifPresent(
+                user -> {
+                    throw new InnAlreadyUsedException();
+                }
+            );
+        userRepository
+            .findOneByPassport(userDTO.getPassword().toLowerCase())
+            .ifPresent(
+                user -> {
+                    throw new PassportAlreadyUsedException();
+                }
+            );
+        userRepository
+            .findOneByPhoneNumber(userDTO.getPhoneNumber())
+            .ifPresent(
+                user -> {
+                    throw new PhoneNumberAlreadyUsedException();
+                }
+            );
+
+        newUser.setLogin(userDTO.getLogin().toLowerCase());
+
+        // Generate new encryption @password
+        String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
+        // new user gets initially a generated password
+        newUser.setPassword(encryptedPassword);
+
+        newUser.setFullName(userDTO.getFullName());
+        newUser.setEmail(userDTO.getEmail().toLowerCase());
+        // new user is not active
+        newUser.setActivated(false);
+        // new user gets registration key
+        newUser.setActivationKey(RandomUtil.generateActivationKey());
+        // by default new user's authority @USER
+        Set<Authority> authorities = new HashSet<>();
+        authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
+        newUser.setAuthorities(authorities);
+        if (userDTO.getEmail() != null) {
+            newUser.setEmail(userDTO.getEmail().toLowerCase());
+        }
+        newUser.setPassport(userDTO.getPassport());
+        if (userDTO.getPinfl() != null) {
+            newUser.setPinfl(userDTO.getPinfl());
+        }
+        newUser.setGroupEnum(userDTO.getGroupEnum());
+        newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
+        if (!userDTO.getUzb()) {
+            newUser.setCountry(userDTO.getCountry());
+        }
+        newUser.setInn(userDTO.getInn());
+        newUser.setPhoneNumber(userDTO.getPhoneNumber());
+        User savedUser = userRepository.save(newUser);
+        this.clearUserCaches(newUser);
+        log.debug("Created Information for Depos-User: {}", newUser);
+        return savedUser;
     }
 
     public User registerUser(AdminUserDTO userDTO, String password) {
@@ -329,6 +423,7 @@ public class UserService {
 
     /**
      * Gets a list of all the authorities.
+     *
      * @return a list of all the authorities.
      */
     @Transactional(readOnly = true)

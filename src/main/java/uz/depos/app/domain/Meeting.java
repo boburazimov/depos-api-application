@@ -70,4 +70,177 @@ public class Meeting extends AbstractAuditingEntity {
     // Доп инфо
     @Column(length = 128, name = "extra_info")
     private String extraInfo;
+
+    public Meeting() {}
+
+    public Meeting(
+        Long id,
+        MeetingStatusEnum status,
+        Timestamp startDate,
+        Timestamp startRegistration,
+        Timestamp endRegistration,
+        Company company,
+        City city,
+        String address,
+        String description,
+        List<Member> members,
+        List<Attachment> attachments,
+        List<Agenda> agendas,
+        String extraInfo
+    ) {
+        this.id = id;
+        this.status = status;
+        this.startDate = startDate;
+        this.startRegistration = startRegistration;
+        this.endRegistration = endRegistration;
+        this.company = company;
+        this.city = city;
+        this.address = address;
+        this.description = description;
+        this.members = members;
+        this.attachments = attachments;
+        this.agendas = agendas;
+        this.extraInfo = extraInfo;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public MeetingStatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(MeetingStatusEnum status) {
+        this.status = status;
+    }
+
+    public Timestamp getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Timestamp startDate) {
+        this.startDate = startDate;
+    }
+
+    public Timestamp getStartRegistration() {
+        return startRegistration;
+    }
+
+    public void setStartRegistration(Timestamp startRegistration) {
+        this.startRegistration = startRegistration;
+    }
+
+    public Timestamp getEndRegistration() {
+        return endRegistration;
+    }
+
+    public void setEndRegistration(Timestamp endRegistration) {
+        this.endRegistration = endRegistration;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
+    }
+
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<Member> getMembers() {
+        return members;
+    }
+
+    public void setMembers(List<Member> members) {
+        this.members = members;
+    }
+
+    public List<Attachment> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<Attachment> attachments) {
+        this.attachments = attachments;
+    }
+
+    public List<Agenda> getAgendas() {
+        return agendas;
+    }
+
+    public void setAgendas(List<Agenda> agendas) {
+        this.agendas = agendas;
+    }
+
+    public String getExtraInfo() {
+        return extraInfo;
+    }
+
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "Meeting{" +
+            "id=" +
+            id +
+            ", status=" +
+            status +
+            ", startDate=" +
+            startDate +
+            ", startRegistration=" +
+            startRegistration +
+            ", endRegistration=" +
+            endRegistration +
+            ", company=" +
+            company +
+            ", city=" +
+            city +
+            ", address='" +
+            address +
+            '\'' +
+            ", description='" +
+            description +
+            '\'' +
+            ", members=" +
+            members +
+            ", attachments=" +
+            attachments +
+            ", agendas=" +
+            agendas +
+            ", extraInfo='" +
+            extraInfo +
+            '\'' +
+            '}'
+        );
+    }
 }
