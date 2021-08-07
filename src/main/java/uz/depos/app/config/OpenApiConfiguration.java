@@ -19,6 +19,9 @@ import springfox.documentation.spring.web.plugins.Docket;
 import tech.jhipster.config.JHipsterConstants;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.apidoc.customizer.SpringfoxCustomizer;
+import uz.depos.app.domain.Attachment;
+import uz.depos.app.domain.Company;
+import uz.depos.app.domain.User;
 
 @Configuration
 @Profile(JHipsterConstants.SPRING_PROFILE_API_DOCS)
@@ -35,7 +38,7 @@ public class OpenApiConfiguration {
         Contact contact = new Contact(properties.getContactName(), properties.getContactUrl(), properties.getContactEmail());
 
         ApiInfo apiInfo = new ApiInfo(
-            "API First " + properties.getTitle(),
+            properties.getTitle(),
             properties.getDescription(),
             properties.getVersion(),
             properties.getTermsOfServiceUrl(),
@@ -54,9 +57,10 @@ public class OpenApiConfiguration {
             .forCodeGeneration(true)
             .directModelSubstitute(ByteBuffer.class, String.class)
             .genericModelSubstitutes(ResponseEntity.class)
-            .ignoredParameterTypes(Pageable.class)
+            .ignoredParameterTypes(Pageable.class, Attachment.class, Company.class, User.class)
             .select()
             .apis(RequestHandlerSelectors.basePackage("uz.depos.app.web.api"))
+            //            .apis(RequestHandlerSelectors.basePackage("uz.depos.app.web.rest.depos"))
             .paths(regex(properties.getDefaultIncludePattern()))
             .build();
     }

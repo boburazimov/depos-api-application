@@ -1,19 +1,30 @@
-package uz.depos.app.web.rest;
+package uz.depos.app.web.api;
 
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tech.jhipster.web.util.ResponseUtil;
+import uz.depos.app.config.Constants;
 import uz.depos.app.domain.User;
 import uz.depos.app.repository.UserRepository;
+import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.UserService;
+import uz.depos.app.service.dto.AdminUserDTO;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.DeposUserLoginDTO;
+import uz.depos.app.web.rest.AccountResource;
+import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.vm.ManagedUserVM;
 
@@ -76,17 +87,33 @@ public class DeposUserResource {
      */
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) {
+    @ApiOperation(value = "Create new company", notes = "This method creates a new company", tags = "User")
+    @ApiImplicitParams(
+        {
+            @ApiImplicitParam(name = "login", dataType = "String", paramType = "query", value = "Results page you want to retrieve (0..N)"),
+            @ApiImplicitParam(name = "size", dataType = "integer", paramType = "query", value = "Number of records per page."),
+            @ApiImplicitParam(
+                name = "sort",
+                allowMultiple = true,
+                dataType = "string",
+                paramType = "query",
+                value = "Sorting criteria in the format: property(,asc|desc). " +
+                "Default sort order is ascending. " +
+                "Multiple sort criteria are supported."
+            ),
+        }
+    )
+    public DeposUserDTO createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
         if (isPasswordLengthInvalid(deposUserDTO.getPassword())) {
             throw new InvalidPasswordException();
-        } else if (deposUserDTO.getId() == null) {
+        } else if (deposUserDTO.getId() != null) {
             throw new IdNotEmptyException();
         }
 
-        User user = userService.createDeposUser(deposUserDTO);
-        return user;
+        DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
+        return deposUser;
     }
 
     /**
@@ -101,5 +128,18 @@ public class DeposUserResource {
             password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
             password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
         );
+    }
+
+    /**
+     * {@code GET /admin/users/:login} : get the "login" user.
+     *
+     * @param login the login of the user to find.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/users/{login}")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<AdminUserDTO> getUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+        log.debug("REST request to get User : {}", login);
+        return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
     }
 }

@@ -8,6 +8,6 @@ public class IdNotEmptyException extends AbstractThrowableProblem {
     private static final long serialVersionUID = 1L;
 
     public IdNotEmptyException() {
-        super(ErrorConstants.ID_NOT_EMPTY_TYPE, "Is not Empty ID", Status.BAD_REQUEST);
+        super(ErrorConstants.ID_NOT_EMPTY_TYPE, "ID must be Null (Empty) for creator user", Status.BAD_REQUEST);
     }
 }

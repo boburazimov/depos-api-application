@@ -22,6 +22,7 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
 import uz.depos.app.service.dto.*;
+import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
@@ -37,23 +38,23 @@ public class UserService {
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
-
     private final PasswordEncoder passwordEncoder;
-
     private final AuthorityRepository authorityRepository;
-
     private final CacheManager cacheManager;
+    private final UserMapper userMapper;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        UserMapper userMapper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        this.userMapper = userMapper;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -115,14 +116,14 @@ public class UserService {
             String bitWord = "UZ-";
             StringBuilder newLogin = new StringBuilder();
             newLogin.insert(0, bitWord);
-            newLogin.insert(1, userLoginDTO.getLogin());
+            newLogin.insert(1, userLoginDTO.getLogin().toLowerCase());
             return new ApiResponse("Generated new login", true);
         } else {
             return new ApiResponse("INN to already user or Login is not Empty", false);
         }
     }
 
-    public User createDeposUser(DeposUserDTO userDTO) {
+    public DeposUserDTO createDeposUser(DeposUserDTO userDTO) {
         // Create new User object
         User newUser = new User();
 
@@ -188,9 +189,10 @@ public class UserService {
         newUser.setInn(userDTO.getInn());
         newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
+        DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
         this.clearUserCaches(newUser);
-        log.debug("Created Information for Depos-User: {}", newUser);
-        return savedUser;
+        log.debug("Created Information for Depos-User: {}", deposUserDTO);
+        return deposUserDTO;
     }
 
     public User registerUser(AdminUserDTO userDTO, String password) {

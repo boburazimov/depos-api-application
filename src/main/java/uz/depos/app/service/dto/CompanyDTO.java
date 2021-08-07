@@ -1,15 +1,24 @@
 package uz.depos.app.service.dto;
 
-public class ReqCompany {
+import io.swagger.annotations.*;
+import javax.validation.constraints.NotNull;
+import uz.depos.app.domain.Company;
+
+@ApiModel(value = "CompanyDTO")
+public class CompanyDTO {
 
     private Long id;
 
     private Boolean isActive;
 
+    @NotNull
+    @ApiModelProperty(example = "DEPOS OOO", required = true)
     private String name;
 
+    @ApiModelProperty(example = "123456789", required = true)
     private String inn;
 
+    @ApiModelProperty(example = "Тошкент ш. Чилонзор т. Нурали к. 42д.", required = true)
     private String legalAddress;
 
     private String email;
@@ -142,38 +151,23 @@ public class ReqCompany {
         this.extraInfo = extraInfo;
     }
 
-    public ReqCompany() {}
+    public CompanyDTO() {}
 
-    public ReqCompany(
-        Long id,
-        Boolean isActive,
-        String name,
-        String inn,
-        String legalAddress,
-        String email,
-        String description,
-        String mailingAddress,
-        String webPage,
-        String phoneNumber,
-        Long logoId,
-        Long chairmanId,
-        Long secretaryId,
-        String extraInfo
-    ) {
-        this.id = id;
-        this.isActive = isActive;
-        this.name = name;
-        this.inn = inn;
-        this.legalAddress = legalAddress;
-        this.email = email;
-        this.description = description;
-        this.mailingAddress = mailingAddress;
-        this.webPage = webPage;
-        this.phoneNumber = phoneNumber;
-        this.logoId = logoId;
-        this.chairmanId = chairmanId;
-        this.secretaryId = secretaryId;
-        this.extraInfo = extraInfo;
+    public CompanyDTO(Company company) {
+        this.id = company.getId();
+        this.isActive = company.getActive();
+        this.name = company.getName();
+        this.inn = company.getInn();
+        this.legalAddress = company.getLegalAddress();
+        this.email = company.getEmail();
+        this.description = company.getDescription();
+        this.mailingAddress = company.getMailingAddress();
+        this.webPage = company.getWebPage();
+        this.phoneNumber = company.getPhoneNumber();
+        this.logoId = company.getLogo().getId();
+        this.chairmanId = company.getChairman().getId();
+        this.secretaryId = company.getSecretary().getId();
+        this.extraInfo = company.getExtraInfo();
     }
 
     @Override

@@ -13,21 +13,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(
-    uniqueConstraints = { // Уникальность в совокупности 3 полей
-        @UniqueConstraint(columnNames = { "code", "meeting_id", "user_id" }),
-    }
-)
 public class Member extends AbstractAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
-
-    // Внешний уникальный код участника в рамках одного заседания
-    @Column(length = 4, nullable = false)
-    private String code;
 
     // Заседание
     @ManyToOne(optional = false)

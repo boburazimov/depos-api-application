@@ -1,4 +1,4 @@
-package uz.depos.app.web.rest;
+package uz.depos.app.web.api;
 
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpEntity;

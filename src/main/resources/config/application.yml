@@ -109,6 +109,8 @@ spring:
     jpa:
       repositories:
         bootstrap-mode: deferred
+    rest:
+      base-path: '/api'
   jpa:
     open-in-view: false
     properties:
@@ -183,13 +185,13 @@ jhipster:
   api-docs:
     default-include-pattern: ${server.servlet.context-path:}/api/.*
     management-include-pattern: ${server.servlet.context-path:}/management/.*
-    title: DeposApi API
-    description: DeposApi API documentation
+    title: Depositary API
+    description: Depositary API documentation
     version: 0.0.1
     terms-of-service-url:
-    contact-name:
-    contact-url:
-    contact-email:
+    contact-name: Bobur Azimov
+    contact-url: https://t.me/Bobur_114
+    contact-email: uzbek.4103@gmail.ru
     license: unlicensed
     license-url:
   security:

@@ -7,19 +7,25 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Service;
 import uz.depos.app.domain.Authority;
+import uz.depos.app.domain.Company;
 import uz.depos.app.domain.User;
 import uz.depos.app.service.dto.AdminUserDTO;
+import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.UserDTO;
 
 /**
- * Mapper for the entity {@link User} and its DTO called {@link UserDTO}.
+ * Mapper for the entity {@link Company} and its DTO called {@link CompanyDTO}.
  *
  * Normal mappers are generated using MapStruct, this one is hand-coded as MapStruct
  * support is still in beta, and requires a manual step with an IDE.
  */
 @Service
-public class UserMapper {
+public class CompanyMapper {
+
+    public CompanyDTO companyToCompanyDTO(Company company) {
+        return new CompanyDTO(company);
+    }
 
     public List<UserDTO> usersToUserDTOs(List<User> users) {
         return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).collect(Collectors.toList());
