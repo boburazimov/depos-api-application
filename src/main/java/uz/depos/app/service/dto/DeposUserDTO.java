@@ -1,7 +1,5 @@
 package uz.depos.app.service.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
@@ -15,7 +13,7 @@ import uz.depos.app.domain.enums.UserGroupEnum;
 /**
  * A DTO representing a user for Depository table, with his authorities
  */
-@JsonIgnoreProperties(value = { "langKey" })
+
 public class DeposUserDTO {
 
     private Long id;
@@ -24,7 +22,6 @@ public class DeposUserDTO {
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
     @NotNull
-    @ApiModelProperty(example = "UZ-123456789", required = true, dataType = "java.lang.String")
     private String login;
 
     public static final int PASSWORD_MIN_LENGTH = 4;
@@ -32,47 +29,34 @@ public class DeposUserDTO {
     public static final int PASSWORD_MAX_LENGTH = 100;
 
     @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
-    @ApiModelProperty(example = "password2021", required = true)
     private String password;
 
     @Email
     @Size(min = 5, max = 254)
-    @ApiModelProperty(example = "1@mail.ru", required = true)
     private String email;
 
-    @ApiModelProperty(example = "false")
     private boolean activated;
 
-    @ApiModelProperty(example = "USER")
     private Set<String> authorities;
 
     @Size(max = 50)
     @Column(length = 50)
-    @ApiModelProperty(example = "Бахромов Тохир Асманович", required = true)
     private String fullName;
 
-    @ApiModelProperty(example = "AB1234567")
     private String passport;
 
-    @ApiModelProperty(example = "12345678912345")
     private String pinfl;
 
-    @ApiModelProperty(example = "ENTITY")
     private UserGroupEnum groupEnum;
 
-    @ApiModelProperty(example = "INNPASS")
     private UserAuthTypeEnum authTypeEnum;
 
-    @ApiModelProperty(example = "UZB")
     private String country;
 
-    @ApiModelProperty(example = "true")
-    private Boolean isUzb;
+    private boolean isUzb;
 
-    @ApiModelProperty(example = "123456787")
     private Integer inn;
 
-    @ApiModelProperty(example = "+998977777777")
     private String phoneNumber;
 
     public DeposUserDTO() {}
@@ -227,9 +211,7 @@ public class DeposUserDTO {
     public String toString() {
         return (
             "DeposUserDTO{" +
-            "id=" +
-            id +
-            ", login='" +
+            "login='" +
             login +
             '\'' +
             ", password='" +

@@ -241,8 +241,8 @@ public class User extends AbstractAuditingEntity implements Serializable {
         return fullName;
     }
 
-    public void setFullName(String middleName) {
-        this.fullName = middleName;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPassport() {
@@ -343,7 +343,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", resetKey='" + resetKey + '\'' +
             ", resetDate=" + resetDate +
             ", authorities=" + authorities +
-            ", middleName='" + fullName + '\'' +
+            ", fullName='" + fullName + '\'' +
             ", passport='" + passport + '\'' +
             ", pinfl='" + pinfl + '\'' +
             ", groupEnum=" + groupEnum +

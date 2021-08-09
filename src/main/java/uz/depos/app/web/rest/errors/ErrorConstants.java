@@ -14,7 +14,6 @@ public final class ErrorConstants {
     public static final URI LOGIN_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/login-already-used");
     public static final URI INN_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/inn-already-used");
     public static final URI PHONENUMBER_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/phonenumber-already-used");
-    public static final URI ID_NOT_EMPTY_TYPE = URI.create(PROBLEM_BASE_URL + "/id-not-empty");
     public static final URI PASSPORT_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/passport-already-used");
 
     private ErrorConstants() {}

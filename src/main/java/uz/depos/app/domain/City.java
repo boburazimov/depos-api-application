@@ -19,9 +19,17 @@ public class City {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Наименование города
+    // Наименование города - Uzbek
     @Column(length = 64, unique = true, nullable = false)
-    private String name;
+    private String nameUz;
+
+    // Наименование города - Russian
+    @Column(length = 64, unique = true, nullable = false)
+    private String nameRu;
+
+    // Наименование города - English
+    @Column(length = 64, unique = true, nullable = false)
+    private String nameEn;
 
     // Доп инфо
     @Column(length = 128, name = "extra_info")

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -110,16 +111,24 @@ public class UserService {
         } else throw new EmailAlreadyUsedException();
     }
 
-    public ApiResponse generateLogin(DeposUserLoginDTO userLoginDTO) {
-        if (userLoginDTO.getInn() != null && userLoginDTO.getLogin().isEmpty()) {
+    public LoginDTO generateLogin(DeposUserLoginDTO userLoginDTO) {
+        if (userLoginDTO.getLogin().isEmpty()) {
             // Generate new login from @INN by adding to begin bit-word "UZ-"
             String bitWord = "UZ-";
             StringBuilder newLogin = new StringBuilder();
             newLogin.insert(0, bitWord);
-            newLogin.insert(1, userLoginDTO.getLogin().toLowerCase());
-            return new ApiResponse("Generated new login", true);
+            newLogin.insert(3, userLoginDTO.getInn());
+            userRepository
+                .findOneByLogin(newLogin.toString())
+                .ifPresent(
+                    user -> {
+                        throw new LoginAlreadyUsedException();
+                    }
+                );
+            log.debug("Generated Login from INN Information for User: {}", newLogin);
+            return new LoginDTO(newLogin.toString());
         } else {
-            return new ApiResponse("INN to already user or Login is not Empty", false);
+            throw new UnsupportedOperationException("Login field must be empty for generate him!");
         }
     }
 
@@ -128,13 +137,6 @@ public class UserService {
         User newUser = new User();
 
         // Checking field @Login, @Passport, @PhoneNumber and @INN to already used
-        userRepository
-            .findOneByLogin(userDTO.getLogin().toLowerCase())
-            .ifPresent(
-                user -> {
-                    throw new LoginAlreadyUsedException();
-                }
-            );
         userRepository
             .findOneByInn(userDTO.getInn())
             .ifPresent(
@@ -165,7 +167,6 @@ public class UserService {
         newUser.setPassword(encryptedPassword);
 
         newUser.setFullName(userDTO.getFullName());
-        newUser.setEmail(userDTO.getEmail().toLowerCase());
         // new user is not active
         newUser.setActivated(false);
         // new user gets registration key
@@ -177,21 +178,22 @@ public class UserService {
         if (userDTO.getEmail() != null) {
             newUser.setEmail(userDTO.getEmail().toLowerCase());
         }
-        newUser.setPassport(userDTO.getPassport());
+        if (!StringUtils.isBlank(userDTO.getPassport())) {
+            newUser.setPassport(userDTO.getPassport());
+        }
         if (userDTO.getPinfl() != null) {
             newUser.setPinfl(userDTO.getPinfl());
         }
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-        if (!userDTO.getUzb()) {
-            newUser.setCountry(userDTO.getCountry());
-        }
+        newUser.setCountry(userDTO.getUzb() ? "Uzbekistan" : userDTO.getCountry());
+        newUser.setUzb(userDTO.getUzb());
         newUser.setInn(userDTO.getInn());
         newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
         DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
-        this.clearUserCaches(newUser);
-        log.debug("Created Information for Depos-User: {}", deposUserDTO);
+        this.clearUserCaches(savedUser);
+        log.debug("Created Information for User: {}", deposUserDTO);
         return deposUserDTO;
     }
 
@@ -398,6 +400,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> getUserWithAuthoritiesById(Long id) {
+        return userRepository.findOneWithAuthoritiesById(id);
     }
 
     @Transactional(readOnly = true)

@@ -3,26 +3,26 @@ package uz.depos.app.web.api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.User;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.UserService;
-import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.DeposUserDTO;
-import uz.depos.app.service.dto.DeposUserLoginDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
@@ -38,6 +38,9 @@ public class DeposUserResource {
             super(message);
         }
     }
+
+    @Value("${jhipster.clientApp.name}")
+    private String applicationName;
 
     private final Logger log = LoggerFactory.getLogger(UserResource.class);
 
@@ -59,26 +62,25 @@ public class DeposUserResource {
      * 3. Generate a new login from INN
      *
      * @param userLoginDTO the user to create.
-     * @param isUzb        to check county.
      * @return the String login with status {@code 201 (Generated)} or with status {@code 400 (Bad Request)} if the login or INN is already in use.
-     * @throws URISyntaxException       if the Location URI syntax is incorrect.
-     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the login or email is already in use.
+     * @throws BadRequestAlertException {@code 400 (Bad Request)} if the Uzb is false.
      */
     @PostMapping("/generate-login")
-    public ResponseEntity<ApiResponse> generateLogin(@Valid @RequestBody DeposUserLoginDTO userLoginDTO, Boolean isUzb)
-        throws URISyntaxException {
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation(value = "Generate login", notes = "This method is generate new login from present INN", tags = "User")
+    public ResponseEntity<LoginDTO> generateLogin(@Valid @RequestBody DeposUserLoginDTO userLoginDTO) {
         log.debug("REST request to generate login from INN : {}", userLoginDTO);
 
-        if (isUzb) {
-            ApiResponse response = userService.generateLogin(userLoginDTO);
-            return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.CONFLICT).body(response);
+        if (userLoginDTO.isUzb()) {
+            LoginDTO loginDTO = userService.generateLogin(userLoginDTO);
+            return ResponseEntity.ok(loginDTO);
         } else {
             throw new BadRequestAlertException("For generate new login isUzb will be true", "userManagement", "isUzbexists");
         }
     }
 
     /**
-     * {@code POST  /register} : register the Depositary user.
+     * {@code POST  /auth/create} : register the Depositary user.
      *
      * @param deposUserDTO the managed user View Model.
      * @throws InvalidPasswordException  {@code 400 (Bad Request)} if the password is incorrect.
@@ -87,18 +89,27 @@ public class DeposUserResource {
      */
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Create new company", notes = "This method creates a new company", tags = "User")
-    public DeposUserDTO createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) {
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Create new user", notes = "This method creates a new user", tags = "User")
+    public ResponseEntity<DeposUserDTO> createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) throws URISyntaxException {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
-        if (isPasswordLengthInvalid(deposUserDTO.getPassword())) {
+        if (deposUserDTO.getId() != null && deposUserDTO.getId() > 0) {
+            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
+            // Lowercase the user login before comparing with database
+        } else if (userRepository.findOneByLogin(deposUserDTO.getLogin().toLowerCase()).isPresent()) {
+            throw new LoginAlreadyUsedException();
+        } else if (userRepository.findOneByEmailIgnoreCase(deposUserDTO.getEmail()).isPresent()) {
+            throw new EmailAlreadyUsedException();
+        } else if (isPasswordLengthInvalid(deposUserDTO.getPassword())) {
             throw new InvalidPasswordException();
-        } else if (deposUserDTO.getId() != null) {
-            throw new IdNotEmptyException();
+        } else {
+            DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
+            return ResponseEntity
+                .created(new URI("/api/moder/users/" + deposUser.getLogin()))
+                .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", deposUser.getLogin()))
+                .body(deposUser);
         }
-
-        DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
-        return deposUser;
     }
 
     /**
@@ -116,15 +127,16 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code GET /admin/users/:login} : get the "login" user.
+     * {@code GET /auth/users/:ID} : get the "login" user.
      *
-     * @param login the login of the user to find.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "login" user, or with status {@code 404 (Not Found)}.
+     * @param id the login of the user to find.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "ID" user, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/users/{login}")
-    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<AdminUserDTO> getUser(@PathVariable @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
-        log.debug("REST request to get User : {}", login);
-        return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
+    @GetMapping("/users/{id}")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Get user", notes = "This method to get one user by ID", tags = "User")
+    public ResponseEntity<DeposUserDTO> getUser(@PathVariable Long id) {
+        log.debug("REST request to get User : {}", id);
+        return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesById(id).map(DeposUserDTO::new));
     }
 }
