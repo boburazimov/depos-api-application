@@ -1,35 +1,35 @@
 package uz.depos.app.web.api;
 
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import uz.depos.app.config.Constants;
-import uz.depos.app.domain.User;
 import uz.depos.app.repository.UserRepository;
-import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.UserService;
-import uz.depos.app.service.dto.*;
+import uz.depos.app.service.dto.DeposUserDTO;
+import uz.depos.app.service.dto.DeposUserLoginDTO;
+import uz.depos.app.service.dto.LoginDTO;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
-import uz.depos.app.web.rest.errors.*;
+import uz.depos.app.web.rest.errors.BadRequestAlertException;
+import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
+import uz.depos.app.web.rest.errors.InvalidPasswordException;
+import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.vm.ManagedUserVM;
 
 @RestController
 @RequestMapping("/api/auth")
+@Api(tags = "User")
 public class DeposUserResource {
 
     private static class DeposUserResourceException extends RuntimeException {
@@ -67,7 +67,7 @@ public class DeposUserResource {
      */
     @PostMapping("/generate-login")
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Generate login", notes = "This method is generate new login from present INN", tags = "User")
+    @ApiOperation(value = "Generate login", notes = "This method is generate new login from present INN")
     public ResponseEntity<LoginDTO> generateLogin(@Valid @RequestBody DeposUserLoginDTO userLoginDTO) {
         log.debug("REST request to generate login from INN : {}", userLoginDTO);
 
@@ -90,7 +90,7 @@ public class DeposUserResource {
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Create new user", notes = "This method creates a new user", tags = "User")
+    @ApiOperation(value = "Create new user", notes = "This method creates a new user")
     public ResponseEntity<DeposUserDTO> createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) throws URISyntaxException {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
@@ -134,7 +134,7 @@ public class DeposUserResource {
      */
     @GetMapping("/users/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get user", notes = "This method to get one user by ID", tags = "User")
+    @ApiOperation(value = "Get user", notes = "This method to get one user by ID")
     public ResponseEntity<DeposUserDTO> getUser(@PathVariable Long id) {
         log.debug("REST request to get User : {}", id);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesById(id).map(DeposUserDTO::new));

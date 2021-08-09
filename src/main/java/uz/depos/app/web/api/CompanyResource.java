@@ -35,14 +35,14 @@ public class CompanyResource {
 
     @PostMapping
     @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Create new company", notes = "This method creates a new company", tags = "Company")
+    @ApiOperation(value = "Create new company", notes = "This method creates a new company")
     public ResponseEntity<CompanyDTO> createCompany(@RequestBody CompanyDTO companyDTO) {
         CompanyDTO company = companyService.createCompany(companyDTO);
         return ResponseEntity.ok(company);
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Get one company", notes = "This method to get one of company by ID", tags = "Company")
+    @ApiOperation(value = "Get one company", notes = "This method to get one of company by ID")
     public HttpEntity<?> getCompany(@PathVariable Long id) {
         Company company = companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("getCompany"));
         ApiResponse response = companyService.getCompany(company);
@@ -50,7 +50,7 @@ public class CompanyResource {
     }
 
     @GetMapping
-    @ApiOperation(value = "Get companies", notes = "This method to get companies of pageable", tags = "Company")
+    @ApiOperation(value = "Get companies", notes = "This method to get companies of pageable")
     public HttpEntity<?> getCompanies(
         @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE) int page,
         @RequestParam(value = "size", defaultValue = Constants.DEFAULT_SIZE) int size,
@@ -60,7 +60,7 @@ public class CompanyResource {
     }
 
     @DeleteMapping("/{id}")
-    @ApiOperation(value = "Delete company", notes = "This method to delete one of company by ID", tags = "Company")
+    @ApiOperation(value = "Delete company", notes = "This method to delete one of company by ID")
     public HttpEntity<?> deleteCompany(@PathVariable Long id) {
         ApiResponse response = companyService.deleteCompany(id);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
