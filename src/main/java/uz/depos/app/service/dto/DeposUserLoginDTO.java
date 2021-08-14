@@ -10,18 +10,10 @@ public class DeposUserLoginDTO {
     @Max(value = 999999999, message = "This field can't be more then 9 characters!")
     private Integer inn;
 
-    private String login;
-
-    @NotNull(message = "Uzb field for generate new login can't be Null!")
-    @AssertTrue(message = "Uzb field for generate new login must be True!")
-    private boolean isUzb;
-
     public DeposUserLoginDTO() {}
 
-    public DeposUserLoginDTO(Integer inn, String login, boolean isUzb) {
+    public DeposUserLoginDTO(Integer inn) {
         this.inn = inn;
-        this.login = login;
-        this.isUzb = isUzb;
     }
 
     public Integer getInn() {
@@ -30,21 +22,5 @@ public class DeposUserLoginDTO {
 
     public void setInn(Integer inn) {
         this.inn = inn;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public boolean isUzb() {
-        return isUzb;
-    }
-
-    public void setUzb(boolean uzb) {
-        isUzb = uzb;
     }
 }

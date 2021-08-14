@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.validator.constraints.Length;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
@@ -125,8 +126,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private Boolean isUzb;
 
     // Номер ИНН
-    @Column(length = 9, unique = true)
-    private Integer inn;
+    @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
+    @Column(unique = true)
+    private String inn;
 
     // Номер телефона
     @Column(unique = true, length = 13, name = "phone_number")
@@ -293,11 +295,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
         isUzb = uzb;
     }
 
-    public Integer getInn() {
+    public String getInn() {
         return inn;
     }
 
-    public void setInn(Integer inn) {
+    public void setInn(String inn) {
         this.inn = inn;
     }
 

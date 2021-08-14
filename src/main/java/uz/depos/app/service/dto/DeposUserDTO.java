@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.Column;
 import javax.validation.constraints.*;
+import org.hibernate.validator.constraints.Length;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.Authority;
 import uz.depos.app.domain.User;
@@ -18,21 +19,22 @@ public class DeposUserDTO {
 
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Login must not be null and whitespace character")
     @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
-    @NotNull
     private String login;
 
     public static final int PASSWORD_MIN_LENGTH = 4;
 
     public static final int PASSWORD_MAX_LENGTH = 100;
 
-    @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
+    //    @NotBlank(message = "Password must not be null and must contain at least one non-whitespace character")
+    //    @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
     private String password;
 
     @Email
     @Size(min = 5, max = 254)
+    //    @NotBlank(message = "Email must not be null and whitespace character")
     private String email;
 
     private boolean activated;
@@ -41,6 +43,7 @@ public class DeposUserDTO {
 
     @Size(max = 50)
     @Column(length = 50)
+    @NotBlank(message = "FullName must not be null and whitespace character")
     private String fullName;
 
     private String passport;
@@ -51,12 +54,17 @@ public class DeposUserDTO {
 
     private UserAuthTypeEnum authTypeEnum;
 
+    @NotBlank(message = "Country must not be null and whitespace character")
     private String country;
 
     private boolean isUzb;
 
-    private Integer inn;
+    @NotNull(message = "INN must not be NULL!")
+    @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
+    @Column(unique = true)
+    private String inn;
 
+    @NotBlank(message = "Login must not be null and whitespace character")
     private String phoneNumber;
 
     public DeposUserDTO() {}
@@ -64,7 +72,6 @@ public class DeposUserDTO {
     public DeposUserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
-        this.password = user.getPassword();
         this.email = user.getEmail();
         this.activated = user.isActivated();
         this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());
@@ -191,11 +198,11 @@ public class DeposUserDTO {
         isUzb = uzb;
     }
 
-    public Integer getInn() {
+    public String getInn() {
         return inn;
     }
 
-    public void setInn(Integer inn) {
+    public void setInn(String inn) {
         this.inn = inn;
     }
 

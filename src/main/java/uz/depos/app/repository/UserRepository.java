@@ -30,9 +30,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByLogin(String login);
 
-    Optional<User> findOneByInn(Integer inn);
+    Optional<User> findOneByInn(String inn);
 
     Optional<User> findOneByPassport(String passport);
+
+    Optional<User> findOneByPinfl(String pinfl);
 
     Optional<User> findOneByPhoneNumber(String phoneNumber);
 

@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +24,11 @@ import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
-import uz.depos.app.service.dto.*;
+import uz.depos.app.service.dto.AdminUserDTO;
+import uz.depos.app.service.dto.DeposUserDTO;
+import uz.depos.app.service.dto.UserDTO;
 import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
-import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PhoneNumberAlreadyUsedException;
 
@@ -43,19 +46,22 @@ public class UserService {
     private final AuthorityRepository authorityRepository;
     private final CacheManager cacheManager;
     private final UserMapper userMapper;
+    private final CheckString checkString;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
         CacheManager cacheManager,
-        UserMapper userMapper
+        UserMapper userMapper,
+        CheckString checkString
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
         this.userMapper = userMapper;
+        this.checkString = checkString;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -111,25 +117,21 @@ public class UserService {
         } else throw new EmailAlreadyUsedException();
     }
 
-    public LoginDTO generateLogin(DeposUserLoginDTO userLoginDTO) {
-        if (userLoginDTO.getLogin().isEmpty()) {
-            // Generate new login from @INN by adding to begin bit-word "UZ-"
-            String bitWord = "UZ-";
-            StringBuilder newLogin = new StringBuilder();
-            newLogin.insert(0, bitWord);
-            newLogin.insert(3, userLoginDTO.getInn());
-            userRepository
-                .findOneByLogin(newLogin.toString())
-                .ifPresent(
-                    user -> {
-                        throw new LoginAlreadyUsedException();
-                    }
-                );
-            log.debug("Generated Login from INN Information for User: {}", newLogin);
-            return new LoginDTO(newLogin.toString());
-        } else {
-            throw new UnsupportedOperationException("Login field must be empty for generate him!");
-        }
+    public String generateLogin(String inn) {
+        // Generate new login from @INN by adding to begin bit-word "UZ-"
+        String bitWord = "UZ-";
+        StringBuilder login = new StringBuilder();
+        login.insert(0, bitWord);
+        login.insert(3, inn);
+        userRepository
+            .findOneByLogin(login.toString())
+            .ifPresent(
+                user -> {
+                    throw new UsernameAlreadyUsedException();
+                }
+            );
+        log.debug("Generated Login from INN Information for User: {}", login);
+        return login.toString();
     }
 
     public DeposUserDTO createDeposUser(DeposUserDTO userDTO) {
@@ -138,6 +140,13 @@ public class UserService {
 
         // Checking field @Login, @Passport, @PhoneNumber and @INN to already used
         userRepository
+            .findOneByLogin(userDTO.getLogin())
+            .ifPresent(
+                user -> {
+                    throw new UsernameAlreadyUsedException();
+                }
+            );
+        userRepository
             .findOneByInn(userDTO.getInn())
             .ifPresent(
                 user -> {
@@ -145,7 +154,7 @@ public class UserService {
                 }
             );
         userRepository
-            .findOneByPassport(userDTO.getPassword().toLowerCase())
+            .findOneByPassport(userDTO.getPassword().toUpperCase())
             .ifPresent(
                 user -> {
                     throw new PassportAlreadyUsedException();
@@ -159,12 +168,29 @@ public class UserService {
                 }
             );
 
-        newUser.setLogin(userDTO.getLogin().toLowerCase());
+        if (!StringUtils.isNoneBlank(userDTO.getLogin())) newUser.setLogin(userDTO.getLogin().toLowerCase());
 
-        // Generate new encryption @password
-        String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
-        // new user gets initially a generated password
-        newUser.setPassword(encryptedPassword);
+        // Checks if none of the CharSequences are empty (""), null or whitespace only.
+        if (!StringUtils.isNoneBlank(userDTO.getPassword())) {
+            // Generate new random password.
+            String password = RandomStringUtils.randomAlphanumeric(6);
+
+            // Shared-salt - key word for encode/decode password
+            //            String salt = "1q#ESDwp";
+            // Encode by Base64 generated password for sending to Front-End side.
+            //            byte[] saltedPassword = Base64.getEncoder().encode(password.concat(salt).getBytes());
+
+            String encryptedPassword = passwordEncoder.encode(password);
+
+            // new user gets initially a generated password
+            newUser.setPassword(encryptedPassword);
+        } else {
+            // Encoding password if user didn't enter the password
+            String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
+
+            // new user gets initially a generated password
+            newUser.setPassword(encryptedPassword);
+        }
 
         newUser.setFullName(userDTO.getFullName());
         // new user is not active
@@ -175,20 +201,16 @@ public class UserService {
         Set<Authority> authorities = new HashSet<>();
         authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         newUser.setAuthorities(authorities);
-        if (userDTO.getEmail() != null) {
-            newUser.setEmail(userDTO.getEmail().toLowerCase());
-        }
-        if (!StringUtils.isBlank(userDTO.getPassport())) {
-            newUser.setPassport(userDTO.getPassport());
-        }
-        if (userDTO.getPinfl() != null) {
-            newUser.setPinfl(userDTO.getPinfl());
-        }
+        if (StringUtils.isNoneBlank(userDTO.getEmail())) newUser.setEmail(userDTO.getEmail().toLowerCase());
+        if (StringUtils.isNoneBlank(userDTO.getPassport())) newUser.setPassport(userDTO.getPassport().toUpperCase());
+        if (StringUtils.isNoneBlank(userDTO.getPinfl())) newUser.setPinfl(userDTO.getPinfl());
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
         newUser.setCountry(userDTO.getUzb() ? "Uzbekistan" : userDTO.getCountry());
         newUser.setUzb(userDTO.getUzb());
-        newUser.setInn(userDTO.getInn());
+        if (userDTO.getInn() != null) {
+            newUser.setInn(userDTO.getInn());
+        }
         newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
         DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
@@ -326,6 +348,61 @@ public class UserService {
                 }
             )
             .map(AdminUserDTO::new);
+    }
+
+    /**
+     * Edit all information for a specific user, and return the modified user.
+     *
+     * @param userDTO user to edit.
+     * @return edited user.
+     */
+    public Optional<DeposUserDTO> editUser(DeposUserDTO userDTO) {
+        return Optional
+            .of(userRepository.findById(userDTO.getId()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(
+                user -> {
+                    this.clearUserCaches(user);
+
+                    // Login
+                    if (StringUtils.isNoneBlank(userDTO.getLogin())) user.setLogin(userDTO.getLogin().toLowerCase());
+                    // Email
+                    if (StringUtils.isNoneBlank(userDTO.getEmail())) user.setEmail(userDTO.getEmail().toLowerCase());
+                    // Password
+                    // Generate new encryption @password if null
+                    if (StringUtils.isNoneBlank(userDTO.getPassword())) {
+                        String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
+                        user.setPassword(encryptedPassword);
+                    }
+                    // Active
+                    user.setActivated(userDTO.isActivated());
+                    // Authorities
+                    Set<Authority> managedAuthorities = user.getAuthorities();
+                    managedAuthorities.clear();
+                    userDTO
+                        .getAuthorities()
+                        .stream()
+                        .map(authorityRepository::findById)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .forEach(managedAuthorities::add);
+                    // FullName
+                    user.setFullName(userDTO.getFullName());
+                    // Passport
+                    if (StringUtils.isNoneBlank(userDTO.getPassport().toUpperCase())) user.setPassport(userDTO.getPassport().toUpperCase());
+                    if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
+                    user.setGroupEnum(userDTO.getGroupEnum());
+                    user.setAuthTypeEnum(userDTO.getAuthTypeEnum());
+                    user.setUzb(userDTO.getUzb());
+                    if (ObjectUtils.isNotEmpty(userDTO.getInn())) user.setInn(userDTO.getInn());
+                    if (StringUtils.isNoneBlank(userDTO.getPhoneNumber())) user.setPhoneNumber(userDTO.getPhoneNumber());
+                    this.clearUserCaches(user);
+                    log.debug("Changed Information for User: {}", user);
+                    return user;
+                }
+            )
+            .map(DeposUserDTO::new);
     }
 
     public void deleteUser(String login) {

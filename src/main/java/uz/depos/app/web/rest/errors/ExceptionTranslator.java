@@ -21,11 +21,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.zalando.problem.DefaultProblem;
-import org.zalando.problem.Problem;
-import org.zalando.problem.ProblemBuilder;
-import org.zalando.problem.Status;
-import org.zalando.problem.StatusType;
+import org.zalando.problem.*;
 import org.zalando.problem.spring.web.advice.ProblemHandling;
 import org.zalando.problem.spring.web.advice.security.SecurityAdviceTrait;
 import org.zalando.problem.violations.ConstraintViolationProblem;
@@ -135,6 +131,45 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
         NativeWebRequest request
     ) {
         LoginAlreadyUsedException problem = new LoginAlreadyUsedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleInnAlreadyUsedException(
+        uz.depos.app.service.InnAlreadyUsedException ex,
+        NativeWebRequest request
+    ) {
+        InnAlreadyUsedException problem = new InnAlreadyUsedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handlePhoneNumberAlreadyUsedException(
+        uz.depos.app.service.PhoneNumberAlreadyUsedException ex,
+        NativeWebRequest request
+    ) {
+        PhoneNumberAlreadyUsedException problem = new PhoneNumberAlreadyUsedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handlePinflAlreadyUsedException(
+        uz.depos.app.service.PinflAlreadyUsedException ex,
+        NativeWebRequest request
+    ) {
+        PinflAlreadyUsedException problem = new PinflAlreadyUsedException();
         return create(
             problem,
             request,

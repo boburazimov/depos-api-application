@@ -5,8 +5,8 @@ package uz.depos.app.domain.enums;
  */
 
 public enum UserAuthTypeEnum {
-    ONEID, // Только ONE-ID
-    INNPASS, // Только логин/пароль
+    ERI, // Только ERI (e-imzo)
+    INPASS, // Только логин/пароль
     ANY, // ONE-ID или логин/пароль
     DISABLED, // Отключена
 }
