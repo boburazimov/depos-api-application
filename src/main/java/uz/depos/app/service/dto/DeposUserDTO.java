@@ -26,7 +26,7 @@ public class DeposUserDTO {
 
     public static final int PASSWORD_MIN_LENGTH = 4;
 
-    public static final int PASSWORD_MAX_LENGTH = 100;
+    public static final int PASSWORD_MAX_LENGTH = 16;
 
     //    @NotBlank(message = "Password must not be null and must contain at least one non-whitespace character")
     //    @Size(min = PASSWORD_MIN_LENGTH, max = PASSWORD_MAX_LENGTH)
@@ -54,7 +54,7 @@ public class DeposUserDTO {
 
     private UserAuthTypeEnum authTypeEnum;
 
-    @NotBlank(message = "Country must not be null and whitespace character")
+    //    @NotBlank(message = "Country must not be null and whitespace character")
     private String country;
 
     private boolean isUzb;
@@ -64,14 +64,18 @@ public class DeposUserDTO {
     @Column(unique = true)
     private String inn;
 
-    @NotBlank(message = "Login must not be null and whitespace character")
     private String phoneNumber;
 
     public DeposUserDTO() {}
 
+    public DeposUserDTO(String password) {
+        this.password = password;
+    }
+
     public DeposUserDTO(User user) {
         this.id = user.getId();
         this.login = user.getLogin();
+        this.password = null;
         this.email = user.getEmail();
         this.activated = user.isActivated();
         this.authorities = user.getAuthorities().stream().map(Authority::getName).collect(Collectors.toSet());

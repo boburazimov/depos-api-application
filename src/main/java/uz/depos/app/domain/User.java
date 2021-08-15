@@ -131,7 +131,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private String inn;
 
     // Номер телефона
-    @Column(unique = true, length = 13, name = "phone_number")
+    @Column(length = 13, name = "phone_number")
     private String phoneNumber;
 
     public Long getId() {

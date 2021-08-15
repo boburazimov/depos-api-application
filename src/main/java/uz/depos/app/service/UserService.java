@@ -46,22 +46,19 @@ public class UserService {
     private final AuthorityRepository authorityRepository;
     private final CacheManager cacheManager;
     private final UserMapper userMapper;
-    private final CheckString checkString;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
         CacheManager cacheManager,
-        UserMapper userMapper,
-        CheckString checkString
+        UserMapper userMapper
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
         this.userMapper = userMapper;
-        this.checkString = checkString;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -168,33 +165,25 @@ public class UserService {
                 }
             );
 
-        if (!StringUtils.isNoneBlank(userDTO.getLogin())) newUser.setLogin(userDTO.getLogin().toLowerCase());
+        if (StringUtils.isNoneBlank(userDTO.getLogin())) newUser.setLogin(userDTO.getLogin().toLowerCase());
 
-        // Checks if none of the CharSequences are empty (""), null or whitespace only.
-        if (!StringUtils.isNoneBlank(userDTO.getPassword())) {
-            // Generate new random password.
-            String password = RandomStringUtils.randomAlphanumeric(6);
+        // Checks and get or generate password if none of the CharSequences are empty (""), null or whitespace only.
+        String password = StringUtils.isNoneBlank(userDTO.getPassword())
+            ? RandomStringUtils.randomAlphanumeric(6) // Generate new random password.
+            : userDTO.getPassword();
 
-            // Shared-salt - key word for encode/decode password
-            //            String salt = "1q#ESDwp";
-            // Encode by Base64 generated password for sending to Front-End side.
-            //            byte[] saltedPassword = Base64.getEncoder().encode(password.concat(salt).getBytes());
+        // Encode password which to set User table in DB
+        String encryptedPassword = passwordEncoder.encode(password);
 
-            String encryptedPassword = passwordEncoder.encode(password);
+        // new user gets initially a generated password
+        newUser.setPassword(encryptedPassword);
 
-            // new user gets initially a generated password
-            newUser.setPassword(encryptedPassword);
-        } else {
-            // Encoding password if user didn't enter the password
-            String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
-
-            // new user gets initially a generated password
-            newUser.setPassword(encryptedPassword);
-        }
+        // Encode by Base64 generated password for sending to Front-End side.
+        String saltedPassword = Base64.getEncoder().encodeToString(password.concat(Constants.PASSWORD_KEY).getBytes());
+        String decode = Arrays.toString(Base64.getDecoder().decode(saltedPassword));
 
         newUser.setFullName(userDTO.getFullName());
-        // new user is not active
-        newUser.setActivated(false);
+        newUser.setActivated(userDTO.isActivated());
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
         // by default new user's authority @USER
@@ -206,14 +195,13 @@ public class UserService {
         if (StringUtils.isNoneBlank(userDTO.getPinfl())) newUser.setPinfl(userDTO.getPinfl());
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-        newUser.setCountry(userDTO.getUzb() ? "Uzbekistan" : userDTO.getCountry());
+        newUser.setCountry(userDTO.getCountry());
         newUser.setUzb(userDTO.getUzb());
-        if (userDTO.getInn() != null) {
-            newUser.setInn(userDTO.getInn());
-        }
-        newUser.setPhoneNumber(userDTO.getPhoneNumber());
+        if (userDTO.getInn() != null) newUser.setInn(userDTO.getInn());
+        if (userDTO.getPhoneNumber() != null) newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
         DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
+        deposUserDTO.setPassword(saltedPassword);
         this.clearUserCaches(savedUser);
         log.debug("Created Information for User: {}", deposUserDTO);
         return deposUserDTO;

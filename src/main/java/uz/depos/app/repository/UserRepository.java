@@ -36,7 +36,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByPinfl(String pinfl);
 
-    Optional<User> findOneByPhoneNumber(String phoneNumber);
+    Optional<User> findOneByPhoneNumber(String number);
 
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
