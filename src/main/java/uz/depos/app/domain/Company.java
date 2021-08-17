@@ -1,6 +1,8 @@
 package uz.depos.app.domain;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 
 /**
@@ -41,11 +43,11 @@ public class Company extends AbstractAuditingEntity {
     private String description;
 
     // Почтовый адрес
-    @Column(length = 64, nullable = false, name = "mailing_address")
-    private String mailingAddress;
+    @Column(length = 64, nullable = false, name = "postal_address")
+    private String postalAddress;
 
     // Веб сайт
-    @Column(length = 64, nullable = false, name = "web_page")
+    @Column(length = 64, name = "web_page")
     private String webPage;
 
     // Телефон номер
@@ -53,8 +55,9 @@ public class Company extends AbstractAuditingEntity {
     private String phoneNumber;
 
     // Логотип
-    @OneToOne
-    private Attachment logo;
+    @Size(max = 256)
+    @Column(name = "image_url", length = 256)
+    private String imageUrl;
 
     // Председатель наб. совета
     @ManyToOne
@@ -63,10 +66,6 @@ public class Company extends AbstractAuditingEntity {
     // Секретарь наб. совета
     @ManyToOne
     private User secretary;
-
-    // Доп инфо
-    @Column(length = 128, name = "extra_info")
-    private String extraInfo;
 
     public Company() {}
 
@@ -78,13 +77,12 @@ public class Company extends AbstractAuditingEntity {
         String legalAddress,
         String email,
         String description,
-        String mailingAddress,
+        String postalAddress,
         String webPage,
         String phoneNumber,
-        Attachment logo,
+        String imageUrl,
         User chairman,
-        User secretary,
-        String extraInfo
+        User secretary
     ) {
         this.id = id;
         this.isActive = isActive;
@@ -93,13 +91,12 @@ public class Company extends AbstractAuditingEntity {
         this.legalAddress = legalAddress;
         this.email = email;
         this.description = description;
-        this.mailingAddress = mailingAddress;
+        this.postalAddress = postalAddress;
         this.webPage = webPage;
         this.phoneNumber = phoneNumber;
-        this.logo = logo;
+        this.imageUrl = imageUrl;
         this.chairman = chairman;
         this.secretary = secretary;
-        this.extraInfo = extraInfo;
     }
 
     public Long getId() {
@@ -158,12 +155,12 @@ public class Company extends AbstractAuditingEntity {
         this.description = description;
     }
 
-    public String getMailingAddress() {
-        return mailingAddress;
+    public String getPostalAddress() {
+        return postalAddress;
     }
 
-    public void setMailingAddress(String mailingAddress) {
-        this.mailingAddress = mailingAddress;
+    public void setPostalAddress(String postalAddress) {
+        this.postalAddress = postalAddress;
     }
 
     public String getWebPage() {
@@ -182,12 +179,12 @@ public class Company extends AbstractAuditingEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public Attachment getLogo() {
-        return logo;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setLogo(Attachment logo) {
-        this.logo = logo;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public User getChairman() {
@@ -204,14 +201,6 @@ public class Company extends AbstractAuditingEntity {
 
     public void setSecretary(User secretary) {
         this.secretary = secretary;
-    }
-
-    public String getExtraInfo() {
-        return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
     }
 
     @Override
@@ -237,8 +226,8 @@ public class Company extends AbstractAuditingEntity {
             ", description='" +
             description +
             '\'' +
-            ", mailingAddress='" +
-            mailingAddress +
+            ", postalAddress='" +
+            postalAddress +
             '\'' +
             ", webPage='" +
             webPage +
@@ -246,15 +235,13 @@ public class Company extends AbstractAuditingEntity {
             ", phoneNumber='" +
             phoneNumber +
             '\'' +
-            ", logo=" +
-            logo +
+            ", imageUrl='" +
+            imageUrl +
+            '\'' +
             ", chairman=" +
             chairman +
             ", secretary=" +
             secretary +
-            ", extraInfo='" +
-            extraInfo +
-            '\'' +
             '}'
         );
     }

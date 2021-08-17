@@ -5,6 +5,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
@@ -12,16 +15,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.User;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.UsernameAlreadyUsedException;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
@@ -29,16 +39,13 @@ import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.vm.ManagedUserVM;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/moder/user")
 @Api(tags = "User")
 public class DeposUserResource {
 
-    private static class DeposUserResourceException extends RuntimeException {
-
-        private DeposUserResourceException(String message) {
-            super(message);
-        }
-    }
+    private static final List<String> ALLOWED_ORDERED_PROPERTIES = Collections.unmodifiableList(
+        Arrays.asList("id", "fullName", "email", "phoneNumber", "groupEnum", "inn", "activated")
+    );
 
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
@@ -56,7 +63,7 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code POST  /auth/generate-login}  : Generate login.
+     * {@code POST  /moder/generate-login}  : Generate login.
      * <p>
      * 1. Checking is true @param isUzb
      * 2. Checking is not Empty @param INN, to already used INN and check is Empty login,
@@ -70,10 +77,7 @@ public class DeposUserResource {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Generate login", notes = "This method is generate new login from present INN.")
     public ResponseEntity<String> generateLogin(
-        @ApiParam(value = "Length must be 9 characters!") @PathVariable @Pattern(
-            regexp = Constants.INN_REGEX,
-            message = "!!!!!!!!!!!"
-        ) String inn
+        @ApiParam(value = "Length must be 9 characters!") @PathVariable @Pattern(regexp = Constants.INN_REGEX) String inn
     ) {
         log.debug("REST request to generate login from INN : {}", inn);
 
@@ -88,17 +92,18 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code POST  /auth/create} : register the Depositary user.
+     * {@code POST  /moder/create} : register the Depositary user.
      *
      * @param deposUserDTO the managed user View Model.
      * @throws InvalidPasswordException     {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException    {@code 400 (Bad Request)} if the email is already used.
      * @throws UsernameAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
+     * @return DeposUserDTO with status {@code 201 (Created)}
      */
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Create new user", notes = "This method creates a new user")
+    @ApiOperation(value = "Create user", notes = "This method creates a new user")
     public ResponseEntity<DeposUserDTO> createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) throws URISyntaxException {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
@@ -107,7 +112,9 @@ public class DeposUserResource {
             // Lowercase the user login before comparing with database
         } else if (userRepository.findOneByLogin(deposUserDTO.getLogin().toLowerCase()).isPresent()) {
             throw new UsernameAlreadyUsedException();
-        } else if (userRepository.findOneByEmailIgnoreCase(deposUserDTO.getEmail()).isPresent()) {
+        } else if (
+            StringUtils.isNotEmpty(deposUserDTO.getEmail()) && userRepository.findOneByEmailIgnoreCase(deposUserDTO.getEmail()).isPresent()
+        ) {
             throw new EmailAlreadyUsedException();
         } else if (isPasswordLengthInvalid(deposUserDTO.getPassword())) {
             throw new InvalidPasswordException();
@@ -135,7 +142,7 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code GET /auth/users/:ID} : get the "login" user.
+     * {@code GET /moder/users/:ID} : get the "login" user.
      *
      * @param id the login of the user to find.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "ID" user, or with status {@code 404 (Not Found)}.
@@ -146,6 +153,31 @@ public class DeposUserResource {
     public ResponseEntity<DeposUserDTO> getUser(@PathVariable Long id) {
         log.debug("REST request to get User : {}", id);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesById(id).map(DeposUserDTO::new));
+    }
+
+    /**
+     * {@code GET /auth/users} : get all users with all the details - calling this are only allowed for the administrators.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
+     */
+    @GetMapping("/users")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Get users", notes = "This method to get all users in pageable")
+    public ResponseEntity<List<DeposUserDTO>> getAllUsers(Pageable pageable) {
+        log.debug("REST request to get all User for an admin");
+
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        final Page<DeposUserDTO> page = userService.getAllManagedDeposUsers(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    private boolean onlyContainsAllowedProperties(Pageable pageable) {
+        return pageable.getSort().stream().map(Sort.Order::getProperty).allMatch(ALLOWED_ORDERED_PROPERTIES::contains);
     }
 
     /**
@@ -162,39 +194,69 @@ public class DeposUserResource {
      */
     @PutMapping("/users")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Edit user", notes = "This method to update user fields")
+    @ApiOperation(value = "Update user", notes = "This method to update user fields")
     public ResponseEntity<DeposUserDTO> editUser(@Valid @RequestBody DeposUserDTO userDTO) {
-        log.debug("REST request to edit User : {}", userDTO);
+        log.debug("REST request to update User : {}", userDTO);
 
-        Optional<User> existingUser = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-            throw new EmailAlreadyUsedException();
-        }
-        existingUser = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (existingUser.isPresent() && (!existingUser.get().getId().equals(userDTO.getId()))) {
-            throw new LoginAlreadyUsedException();
-        }
-        Optional<User> existingUserByInn = userRepository.findOneByInn(userDTO.getInn());
-        if (existingUserByInn.isPresent() && (!existingUserByInn.get().getId().equals(userDTO.getId()))) {
-            throw new InnAlreadyUsedException();
-        }
-        Optional<User> oneByPassport = userRepository.findOneByPassport(userDTO.getPassport());
-        if (oneByPassport.isPresent() && (!oneByPassport.get().getPassport().equals(userDTO.getPassport()))) {
-            throw new PassportAlreadyUsedException();
-        }
+        Optional<User> existingByEmail = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
+        if (
+            StringUtils.isNotEmpty(userDTO.getEmail()) &&
+            existingByEmail.isPresent() &&
+            (!existingByEmail.get().getId().equals(userDTO.getId()))
+        ) throw new EmailAlreadyUsedException();
+
+        Optional<User> existingByLogin = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
+        if (
+            StringUtils.isNotEmpty(userDTO.getLogin()) &&
+            existingByLogin.isPresent() &&
+            (!existingByLogin.get().getId().equals(userDTO.getId()))
+        ) throw new LoginAlreadyUsedException();
+
+        Optional<User> existingByInn = userRepository.findOneByInn(userDTO.getInn());
+        if (
+            StringUtils.isNotEmpty(userDTO.getInn()) && existingByInn.isPresent() && (!existingByInn.get().getId().equals(userDTO.getId()))
+        ) throw new InnAlreadyUsedException();
+
+        Optional<User> existingByPassport = userRepository.findOneByPassport(userDTO.getPassport());
+        if (
+            StringUtils.isNotEmpty(userDTO.getPassport()) &&
+            existingByPassport.isPresent() &&
+            (!existingByPassport.get().getId().equals(userDTO.getId()))
+        ) throw new PassportAlreadyUsedException();
+
         Optional<User> oneByPinfl = userRepository.findOneByPinfl(userDTO.getPinfl());
-        if (oneByPinfl.isPresent() && (!oneByPinfl.get().getPinfl().equals(userDTO.getPinfl()))) {
-            throw new PinflAlreadyUsedException();
-        }
+        if (
+            StringUtils.isNotEmpty(userDTO.getPinfl()) && oneByPinfl.isPresent() && (!oneByPinfl.get().getId().equals(userDTO.getId()))
+        ) throw new PinflAlreadyUsedException();
+
         Optional<User> oneByPhoneNumber = userRepository.findOneByPhoneNumber(userDTO.getPhoneNumber());
-        if (oneByPhoneNumber.isPresent() && (!oneByPhoneNumber.get().getPhoneNumber().equals(userDTO.getPhoneNumber()))) {
-            throw new PhoneNumberAlreadyUsedException();
-        }
+        if (
+            StringUtils.isNotEmpty(userDTO.getPhoneNumber()) &&
+            oneByPhoneNumber.isPresent() &&
+            (!oneByPhoneNumber.get().getId().equals(userDTO.getId()))
+        ) throw new PhoneNumberAlreadyUsedException();
+
         Optional<DeposUserDTO> updatedUser = userService.editUser(userDTO);
 
         return ResponseUtil.wrapOrNotFound(
             updatedUser,
             HeaderUtil.createAlert(applicationName, "userManagement.edited", userDTO.getLogin())
         );
+    }
+
+    /**
+     * {@code DELETE /auth/users/:id} : delete the "id" User.
+     *
+     * @param id the id of the user to delete.
+     * @return the {@link ResponseEntity} with status {@code 202 (ACCEPTED)}.
+     */
+    @DeleteMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Delete user", notes = "This method to delete user by id")
+    public ResponseEntity<ApiResponse> removeUser(@PathVariable Long id) {
+        log.debug("REST request to delete User: {}", id);
+        ApiResponse response = userService.removeUser(id);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
     }
 }

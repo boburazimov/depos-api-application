@@ -117,13 +117,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserAuthTypeEnum authTypeEnum;
 
-    // Страна (будет условия по Узб)
+    // Страна
     @Column(length = 64)
     private String country;
-
-    // Является ли страна Узб для ввода ИНН
-    @Column(name = "is_uzb")
-    private Boolean isUzb;
 
     // Номер ИНН
     @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
@@ -287,14 +283,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.country = country;
     }
 
-    public Boolean getUzb() {
-        return isUzb;
-    }
-
-    public void setUzb(Boolean uzb) {
-        isUzb = uzb;
-    }
-
     public String getInn() {
         return inn;
     }
@@ -351,7 +339,6 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", groupEnum=" + groupEnum +
             ", authTypeEnum=" + authTypeEnum +
             ", country='" + country + '\'' +
-            ", isUzb=" + isUzb +
             ", inn=" + inn +
             ", phoneNumber='" + phoneNumber + '\'' +
             '}';

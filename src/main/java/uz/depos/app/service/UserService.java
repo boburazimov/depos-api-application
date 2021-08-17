@@ -25,12 +25,14 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
 import uz.depos.app.service.dto.AdminUserDTO;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.UserDTO;
 import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PhoneNumberAlreadyUsedException;
+import uz.depos.app.web.rest.errors.PinflAlreadyUsedException;
 
 /**
  * Service class for managing users.
@@ -150,18 +152,25 @@ public class UserService {
                     throw new InnAlreadyUsedException();
                 }
             );
-        userRepository
+        if (userDTO.getPassport() != null) userRepository
             .findOneByPassport(userDTO.getPassword().toUpperCase())
             .ifPresent(
                 user -> {
                     throw new PassportAlreadyUsedException();
                 }
             );
-        userRepository
+        if (userDTO.getPhoneNumber() != null) userRepository
             .findOneByPhoneNumber(userDTO.getPhoneNumber())
             .ifPresent(
                 user -> {
                     throw new PhoneNumberAlreadyUsedException();
+                }
+            );
+        if (userDTO.getPinfl() != null) userRepository
+            .findOneByPinfl(userDTO.getPinfl())
+            .ifPresent(
+                user -> {
+                    throw new PinflAlreadyUsedException();
                 }
             );
 
@@ -186,17 +195,29 @@ public class UserService {
         newUser.setActivated(userDTO.isActivated());
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
-        // by default new user's authority @USER
-        Set<Authority> authorities = new HashSet<>();
-        authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
+
+        Set<Authority> authorities;
+        if (userDTO.getAuthorities() != null) {
+            authorities =
+                userDTO
+                    .getAuthorities()
+                    .stream()
+                    .map(authorityRepository::findById)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .collect(Collectors.toSet());
+        } else {
+            // by default new user's authority @USER
+            authorities = new HashSet<>();
+            authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
+        }
         newUser.setAuthorities(authorities);
         if (StringUtils.isNoneBlank(userDTO.getEmail())) newUser.setEmail(userDTO.getEmail().toLowerCase());
         if (StringUtils.isNoneBlank(userDTO.getPassport())) newUser.setPassport(userDTO.getPassport().toUpperCase());
         if (StringUtils.isNoneBlank(userDTO.getPinfl())) newUser.setPinfl(userDTO.getPinfl());
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-        newUser.setCountry(userDTO.getCountry());
-        newUser.setUzb(userDTO.getUzb());
+        if (StringUtils.isNoneBlank(userDTO.getCountry())) newUser.setCountry(userDTO.getCountry());
         if (userDTO.getInn() != null) newUser.setInn(userDTO.getInn());
         if (userDTO.getPhoneNumber() != null) newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
@@ -358,7 +379,7 @@ public class UserService {
                     // Email
                     if (StringUtils.isNoneBlank(userDTO.getEmail())) user.setEmail(userDTO.getEmail().toLowerCase());
                     // Password
-                    // Generate new encryption @password if null
+                    // Generate new encryption @password if not null
                     if (StringUtils.isNoneBlank(userDTO.getPassword())) {
                         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
                         user.setPassword(encryptedPassword);
@@ -376,13 +397,13 @@ public class UserService {
                         .map(Optional::get)
                         .forEach(managedAuthorities::add);
                     // FullName
-                    user.setFullName(userDTO.getFullName());
+                    if (StringUtils.isNoneBlank(userDTO.getFullName())) user.setFullName(userDTO.getFullName());
                     // Passport
                     if (StringUtils.isNoneBlank(userDTO.getPassport().toUpperCase())) user.setPassport(userDTO.getPassport().toUpperCase());
                     if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
                     user.setGroupEnum(userDTO.getGroupEnum());
                     user.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-                    user.setUzb(userDTO.getUzb());
+                    if (StringUtils.isNoneBlank(userDTO.getCountry())) user.setCountry(userDTO.getCountry());
                     if (ObjectUtils.isNotEmpty(userDTO.getInn())) user.setInn(userDTO.getInn());
                     if (StringUtils.isNoneBlank(userDTO.getPhoneNumber())) user.setPhoneNumber(userDTO.getPhoneNumber());
                     this.clearUserCaches(user);
@@ -403,6 +424,23 @@ public class UserService {
                     log.debug("Deleted User: {}", user);
                 }
             );
+    }
+
+    public ApiResponse removeUser(Long id) {
+        try {
+            userRepository
+                .findById(id)
+                .ifPresent(
+                    user -> {
+                        userRepository.delete(user);
+                        this.clearUserCaches(user);
+                        log.debug("Deleted User: {}", user);
+                    }
+                );
+            return new ApiResponse("User deleted!", true);
+        } catch (Exception e) {
+            return new ApiResponse(e.getMessage(), false);
+        }
     }
 
     /**
@@ -455,6 +493,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public Page<AdminUserDTO> getAllManagedUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(AdminUserDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DeposUserDTO> getAllManagedDeposUsers(Pageable pageable) {
+        return userRepository.findAll(pageable).map(DeposUserDTO::new);
     }
 
     @Transactional(readOnly = true)

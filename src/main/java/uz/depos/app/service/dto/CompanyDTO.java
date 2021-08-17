@@ -1,7 +1,8 @@
 package uz.depos.app.service.dto;
 
-import io.swagger.annotations.*;
-import javax.validation.constraints.NotNull;
+import io.swagger.annotations.ApiModel;
+import javax.validation.constraints.NotBlank;
+import org.apache.commons.lang3.ObjectUtils;
 import uz.depos.app.domain.Company;
 
 @ApiModel(value = "CompanyDTO")
@@ -9,35 +10,54 @@ public class CompanyDTO {
 
     private Long id;
 
-    private Boolean isActive;
+    private Boolean isActive = false;
 
-    @NotNull
-    @ApiModelProperty(example = "DEPOS OOO", required = true)
+    @NotBlank(message = "Name must not be null!")
     private String name;
 
-    @ApiModelProperty(example = "123456789", required = true)
+    @NotBlank(message = "INN must not be null!")
     private String inn;
 
-    @ApiModelProperty(example = "Тошкент ш. Чилонзор т. Нурали к. 42д.", required = true)
+    @NotBlank(message = "Legal address must not be null!")
     private String legalAddress;
 
+    @NotBlank(message = "Email must not be null!")
     private String email;
 
+    @NotBlank(message = "Description must not be null!")
     private String description;
 
-    private String mailingAddress;
+    @NotBlank(message = "Postal address must not be null!")
+    private String postalAddress;
 
     private String webPage;
 
+    @NotBlank(message = "Phone-number must not be null!")
     private String phoneNumber;
 
-    private Long logoId;
+    private String imageUrl;
 
     private Long chairmanId;
 
     private Long secretaryId;
 
-    private String extraInfo;
+    public CompanyDTO() {}
+
+    public CompanyDTO(Company company) {
+        this.id = company.getId();
+        this.isActive = company.getActive();
+        this.name = company.getName();
+        this.inn = company.getInn();
+        this.legalAddress = company.getLegalAddress();
+        this.email = company.getEmail();
+        this.description = company.getDescription();
+        this.postalAddress = company.getPostalAddress();
+        this.webPage = company.getWebPage();
+        this.phoneNumber = company.getPhoneNumber();
+        this.imageUrl = company.getImageUrl();
+        this.chairmanId = ObjectUtils.isNotEmpty(company.getChairman()) ? company.getChairman().getId() : null;
+        this.secretaryId = ObjectUtils.isNotEmpty(company.getSecretary()) ? company.getSecretary().getId() : null;
+    }
 
     public Long getId() {
         return id;
@@ -95,12 +115,12 @@ public class CompanyDTO {
         this.description = description;
     }
 
-    public String getMailingAddress() {
-        return mailingAddress;
+    public String getPostalAddress() {
+        return postalAddress;
     }
 
-    public void setMailingAddress(String mailingAddress) {
-        this.mailingAddress = mailingAddress;
+    public void setPostalAddress(String postalAddress) {
+        this.postalAddress = postalAddress;
     }
 
     public String getWebPage() {
@@ -119,12 +139,12 @@ public class CompanyDTO {
         this.phoneNumber = phoneNumber;
     }
 
-    public Long getLogoId() {
-        return logoId;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setLogoId(Long logoId) {
-        this.logoId = logoId;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public Long getChairmanId() {
@@ -143,37 +163,10 @@ public class CompanyDTO {
         this.secretaryId = secretaryId;
     }
 
-    public String getExtraInfo() {
-        return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
-    }
-
-    public CompanyDTO() {}
-
-    public CompanyDTO(Company company) {
-        this.id = company.getId();
-        this.isActive = company.getActive();
-        this.name = company.getName();
-        this.inn = company.getInn();
-        this.legalAddress = company.getLegalAddress();
-        this.email = company.getEmail();
-        this.description = company.getDescription();
-        this.mailingAddress = company.getMailingAddress();
-        this.webPage = company.getWebPage();
-        this.phoneNumber = company.getPhoneNumber();
-        this.logoId = company.getLogo().getId();
-        this.chairmanId = company.getChairman().getId();
-        this.secretaryId = company.getSecretary().getId();
-        this.extraInfo = company.getExtraInfo();
-    }
-
     @Override
     public String toString() {
         return (
-            "ReqCompany{" +
+            "CompanyDTO{" +
             "id=" +
             id +
             ", isActive=" +
@@ -193,8 +186,8 @@ public class CompanyDTO {
             ", description='" +
             description +
             '\'' +
-            ", mailingAddress='" +
-            mailingAddress +
+            ", postalAddress='" +
+            postalAddress +
             '\'' +
             ", webPage='" +
             webPage +
@@ -202,15 +195,13 @@ public class CompanyDTO {
             ", phoneNumber='" +
             phoneNumber +
             '\'' +
-            ", logoId=" +
-            logoId +
+            ", imageUrl='" +
+            imageUrl +
+            '\'' +
             ", chairmanId=" +
             chairmanId +
             ", secretaryId=" +
             secretaryId +
-            ", extraInfo='" +
-            extraInfo +
-            '\'' +
             '}'
         );
     }
