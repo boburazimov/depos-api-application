@@ -1,43 +1,31 @@
-package uz.depos.app.domain;
+package uz.depos.app.service.dto;
 
 import javax.persistence.*;
+import uz.depos.app.domain.City;
 
-/**
- * Города Республики: (г. Ташкент, Самаркандская обл...)
- **/
+public class CityDTO {
 
-@Entity
-public class City {
-
-    // Уникальный идентификатор
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Наименование города - Uzbek
-    @Column(length = 64, unique = true, nullable = false, name = "name_uz")
+    @Column(length = 64, unique = true, nullable = false)
     private String nameUz;
 
-    // Наименование города - Russian
-    @Column(length = 64, unique = true, nullable = false, name = "name_ru")
+    @Column(length = 64, unique = true, nullable = false)
     private String nameRu;
 
-    // Наименование города - English
-    @Column(length = 64, unique = true, nullable = false, name = "name_en")
+    @Column(length = 64, unique = true, nullable = false)
     private String nameEn;
 
-    // Доп инфо
-    @Column(length = 128, name = "extra_info")
     private String extraInfo;
 
-    public City() {}
+    public CityDTO() {}
 
-    public City(Integer id, String nameUz, String nameRu, String nameEn, String extraInfo) {
-        this.id = id;
-        this.nameUz = nameUz;
-        this.nameRu = nameRu;
-        this.nameEn = nameEn;
-        this.extraInfo = extraInfo;
+    public CityDTO(City city) {
+        this.id = city.getId();
+        this.nameUz = city.getNameUz();
+        this.nameRu = city.getNameRu();
+        this.nameEn = city.getNameEn();
+        this.extraInfo = city.getExtraInfo();
     }
 
     public Integer getId() {

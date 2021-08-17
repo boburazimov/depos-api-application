@@ -7,12 +7,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.springframework.stereotype.Service;
 import uz.depos.app.domain.Authority;
+import uz.depos.app.domain.City;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.User;
-import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.CompanyDTO;
-import uz.depos.app.service.dto.DeposUserDTO;
-import uz.depos.app.service.dto.UserDTO;
+import uz.depos.app.service.dto.*;
 
 /**
  * Mapper for the entity {@link Company} and its DTO called {@link CompanyDTO}.
@@ -25,6 +23,10 @@ public class CompanyMapper {
 
     public CompanyDTO companyToCompanyDTO(Company company) {
         return new CompanyDTO(company);
+    }
+
+    public CityDTO cityToCityDTO(City city) {
+        return new CityDTO(city);
     }
     //    public List<UserDTO> usersToUserDTOs(List<User> users) {
     //        return users.stream().filter(Objects::nonNull).map(this::userToUserDTO).collect(Collectors.toList());

@@ -4,7 +4,6 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.repository.*;
-import uz.depos.app.repository.rest.CityRepository;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.ReqMeeting;
 import uz.depos.app.service.dto.ResPageable;

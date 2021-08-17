@@ -1,11 +1,9 @@
 package uz.depos.app.service.dto;
 
-import io.swagger.annotations.ApiModel;
 import javax.validation.constraints.NotBlank;
 import org.apache.commons.lang3.ObjectUtils;
 import uz.depos.app.domain.Company;
 
-@ApiModel(value = "CompanyDTO")
 public class CompanyDTO {
 
     private Long id;

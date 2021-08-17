@@ -158,19 +158,9 @@ public class CompanyResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
-    //    @GetMapping
-    //    @ApiOperation(value = "Get companies", notes = "This method to get companies of pageable")
-    //    public HttpEntity<?> getCompanies(
-    //        @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE) int page,
-    //        @RequestParam(value = "size", defaultValue = Constants.DEFAULT_SIZE) int size,
-    //        @RequestParam(value = "sort", defaultValue = "false") boolean sort
-    //    ) {
-    //        return ResponseEntity.ok(companyService.getCompanies(page, size, sort));
-    //    }
-
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Delete company", notes = "This method to delete one of company by ID")
-    public HttpEntity<?> deleteCompany(@PathVariable Long id) {
+    public HttpEntity<ApiResponse> deleteCompany(@PathVariable Long id) {
         ApiResponse response = companyService.deleteCompany(id);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
     }
