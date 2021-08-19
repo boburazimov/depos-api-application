@@ -26,7 +26,6 @@ import uz.depos.app.domain.User;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.UserDTO;
 import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.vm.ManagedUserVM;
 

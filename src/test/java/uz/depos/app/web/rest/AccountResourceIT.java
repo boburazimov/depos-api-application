@@ -25,7 +25,6 @@ import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.dto.AdminUserDTO;
 import uz.depos.app.service.dto.PasswordChangeDTO;
-import uz.depos.app.service.dto.UserDTO;
 import uz.depos.app.web.rest.vm.KeyAndPasswordVM;
 import uz.depos.app.web.rest.vm.ManagedUserVM;
 

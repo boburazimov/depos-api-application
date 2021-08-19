@@ -1,20 +1,21 @@
 package uz.depos.app.domain;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import javax.persistence.*;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
+import uz.depos.app.domain.enums.MeetingTypeEnum;
 
 /**
- * Заседание (Собрание) - Наблюдательного совета
+ * Meeting of Company
  **/
 
 @EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Meeting extends AbstractAuditingEntity {
 
@@ -23,28 +24,32 @@ public class Meeting extends AbstractAuditingEntity {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-    // Статус заседания
+    // Status of meeting
     @Enumerated(value = EnumType.STRING)
     private MeetingStatusEnum status;
 
+    // Type of meeting
+    @Enumerated(value = EnumType.STRING)
+    private MeetingTypeEnum typeEnum;
+
     // Дата и время проведения заседания
     @Column(nullable = false, name = "start_date")
-    private Timestamp startDate;
+    private Instant startDate;
 
     // Начало регистрации
     @Column(nullable = false, name = "start_registration")
-    private Timestamp startRegistration;
+    private Instant startRegistration;
 
     // Окончание регистрации
     @Column(nullable = false, name = "end_registration")
-    private Timestamp endRegistration;
+    private Instant endRegistration;
 
     // Привязка к компанию / организации
     @ManyToOne(optional = false)
     private Company company;
 
     // Привязка к Город/область
-    @ManyToOne(optional = false)
+    @ManyToOne
     private City city;
 
     // Адрес - место проведения
@@ -56,16 +61,16 @@ public class Meeting extends AbstractAuditingEntity {
     private String description;
 
     // Список наблюдателей в заседании
-    @OneToMany(mappedBy = "meeting")
-    private List<Member> members;
+    //    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL)
+    //    private List<Member> members;
 
     // Прикрепляемы файлы для всего заседания
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Attachment> attachments;
+    //    @OneToMany(cascade = CascadeType.ALL)
+    //    private List<Long> attachments;
 
     // Привязка к повесткам дня
-    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL)
-    private List<Agenda> agendas;
+    //    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL)
+    //    private List<Agenda> agendas;
 
     // Доп инфо
     @Column(length = 128, name = "extra_info")
@@ -76,20 +81,21 @@ public class Meeting extends AbstractAuditingEntity {
     public Meeting(
         Long id,
         MeetingStatusEnum status,
-        Timestamp startDate,
-        Timestamp startRegistration,
-        Timestamp endRegistration,
+        MeetingTypeEnum typeEnum,
+        Instant startDate,
+        Instant startRegistration,
+        Instant endRegistration,
         Company company,
         City city,
         String address,
         String description,
         List<Member> members,
-        List<Attachment> attachments,
         List<Agenda> agendas,
         String extraInfo
     ) {
         this.id = id;
         this.status = status;
+        this.typeEnum = typeEnum;
         this.startDate = startDate;
         this.startRegistration = startRegistration;
         this.endRegistration = endRegistration;
@@ -97,9 +103,8 @@ public class Meeting extends AbstractAuditingEntity {
         this.city = city;
         this.address = address;
         this.description = description;
-        this.members = members;
-        this.attachments = attachments;
-        this.agendas = agendas;
+        //        this.members = members;
+        //        this.agendas = agendas;
         this.extraInfo = extraInfo;
     }
 
@@ -119,27 +124,35 @@ public class Meeting extends AbstractAuditingEntity {
         this.status = status;
     }
 
-    public Timestamp getStartDate() {
+    public MeetingTypeEnum getTypeEnum() {
+        return typeEnum;
+    }
+
+    public void setTypeEnum(MeetingTypeEnum typeEnum) {
+        this.typeEnum = typeEnum;
+    }
+
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Timestamp startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public Timestamp getStartRegistration() {
+    public Instant getStartRegistration() {
         return startRegistration;
     }
 
-    public void setStartRegistration(Timestamp startRegistration) {
+    public void setStartRegistration(Instant startRegistration) {
         this.startRegistration = startRegistration;
     }
 
-    public Timestamp getEndRegistration() {
+    public Instant getEndRegistration() {
         return endRegistration;
     }
 
-    public void setEndRegistration(Timestamp endRegistration) {
+    public void setEndRegistration(Instant endRegistration) {
         this.endRegistration = endRegistration;
     }
 
@@ -175,29 +188,21 @@ public class Meeting extends AbstractAuditingEntity {
         this.description = description;
     }
 
-    public List<Member> getMembers() {
-        return members;
-    }
-
-    public void setMembers(List<Member> members) {
-        this.members = members;
-    }
-
-    public List<Attachment> getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(List<Attachment> attachments) {
-        this.attachments = attachments;
-    }
-
-    public List<Agenda> getAgendas() {
-        return agendas;
-    }
-
-    public void setAgendas(List<Agenda> agendas) {
-        this.agendas = agendas;
-    }
+    //    public List<Member> getMembers() {
+    //        return members;
+    //    }
+    //
+    //    public void setMembers(List<Member> members) {
+    //        this.members = members;
+    //    }
+    //
+    //    public List<Agenda> getAgendas() {
+    //        return agendas;
+    //    }
+    //
+    //    public void setAgendas(List<Agenda> agendas) {
+    //        this.agendas = agendas;
+    //    }
 
     public String getExtraInfo() {
         return extraInfo;
@@ -215,6 +220,8 @@ public class Meeting extends AbstractAuditingEntity {
             id +
             ", status=" +
             status +
+            ", typeEnum=" +
+            typeEnum +
             ", startDate=" +
             startDate +
             ", startRegistration=" +
@@ -231,12 +238,8 @@ public class Meeting extends AbstractAuditingEntity {
             ", description='" +
             description +
             '\'' +
-            ", members=" +
-            members +
-            ", attachments=" +
-            attachments +
-            ", agendas=" +
-            agendas +
+            //            ", members=" + members +
+            //            ", agendas=" + agendas +
             ", extraInfo='" +
             extraInfo +
             '\'' +

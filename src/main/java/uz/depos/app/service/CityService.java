@@ -1,8 +1,6 @@
 package uz.depos.app.service;
 
-import java.util.Objects;
 import java.util.Optional;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,12 +10,9 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.City;
-import uz.depos.app.domain.Company;
 import uz.depos.app.repository.CityRepository;
-import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.CityDTO;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
 
 @Service

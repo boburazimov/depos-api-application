@@ -21,5 +21,9 @@ public final class ErrorConstants {
     public static final URI COMPANY_INN_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/company-inn-already-used");
     public static final URI COMPANY_NAME_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/company-name-already-used");
 
+    public static final URI MEETING_WITH_START_DATE_ALREADY_CREATED_TYPE = URI.create(
+        PROBLEM_BASE_URL + "/meeting-with-start-date-already-created"
+    );
+
     private ErrorConstants() {}
 }

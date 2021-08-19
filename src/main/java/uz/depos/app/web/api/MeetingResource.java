@@ -1,55 +1,159 @@
 package uz.depos.app.web.api;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Optional;
+import javax.validation.Valid;
+import org.apache.commons.lang3.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uz.depos.app.config.Constants;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
+import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingService;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.ReqMeeting;
-import uz.depos.app.web.rest.errors.BadRequestAlertException;
+import uz.depos.app.service.dto.MeetingDTO;
+import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
+import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
 
 @RestController
 @RequestMapping(path = "/api/meeting")
+@Api(tags = "Meeting")
 public class MeetingResource {
+
+    @Value("${jhipster.clientApp.name}")
+    private String applicationName;
+
+    private final Logger log = LoggerFactory.getLogger(MeetingResource.class);
 
     final MeetingService meetingService;
     final MeetingRepository meetingRepository;
+    final CompanyRepository companyRepository;
 
-    public MeetingResource(MeetingService meetingService, MeetingRepository meetingRepository) {
+    public MeetingResource(MeetingService meetingService, MeetingRepository meetingRepository, CompanyRepository companyRepository) {
         this.meetingService = meetingService;
         this.meetingRepository = meetingRepository;
+        this.companyRepository = companyRepository;
     }
 
+    /**
+     * {@code POST  /meeting/users}  : Creates a new meeting.
+     * <p>
+     * Creates a new meeting if the company is not empty, and return meetingDTO
+     *
+     * @param meetingDTO the meeting to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new meeting, or with status {@code 400 (Bad Request)} if the company empty
+     * and have incorrect id.
+     * @throws NullPointerException      if the company is Empty.
+     * @throws ResourceNotFoundException if the company id is not correct - Not found).
+     */
     @PostMapping
-    public HttpEntity<?> addMeeting(@RequestBody ReqMeeting request) {
-        ApiResponse response = meetingService.addMeeting(request);
-        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.CONFLICT).body(response);
+    @ResponseStatus(HttpStatus.CREATED)
+    @ApiOperation(value = "Create meeting", notes = "This method creates a new meeting")
+    public ResponseEntity<MeetingDTO> createMeeting(@Valid @RequestBody MeetingDTO meetingDTO) throws URISyntaxException {
+        log.debug("REST request to create Meeting : {}", meetingDTO);
+
+        if (ObjectUtils.isEmpty(meetingDTO.getCompanyId())) throw new NullPointerException("Meeting have must a company");
+        if (!companyRepository.existsById(meetingDTO.getCompanyId())) throw new ResourceNotFoundException(
+            "Company not found by ID: " + meetingDTO.getCompanyId()
+        );
+
+        MeetingDTO meeting = meetingService.createMeeting(meetingDTO);
+        return ResponseEntity
+            .created(new URI("/api/meeting/" + meeting.getId()))
+            .headers(HeaderUtil.createAlert(applicationName, "meetingManagement.created", meeting.getDescription()))
+            .body(meeting);
     }
 
+    /**
+     * {@code PUT /meeting} : Updates an existing Meeting.
+     *
+     * @param meetingDTO the meeting to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated meeting.
+     * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
+     */
+    @PutMapping
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Update meeting", notes = "This method updated a meeting")
+    public ResponseEntity<MeetingDTO> updateMeeting(@Valid @RequestBody MeetingDTO meetingDTO) {
+        log.debug("REST request to update Meeting : {}", meetingDTO);
+
+        Optional<Meeting> existingMeeting = meetingRepository.findOneByStartDate(meetingDTO.getStartDate());
+        if (existingMeeting.isPresent() && (!existingMeeting.get().getId().equals(meetingDTO.getId()))) {
+            throw new MeetingWithStartDateAlreadyCreatedException();
+        } else if (ObjectUtils.isEmpty(meetingDTO.getCompanyId())) {
+            throw new NullPointerException("Meeting have must a company");
+        } else if (!companyRepository.existsById(meetingDTO.getCompanyId())) throw new ResourceNotFoundException(
+            "Company not found by ID: " + meetingDTO.getCompanyId()
+        );
+
+        Optional<MeetingDTO> updatedMeeting = meetingService.updateMeeting(meetingDTO);
+        return ResponseUtil.wrapOrNotFound(
+            updatedMeeting,
+            HeaderUtil.createAlert(applicationName, "meetingManagement.updated", meetingDTO.getDescription())
+        );
+    }
+
+    /**
+     * {@code GET /meeting/:id} : get the "id" meeting.
+     *
+     * @param id the id of the meeting to find.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "id" meeting, or with status {@code 404 (Not Found)}.
+     */
     @GetMapping("/{id}")
-    public HttpEntity<?> getMeeting(@PathVariable Long id) {
-        Meeting meeting = meetingRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("getMeeting"));
-        ApiResponse response = meetingService.getMeeting(meeting);
-        return ResponseEntity.status(response.isSuccess() ? HttpStatus.CREATED : HttpStatus.CONFLICT).body(response);
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Get meeting", notes = "This method get one meeting")
+    public ResponseEntity<MeetingDTO> getMeeting(@PathVariable Long id) {
+        log.debug("REST request to get Meeting : {}", id);
+        return ResponseUtil.wrapOrNotFound(meetingService.getMeeting(id).map(MeetingDTO::new));
     }
 
+    /**
+     * {@code GET /meeting} : get all meetings with all the details - calling this are only allowed for the moderator.
+     *
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meetings.
+     */
     @GetMapping
-    public HttpEntity<?> getMeetings(
-        @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE) int page,
-        @RequestParam(value = "size", defaultValue = Constants.DEFAULT_SIZE) int size,
-        @RequestParam(value = "sort", defaultValue = "false") boolean sort
-    ) throws BadRequestAlertException {
-        return ResponseEntity.ok(meetingService.getMeetings(page, size, sort));
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Get meetings", notes = "This method get all meetings")
+    public ResponseEntity<List<MeetingDTO>> getAllMeetings(Pageable pageable) {
+        log.debug("REST request to get all Meeting for an moderator");
+
+        final Page<MeetingDTO> page = meetingService.getAllMeetings(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+    /**
+     * {@code DELETE /meeting/:id} : delete the "id" User.
+     *
+     * @param id the id of the meeting to delete.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     */
     @DeleteMapping("/{id}")
-    public HttpEntity<?> deleteMeeting(@PathVariable Long id) {
-        ApiResponse response = meetingService.deleteMeeting(id);
-        return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
+    @ApiOperation(value = "Delete meeting", notes = "This method to delete meeting")
+    public ResponseEntity<Void> deleteMeeting(@PathVariable Long id) {
+        log.debug("REST request to delete Meeting: {}", id);
+        meetingService.deleteMeeting(id);
+        return ResponseEntity
+            .noContent()
+            .headers(HeaderUtil.createAlert(applicationName, "meetingManagement.deleted", id.toString()))
+            .build();
     }
 }

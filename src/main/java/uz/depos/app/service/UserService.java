@@ -378,8 +378,7 @@ public class UserService {
                     if (StringUtils.isNoneBlank(userDTO.getLogin())) user.setLogin(userDTO.getLogin().toLowerCase());
                     // Email
                     if (StringUtils.isNoneBlank(userDTO.getEmail())) user.setEmail(userDTO.getEmail().toLowerCase());
-                    // Password
-                    // Generate new encryption @password if not null
+                    // Password - Encryption @password if not null
                     if (StringUtils.isNoneBlank(userDTO.getPassword())) {
                         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
                         user.setPassword(encryptedPassword);

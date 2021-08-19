@@ -1,10 +1,10 @@
 package uz.depos.app.service.mapper;
 
 import org.springframework.stereotype.Service;
-import uz.depos.app.domain.City;
 import uz.depos.app.domain.Company;
-import uz.depos.app.service.dto.CityDTO;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.service.dto.CompanyDTO;
+import uz.depos.app.service.dto.MeetingDTO;
 
 /**
  * Mapper for the entity {@link Company} and its DTO called {@link CompanyDTO}.
@@ -13,13 +13,9 @@ import uz.depos.app.service.dto.CompanyDTO;
  * support is still in beta, and requires a manual step with an IDE.
  */
 @Service
-public class CompanyMapper {
+public class MeetingMapper {
 
-    public CompanyDTO companyToCompanyDTO(Company company) {
-        return new CompanyDTO(company);
-    }
-
-    public CityDTO cityToCityDTO(City city) {
-        return new CityDTO(city);
+    public MeetingDTO meetingToMeetingDTO(Meeting meeting) {
+        return new MeetingDTO(meeting);
     }
 }

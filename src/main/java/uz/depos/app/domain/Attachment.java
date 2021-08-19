@@ -1,35 +1,77 @@
 package uz.depos.app.domain;
 
-import io.swagger.v3.oas.annotations.Hidden;
-import io.swagger.v3.oas.annotations.media.Schema;
-import javax.persistence.*;
-import lombok.EqualsAndHashCode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+import org.springframework.data.annotation.Id;
 
 /**
- * Для хранение данных о файлах а именно тип файла и его размер,
- * сам файл будет храниться в "AttachmentContent"
+ * Uploading files model
  **/
 
-@EqualsAndHashCode(callSuper = true)
-@Entity
-public class Attachment extends AbstractAuditingEntity {
+//@Entity
+@Table(name = "attachment")
+public class Attachment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
-    @SequenceGenerator(name = "sequenceGenerator")
+    @Column(name = "id")
     private Long id;
 
-    // Имя файла
-    @Column(nullable = false)
-    private String name;
+    @NotNull
+    @Column(name = "path")
+    private String path;
 
-    // Тип файла - расширение (pdf, jpg...)
-    @Column(nullable = false, name = "content_type")
+    @NotNull
+    @Column(name = "original_file_name")
+    private String originalFileName;
+
+    @NotNull
+    @Column(name = "file_name")
+    private String fileName;
+
+    @NotNull
+    @Column(name = "content_type")
     private String contentType;
 
-    // Размер файла - bytea
-    @Column(nullable = false)
-    private Long size;
+    @NotNull
+    @Column(name = "file_size")
+    private Long fileSize;
+
+    @NotNull
+    @Column(name = "application_name")
+    private String applicationName;
+
+    @Column(name = "created_date")
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime createdDate;
+
+    public Attachment() {}
+
+    public Attachment(
+        Long id,
+        String path,
+        String originalFileName,
+        String fileName,
+        String contentType,
+        Long fileSize,
+        String applicationName,
+        LocalDateTime createdDate
+    ) {
+        this.id = id;
+        this.path = path;
+        this.originalFileName = originalFileName;
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+        this.applicationName = applicationName;
+        this.createdDate = createdDate;
+    }
 
     public Long getId() {
         return id;
@@ -39,12 +81,28 @@ public class Attachment extends AbstractAuditingEntity {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getPath() {
+        return path;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public String getOriginalFileName() {
+        return originalFileName;
+    }
+
+    public void setOriginalFileName(String originalFileName) {
+        this.originalFileName = originalFileName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public String getContentType() {
@@ -55,25 +113,57 @@ public class Attachment extends AbstractAuditingEntity {
         this.contentType = contentType;
     }
 
-    public Long getSize() {
-        return size;
+    public Long getFileSize() {
+        return fileSize;
     }
 
-    public void setSize(Long size) {
-        this.size = size;
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
     }
 
-    public Attachment() {}
+    public String getApplicationName() {
+        return applicationName;
+    }
 
-    public Attachment(Long id, String name, String contentType, Long size) {
-        this.id = id;
-        this.name = name;
-        this.contentType = contentType;
-        this.size = size;
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    public LocalDateTime getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = createdDate;
     }
 
     @Override
     public String toString() {
-        return "Attachment{" + "id=" + id + ", name='" + name + '\'' + ", contentType='" + contentType + '\'' + ", size=" + size + '}';
+        return (
+            "Attachment{" +
+            "id='" +
+            id +
+            '\'' +
+            ", path='" +
+            path +
+            '\'' +
+            ", originalFileName='" +
+            originalFileName +
+            '\'' +
+            ", fileName='" +
+            fileName +
+            '\'' +
+            ", contentType='" +
+            contentType +
+            '\'' +
+            ", fileSize=" +
+            fileSize +
+            ", applicationName='" +
+            applicationName +
+            '\'' +
+            ", createdDate=" +
+            createdDate +
+            '}'
+        );
     }
 }

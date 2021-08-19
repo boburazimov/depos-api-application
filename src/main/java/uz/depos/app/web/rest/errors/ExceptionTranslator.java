@@ -126,6 +126,19 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     }
 
     @ExceptionHandler
+    public ResponseEntity<Problem> handleMeetingWithStartDateAlreadyCreatedException(
+        uz.depos.app.service.MeetingWithStartDateAlreadyCreatedException ex,
+        NativeWebRequest request
+    ) {
+        MeetingWithStartDateAlreadyCreatedException problem = new MeetingWithStartDateAlreadyCreatedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
     public ResponseEntity<Problem> handleUsernameAlreadyUsedException(
         uz.depos.app.service.UsernameAlreadyUsedException ex,
         NativeWebRequest request

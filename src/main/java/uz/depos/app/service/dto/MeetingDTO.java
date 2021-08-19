@@ -1,32 +1,54 @@
 package uz.depos.app.service.dto;
 
-import java.sql.Timestamp;
-import java.util.List;
+import java.time.Instant;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
+import uz.depos.app.domain.enums.MeetingTypeEnum;
 
-public class ReqMeeting {
+/**
+ * A DTO representing a meeting for Depository table, with his authorities
+ */
+
+public class MeetingDTO {
 
     private Long id;
 
     private MeetingStatusEnum status;
 
-    private Timestamp startDate;
+    private MeetingTypeEnum typeEnum;
 
-    private Timestamp startRegistration;
+    private Instant startDate;
 
-    private Timestamp endRegistration;
+    private Instant startRegistration;
 
+    private Instant endRegistration;
+
+    @NotNull(message = "Company have must be not empty")
     private Long companyId;
 
     private Integer cityId;
 
     private String address;
 
+    @NotBlank(message = "Description must not be null")
     private String description;
 
-    private List<Long> attachmentsId;
+    public MeetingDTO() {}
 
-    private String extraInfo;
+    public MeetingDTO(Meeting meeting) {
+        this.id = meeting.getId();
+        this.status = meeting.getStatus();
+        this.typeEnum = meeting.getTypeEnum();
+        this.startDate = meeting.getStartDate();
+        this.startRegistration = meeting.getStartRegistration();
+        this.endRegistration = meeting.getEndRegistration();
+        this.companyId = meeting.getCompany().getId();
+        this.cityId = meeting.getCity() != null ? meeting.getCity().getId() : null;
+        this.address = meeting.getAddress();
+        this.description = meeting.getDescription();
+    }
 
     public Long getId() {
         return id;
@@ -44,27 +66,35 @@ public class ReqMeeting {
         this.status = status;
     }
 
-    public Timestamp getStartDate() {
+    public MeetingTypeEnum getTypeEnum() {
+        return typeEnum;
+    }
+
+    public void setTypeEnum(MeetingTypeEnum typeEnum) {
+        this.typeEnum = typeEnum;
+    }
+
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Timestamp startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public Timestamp getStartRegistration() {
+    public Instant getStartRegistration() {
         return startRegistration;
     }
 
-    public void setStartRegistration(Timestamp startRegistration) {
+    public void setStartRegistration(Instant startRegistration) {
         this.startRegistration = startRegistration;
     }
 
-    public Timestamp getEndRegistration() {
+    public Instant getEndRegistration() {
         return endRegistration;
     }
 
-    public void setEndRegistration(Timestamp endRegistration) {
+    public void setEndRegistration(Instant endRegistration) {
         this.endRegistration = endRegistration;
     }
 
@@ -100,58 +130,16 @@ public class ReqMeeting {
         this.description = description;
     }
 
-    public List<Long> getAttachmentsId() {
-        return attachmentsId;
-    }
-
-    public void setAttachmentsId(List<Long> attachmentsId) {
-        this.attachmentsId = attachmentsId;
-    }
-
-    public String getExtraInfo() {
-        return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
-    }
-
-    public ReqMeeting() {}
-
-    public ReqMeeting(
-        Long id,
-        MeetingStatusEnum status,
-        Timestamp startDate,
-        Timestamp startRegistration,
-        Timestamp endRegistration,
-        Long companyId,
-        Integer cityId,
-        String address,
-        String description,
-        List<Long> attachmentsId,
-        String extraInfo
-    ) {
-        this.id = id;
-        this.status = status;
-        this.startDate = startDate;
-        this.startRegistration = startRegistration;
-        this.endRegistration = endRegistration;
-        this.companyId = companyId;
-        this.cityId = cityId;
-        this.address = address;
-        this.description = description;
-        this.attachmentsId = attachmentsId;
-        this.extraInfo = extraInfo;
-    }
-
     @Override
     public String toString() {
         return (
-            "ReqMeeting{" +
+            "MeetingDTO{" +
             "id=" +
             id +
             ", status=" +
             status +
+            ", typeEnum=" +
+            typeEnum +
             ", startDate=" +
             startDate +
             ", startRegistration=" +
@@ -167,11 +155,6 @@ public class ReqMeeting {
             '\'' +
             ", description='" +
             description +
-            '\'' +
-            ", attachmentsId=" +
-            attachmentsId +
-            ", extraInfo='" +
-            extraInfo +
             '\'' +
             '}'
         );

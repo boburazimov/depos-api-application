@@ -48,9 +48,9 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    // Файлы для повестки дня
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Attachment> attachments;
+    //    // Файлы для повестки дня
+    //    @OneToMany(cascade = CascadeType.ALL)
+    //    private List<Attachment> attachments;
 
     // Варианты решения для голосования
     @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
