@@ -8,10 +8,6 @@ import lombok.*;
  **/
 
 @EqualsAndHashCode(callSuper = true)
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 public class Member extends AbstractAuditingEntity {
 
@@ -25,7 +21,7 @@ public class Member extends AbstractAuditingEntity {
     private Meeting meeting;
 
     // Привязка пользователя к участнику заседание
-    @OneToOne
+    @ManyToOne(optional = false)
     private User user;
 
     // Тип участье в заседании добавленных пользователей
@@ -40,7 +36,97 @@ public class Member extends AbstractAuditingEntity {
     @Column(name = "is_involved")
     private Boolean isInvolved;
 
-    // Доп инфо
-    @Column(length = 128, name = "extra_info")
-    private String extraInfo;
+    // Является ли участник заседание докладчиком
+    @Column(name = "is_speaker")
+    private Boolean isSpeaker;
+
+    public Member() {}
+
+    public Member(Long id, Meeting meeting, User user, Boolean isRemotely, Boolean isConfirmed, Boolean isInvolved, Boolean isSpeaker) {
+        this.id = id;
+        this.meeting = meeting;
+        this.user = user;
+        this.isRemotely = isRemotely;
+        this.isConfirmed = isConfirmed;
+        this.isInvolved = isInvolved;
+        this.isSpeaker = isSpeaker;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Meeting getMeeting() {
+        return meeting;
+    }
+
+    public void setMeeting(Meeting meeting) {
+        this.meeting = meeting;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Boolean getRemotely() {
+        return isRemotely;
+    }
+
+    public void setRemotely(Boolean remotely) {
+        isRemotely = remotely;
+    }
+
+    public Boolean getConfirmed() {
+        return isConfirmed;
+    }
+
+    public void setConfirmed(Boolean confirmed) {
+        isConfirmed = confirmed;
+    }
+
+    public Boolean getInvolved() {
+        return isInvolved;
+    }
+
+    public void setInvolved(Boolean involved) {
+        isInvolved = involved;
+    }
+
+    public Boolean getSpeaker() {
+        return isSpeaker;
+    }
+
+    public void setSpeaker(Boolean speaker) {
+        isSpeaker = speaker;
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "Member{" +
+            "id=" +
+            id +
+            ", meeting=" +
+            meeting +
+            ", user=" +
+            user +
+            ", isRemotely=" +
+            isRemotely +
+            ", isConfirmed=" +
+            isConfirmed +
+            ", isInvolved=" +
+            isInvolved +
+            ", isSpeaker=" +
+            isSpeaker +
+            '}'
+        );
+    }
 }

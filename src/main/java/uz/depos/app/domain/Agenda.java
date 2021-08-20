@@ -13,10 +13,6 @@ import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class Agenda extends AbstractAuditingEntity implements Serializable {
 
     @Id
@@ -59,4 +55,128 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     // Доп инфо
     @Column(length = 128, name = "extra_info")
     private String extraInfo;
+
+    public Agenda() {}
+
+    public Agenda(
+        Long id,
+        Meeting meeting,
+        String subject,
+        Member speaker,
+        AgendaSpeakTimeEnum speakTimeEnum,
+        AgendaDebateEnum debateEnum,
+        Boolean isActive,
+        List<VotingOption> votingOptions,
+        String extraInfo
+    ) {
+        this.id = id;
+        this.meeting = meeting;
+        this.subject = subject;
+        this.speaker = speaker;
+        this.speakTimeEnum = speakTimeEnum;
+        this.debateEnum = debateEnum;
+        this.isActive = isActive;
+        this.votingOptions = votingOptions;
+        this.extraInfo = extraInfo;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Meeting getMeeting() {
+        return meeting;
+    }
+
+    public void setMeeting(Meeting meeting) {
+        this.meeting = meeting;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public Member getSpeaker() {
+        return speaker;
+    }
+
+    public void setSpeaker(Member speaker) {
+        this.speaker = speaker;
+    }
+
+    public AgendaSpeakTimeEnum getSpeakTimeEnum() {
+        return speakTimeEnum;
+    }
+
+    public void setSpeakTimeEnum(AgendaSpeakTimeEnum speakTimeEnum) {
+        this.speakTimeEnum = speakTimeEnum;
+    }
+
+    public AgendaDebateEnum getDebateEnum() {
+        return debateEnum;
+    }
+
+    public void setDebateEnum(AgendaDebateEnum debateEnum) {
+        this.debateEnum = debateEnum;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public List<VotingOption> getVotingOptions() {
+        return votingOptions;
+    }
+
+    public void setVotingOptions(List<VotingOption> votingOptions) {
+        this.votingOptions = votingOptions;
+    }
+
+    public String getExtraInfo() {
+        return extraInfo;
+    }
+
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "Agenda{" +
+            "id=" +
+            id +
+            ", meeting=" +
+            meeting +
+            ", subject='" +
+            subject +
+            '\'' +
+            ", speaker=" +
+            speaker +
+            ", speakTimeEnum=" +
+            speakTimeEnum +
+            ", debateEnum=" +
+            debateEnum +
+            ", isActive=" +
+            isActive +
+            ", votingOptions=" +
+            votingOptions +
+            ", extraInfo='" +
+            extraInfo +
+            '\'' +
+            '}'
+        );
+    }
 }

@@ -16,6 +16,7 @@ import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 
 @Service
+@Transactional
 public class MeetingService {
 
     private final Logger log = LoggerFactory.getLogger(MeetingService.class);
@@ -101,8 +102,7 @@ public class MeetingService {
                     meeting.setAddress(meetingDTO.getAddress());
                     meeting.setDescription(meetingDTO.getDescription());
                     log.debug("Changed Information for User: {}", meeting);
-                    meetingRepository.save(meeting);
-                    return meeting;
+                    return meetingRepository.saveAndFlush(meeting);
                 }
             )
             .map(MeetingDTO::new);
