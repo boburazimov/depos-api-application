@@ -120,7 +120,7 @@ public class BallotResource {
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
      */
-    @PutMapping("/users")
+    @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update ballot", notes = "This method is update exist ballot")
     public ResponseEntity<BallotDTO> updateBallot(@Valid @RequestBody BallotDTO ballotDTO) {

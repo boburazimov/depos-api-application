@@ -120,7 +120,7 @@ public class MemberResource {
      * @throws EmailAlreadyUsedException {@code 400 (Bad Request)} if the email is already in use.
      * @throws LoginAlreadyUsedException {@code 400 (Bad Request)} if the login is already in use.
      */
-    @PutMapping("/users")
+    @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update member", notes = "This method is update exist member")
     public ResponseEntity<MemberDTO> updateMember(@Valid @RequestBody MemberDTO memberDTO) {
