@@ -79,7 +79,7 @@ public class VotingOptionResource {
 
         VotingOptionDTO savedVotingOptionDTO = votingOptionService.createVotingOption(votingOptionDTO);
         return ResponseEntity
-            .created(new URI("/api/agenda/" + savedVotingOptionDTO.getId()))
+            .created(new URI("/api/voting_option/" + savedVotingOptionDTO.getId()))
             .headers(HeaderUtil.createAlert(applicationName, "votingOptionManagement.created", savedVotingOptionDTO.getVotingText()))
             .body(savedVotingOptionDTO);
     }
