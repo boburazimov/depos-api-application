@@ -3,6 +3,9 @@ package uz.depos.app.service.dto;
 import javax.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
+/**
+ * A DTO representing a depos-user-login for Depository table
+ */
 public class DeposUserLoginDTO {
 
     @NotNull(message = "INN must not be null and 0 for generate new login!")

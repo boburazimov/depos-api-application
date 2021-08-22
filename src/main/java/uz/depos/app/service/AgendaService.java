@@ -15,6 +15,9 @@ import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 
+/**
+ * Service class for managing agenda.
+ */
 @Service
 @Transactional
 public class AgendaService {

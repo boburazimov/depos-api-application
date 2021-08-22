@@ -15,6 +15,9 @@ import uz.depos.app.repository.VotingOptionRepository;
 import uz.depos.app.service.dto.VotingOptionDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 
+/**
+ * Service class for managing voting-option.
+ */
 @Service
 @Transactional
 public class VotingOptionService {

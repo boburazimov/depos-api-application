@@ -1,5 +1,8 @@
 package uz.depos.app.service.dto;
 
+/**
+ * A DTO representing a Upload file.
+ */
 public class ResUploadFile {
 
     private Long fileId;

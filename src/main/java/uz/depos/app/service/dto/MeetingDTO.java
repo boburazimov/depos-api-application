@@ -10,7 +10,6 @@ import uz.depos.app.domain.enums.MeetingTypeEnum;
 /**
  * A DTO representing a meeting for Depository table, with his authorities
  */
-
 public class MeetingDTO {
 
     private Long id;

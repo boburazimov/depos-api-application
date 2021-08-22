@@ -7,7 +7,6 @@ import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
 /**
  * A DTO representing a agenda.
  */
-
 public class AgendaDTO {
 
     private Long id;

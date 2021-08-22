@@ -15,6 +15,9 @@ import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.CityDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
 
+/**
+ * Service class for managing city.
+ */
 @Service
 @Transactional
 public class CityService {

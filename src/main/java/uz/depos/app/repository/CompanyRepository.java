@@ -10,7 +10,6 @@ import uz.depos.app.domain.Company;
 /**
  * Spring Data JPA repository for the {@link Company} entity.
  */
-
 @Repository
 public interface CompanyRepository extends JpaRepository<Company, Long> {
     String COMPANIES_BY_NAME_CACHE = "companiesByName";

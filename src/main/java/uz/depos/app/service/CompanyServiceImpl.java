@@ -19,6 +19,9 @@ import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
 
+/**
+ * Service class for managing company.
+ */
 @Service
 @Transactional
 public class CompanyServiceImpl implements CompanyService {

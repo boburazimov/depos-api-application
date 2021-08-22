@@ -4,9 +4,8 @@ import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
 
 /**
- * A DTO representing a member, with all attributes.
+ * A DTO representing a member.
  */
-
 public class MemberDTO {
 
     private Long id;
@@ -35,28 +34,6 @@ public class MemberDTO {
         this.isConfirmed = member.getConfirmed();
         this.isInvolved = member.getInvolved();
         this.isSpeaker = member.getSpeaker();
-    }
-
-    @Override
-    public String toString() {
-        return (
-            "MemberDTO{" +
-            "id=" +
-            id +
-            ", meetingId=" +
-            meetingId +
-            ", userId=" +
-            userId +
-            ", isRemotely=" +
-            isRemotely +
-            ", isConfirmed=" +
-            isConfirmed +
-            ", isInvolved=" +
-            isInvolved +
-            ", isSpeaker=" +
-            isSpeaker +
-            '}'
-        );
     }
 
     public Long getId() {
@@ -113,5 +90,27 @@ public class MemberDTO {
 
     public void setSpeaker(Boolean speaker) {
         isSpeaker = speaker;
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "MemberDTO{" +
+            "id=" +
+            id +
+            ", meetingId=" +
+            meetingId +
+            ", userId=" +
+            userId +
+            ", isRemotely=" +
+            isRemotely +
+            ", isConfirmed=" +
+            isConfirmed +
+            ", isInvolved=" +
+            isInvolved +
+            ", isSpeaker=" +
+            isSpeaker +
+            '}'
+        );
     }
 }

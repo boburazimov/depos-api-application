@@ -100,7 +100,7 @@ public class DeposUserResource {
      * @throws UsernameAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
      * @return DeposUserDTO with status {@code 201 (Created)}
      */
-    @PostMapping("/create")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Create user", notes = "This method creates a new user")
@@ -147,7 +147,7 @@ public class DeposUserResource {
      * @param id the login of the user to find.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "ID" user, or with status {@code 404 (Not Found)}.
      */
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get user", notes = "This method to get one user by ID")
     public ResponseEntity<DeposUserDTO> getUser(@PathVariable Long id) {
@@ -156,12 +156,12 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code GET /auth/users} : get all users with all the details - calling this are only allowed for the administrators.
+     * {@code GET /moder/user} : get all users with all the details - calling this are only allowed for the administrators.
      *
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all users.
      */
-    @GetMapping("/users")
+    @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get users", notes = "This method to get all users in pageable")
     public ResponseEntity<List<DeposUserDTO>> getAllUsers(Pageable pageable) {
@@ -181,7 +181,7 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code PUT /auth/users} : Updates an existing User.
+     * {@code PUT /moder/user} : Updates an existing User.
      *
      * @param userDTO the user to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated user.
@@ -192,7 +192,7 @@ public class DeposUserResource {
      * @throws PassportAlreadyUsedException    {@code 400 (Bad Request)} if the passport is already in use.
      * @throws PinflAlreadyUsedException       {@code 400 (Bad Request)} if the pinfl is already in use.
      */
-    @PutMapping("/users")
+    @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update user", notes = "This method to update user fields")
     public ResponseEntity<DeposUserDTO> editUser(@Valid @RequestBody DeposUserDTO userDTO) {
@@ -245,12 +245,12 @@ public class DeposUserResource {
     }
 
     /**
-     * {@code DELETE /auth/users/:id} : delete the "id" User.
+     * {@code DELETE /moder/user/:id} : delete the "id" User.
      *
      * @param id the id of the user to delete.
      * @return the {@link ResponseEntity} with status {@code 202 (ACCEPTED)}.
      */
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Delete user", notes = "This method to delete user by id")

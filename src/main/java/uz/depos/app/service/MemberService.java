@@ -14,6 +14,9 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.mapper.MemberMapper;
 
+/**
+ * Service class for managing member.
+ */
 @Service
 @Transactional
 public class MemberService {

@@ -40,6 +40,10 @@ public class Member extends AbstractAuditingEntity {
     @Column(name = "is_speaker")
     private Boolean isSpeaker;
 
+    //    // Представитель государство
+    //    @Column(name = "nation_vakeel")
+    //    private Boolean nationVakeel;
+
     public Member() {}
 
     public Member(Long id, Meeting meeting, User user, Boolean isRemotely, Boolean isConfirmed, Boolean isInvolved, Boolean isSpeaker) {

@@ -14,7 +14,6 @@ import uz.depos.app.domain.enums.UserGroupEnum;
 /**
  * A DTO representing a user for Depository table, with his authorities
  */
-
 public class DeposUserDTO {
 
     private Long id;
@@ -46,6 +45,9 @@ public class DeposUserDTO {
 
     private String passport;
 
+    @NotBlank(message = "PINFL must not be null and whitespace character!")
+    @Length(min = 14, max = 14, message = "PINFL Length must be 14 characters!")
+    @Column(unique = true)
     private String pinfl;
 
     private UserGroupEnum groupEnum;

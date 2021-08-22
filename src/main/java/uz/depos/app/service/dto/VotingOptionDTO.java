@@ -1,14 +1,11 @@
 package uz.depos.app.service.dto;
 
-import lombok.Getter;
-import lombok.Setter;
 import uz.depos.app.domain.VotingOption;
 import uz.depos.app.domain.enums.VotingOptionTypeEnum;
 
 /**
  * A DTO representing a voting-option, with only the public attributes.
  */
-
 public class VotingOptionDTO {
 
     private Long id;

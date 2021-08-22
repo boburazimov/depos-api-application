@@ -15,6 +15,9 @@ import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 
+/**
+ * Service class for managing meeting.
+ */
 @Service
 @Transactional
 public class MeetingService {

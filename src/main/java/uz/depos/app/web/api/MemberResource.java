@@ -93,9 +93,9 @@ public class MemberResource {
         if (memberDTO.getId() != null && memberDTO.getId() > 0) {
             throw new BadRequestAlertException("A new member cannot already have an ID", "memberManagement", "idExists");
         } else if (memberDTO.getMeetingId() == null || memberDTO.getMeetingId() == 0) {
-            throw new BadRequestAlertException("MeetingID not must be null and zero", "memberManagement", "meetingIDNull");
+            throw new BadRequestAlertException("MeetingID must NOT be null and zero", "memberManagement", "meetingIDNull");
         } else if (memberDTO.getUserId() == null || memberDTO.getUserId() == 0) {
-            throw new BadRequestAlertException("UserID not must be null and zero", "memberManagement", "userIDNull");
+            throw new BadRequestAlertException("UserID must NOT be null and zero", "memberManagement", "userIDNull");
         } else if (!meetingRepository.existsById(memberDTO.getMeetingId())) {
             throw new ResourceNotFoundException("Meeting not found by ID: " + memberDTO.getMeetingId());
         } else if (!userRepository.existsById(memberDTO.getUserId())) {

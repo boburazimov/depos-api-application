@@ -3,6 +3,9 @@ package uz.depos.app.service.dto;
 import javax.persistence.*;
 import uz.depos.app.domain.City;
 
+/**
+ * A DTO representing a city table.
+ */
 public class CityDTO {
 
     private Integer id;

@@ -1,5 +1,8 @@
 package uz.depos.app.service.dto;
 
+/**
+ * A DTO representing a response table in rest.
+ */
 public class ApiResponse {
 
     private String message;

@@ -4,6 +4,9 @@ import javax.validation.constraints.NotBlank;
 import org.apache.commons.lang3.ObjectUtils;
 import uz.depos.app.domain.Company;
 
+/**
+ * A DTO representing a company table, with his authorities
+ */
 public class CompanyDTO {
 
     private Long id;
