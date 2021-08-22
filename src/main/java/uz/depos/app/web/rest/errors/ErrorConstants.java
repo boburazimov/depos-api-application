@@ -25,5 +25,9 @@ public final class ErrorConstants {
         PROBLEM_BASE_URL + "/meeting-with-start-date-already-created"
     );
 
+    public static final URI SUBJECT_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/subject-in-meeting-already-created");
+
+    public static final URI VOTING_TEXT_ALREADY_USED_TYPE = URI.create(PROBLEM_BASE_URL + "/voting-text-in-agenda-already-created");
+
     private ErrorConstants() {}
 }

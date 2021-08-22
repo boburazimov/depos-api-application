@@ -191,6 +191,32 @@ public class ExceptionTranslator implements ProblemHandling, SecurityAdviceTrait
     }
 
     @ExceptionHandler
+    public ResponseEntity<Problem> handleSubjectInMeetingUsedException(
+        uz.depos.app.service.AgendaSubjectAlreadyUsedException ex,
+        NativeWebRequest request
+    ) {
+        AgendaSubjectAlreadyUsedException problem = new AgendaSubjectAlreadyUsedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Problem> handleVotingTextUsedException(
+        uz.depos.app.service.VotinOptionTextAlreadyUsedException ex,
+        NativeWebRequest request
+    ) {
+        VotinOptionTextAlreadyUsedException problem = new VotinOptionTextAlreadyUsedException();
+        return create(
+            problem,
+            request,
+            HeaderUtil.createFailureAlert(applicationName, true, problem.getEntityName(), problem.getErrorKey(), problem.getMessage())
+        );
+    }
+
+    @ExceptionHandler
     public ResponseEntity<Problem> handleInvalidPasswordException(
         uz.depos.app.service.InvalidPasswordException ex,
         NativeWebRequest request

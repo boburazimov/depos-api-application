@@ -48,9 +48,9 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     //    @OneToMany(cascade = CascadeType.ALL)
     //    private List<Attachment> attachments;
 
-    // Варианты решения для голосования
-    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
-    private List<VotingOption> votingOptions;
+    //    // Варианты решения для голосования
+    //    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
+    //    private List<VotingOption> votingOptions;
 
     // Доп инфо
     @Column(length = 128, name = "extra_info")
@@ -66,7 +66,6 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         AgendaSpeakTimeEnum speakTimeEnum,
         AgendaDebateEnum debateEnum,
         Boolean isActive,
-        List<VotingOption> votingOptions,
         String extraInfo
     ) {
         this.id = id;
@@ -76,7 +75,6 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         this.speakTimeEnum = speakTimeEnum;
         this.debateEnum = debateEnum;
         this.isActive = isActive;
-        this.votingOptions = votingOptions;
         this.extraInfo = extraInfo;
     }
 
@@ -136,14 +134,6 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         isActive = active;
     }
 
-    public List<VotingOption> getVotingOptions() {
-        return votingOptions;
-    }
-
-    public void setVotingOptions(List<VotingOption> votingOptions) {
-        this.votingOptions = votingOptions;
-    }
-
     public String getExtraInfo() {
         return extraInfo;
     }
@@ -171,8 +161,6 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
             debateEnum +
             ", isActive=" +
             isActive +
-            ", votingOptions=" +
-            votingOptions +
             ", extraInfo='" +
             extraInfo +
             '\'' +

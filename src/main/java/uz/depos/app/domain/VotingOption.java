@@ -2,6 +2,7 @@ package uz.depos.app.domain;
 
 import javax.persistence.*;
 import lombok.*;
+import uz.depos.app.domain.enums.VotingOptionTypeEnum;
 
 /**
  * Варианты решения для голосования
@@ -9,16 +10,19 @@ import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class VotingOption extends AbstractAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
+
+    // Наименование варианта
+    @Column(nullable = false, name = "voting_text")
+    private String votingText;
+
+    @Enumerated(EnumType.STRING)
+    private VotingOptionTypeEnum optionTypeEnum;
 
     // Привязка к заседанию "meetingID"
     @ManyToOne(optional = false)
@@ -28,11 +32,72 @@ public class VotingOption extends AbstractAuditingEntity {
     @ManyToOne(optional = false)
     private Agenda agenda;
 
-    // Наименование варианта
-    @Column(nullable = false, name = "voting_text")
-    private String votingText;
+    public VotingOption() {}
 
-    // Доп инфо
-    @Column(length = 128, name = "extra_info")
-    private String extraInfo;
+    public VotingOption(Long id, String votingText, VotingOptionTypeEnum optionTypeEnum, Meeting meeting, Agenda agenda) {
+        this.id = id;
+        this.votingText = votingText;
+        this.optionTypeEnum = optionTypeEnum;
+        this.meeting = meeting;
+        this.agenda = agenda;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getVotingText() {
+        return votingText;
+    }
+
+    public void setVotingText(String votingText) {
+        this.votingText = votingText;
+    }
+
+    public VotingOptionTypeEnum getOptionTypeEnum() {
+        return optionTypeEnum;
+    }
+
+    public void setOptionTypeEnum(VotingOptionTypeEnum optionTypeEnum) {
+        this.optionTypeEnum = optionTypeEnum;
+    }
+
+    public Meeting getMeeting() {
+        return meeting;
+    }
+
+    public void setMeeting(Meeting meeting) {
+        this.meeting = meeting;
+    }
+
+    public Agenda getAgenda() {
+        return agenda;
+    }
+
+    public void setAgenda(Agenda agenda) {
+        this.agenda = agenda;
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "VotingOption{" +
+            "id=" +
+            id +
+            ", votingText='" +
+            votingText +
+            '\'' +
+            ", optionTypeEnum=" +
+            optionTypeEnum +
+            ", meeting=" +
+            meeting +
+            ", agenda=" +
+            agenda +
+            '}'
+        );
+    }
 }

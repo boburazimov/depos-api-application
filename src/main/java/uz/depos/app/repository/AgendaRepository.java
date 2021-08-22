@@ -1,6 +1,15 @@
 package uz.depos.app.repository;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import uz.depos.app.domain.Agenda;
 
-public interface AgendaRepository extends JpaRepository<Agenda, Long> {}
+/**
+ * Spring Data JPA repository for the {@link Agenda} entity.
+ */
+
+public interface AgendaRepository extends JpaRepository<Agenda, Long> {
+    Optional<Agenda> findOneBySubject(String subject);
+
+    Optional<Agenda> findOneBySubjectContainsAndMeetingId(String subject, Long meeting_id);
+}
