@@ -5,22 +5,27 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import java.time.LocalDateTime;
-import javax.persistence.Column;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import org.springframework.data.annotation.Id;
 
 /**
  * Uploading files model
  **/
 
-//@Entity
+@Entity
 @Table(name = "attachment")
 public class Attachment {
 
     @Id
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequenceGenerator")
+    @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
+
+    @Column(name = "meeting_id")
+    private Long meetingId;
+
+    @Column(name = "agenda_id")
+    private Long agendaId;
 
     @NotNull
     @Column(name = "path")
@@ -42,10 +47,6 @@ public class Attachment {
     @Column(name = "file_size")
     private Long fileSize;
 
-    @NotNull
-    @Column(name = "application_name")
-    private String applicationName;
-
     @Column(name = "created_date")
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -55,21 +56,23 @@ public class Attachment {
 
     public Attachment(
         Long id,
+        Long meetingId,
+        Long agendaId,
         String path,
         String originalFileName,
         String fileName,
         String contentType,
         Long fileSize,
-        String applicationName,
         LocalDateTime createdDate
     ) {
         this.id = id;
+        this.meetingId = meetingId;
+        this.agendaId = agendaId;
         this.path = path;
         this.originalFileName = originalFileName;
         this.fileName = fileName;
         this.contentType = contentType;
         this.fileSize = fileSize;
-        this.applicationName = applicationName;
         this.createdDate = createdDate;
     }
 
@@ -79,6 +82,22 @@ public class Attachment {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getMeetingId() {
+        return meetingId;
+    }
+
+    public void setMeetingId(Long meetingId) {
+        this.meetingId = meetingId;
+    }
+
+    public Long getAgendaId() {
+        return agendaId;
+    }
+
+    public void setAgendaId(Long agendaId) {
+        this.agendaId = agendaId;
     }
 
     public String getPath() {
@@ -121,14 +140,6 @@ public class Attachment {
         this.fileSize = fileSize;
     }
 
-    public String getApplicationName() {
-        return applicationName;
-    }
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-    }
-
     public LocalDateTime getCreatedDate() {
         return createdDate;
     }
@@ -141,9 +152,12 @@ public class Attachment {
     public String toString() {
         return (
             "Attachment{" +
-            "id='" +
+            "id=" +
             id +
-            '\'' +
+            ", meetingId=" +
+            meetingId +
+            ", agendaId=" +
+            agendaId +
             ", path='" +
             path +
             '\'' +
@@ -158,9 +172,6 @@ public class Attachment {
             '\'' +
             ", fileSize=" +
             fileSize +
-            ", applicationName='" +
-            applicationName +
-            '\'' +
             ", createdDate=" +
             createdDate +
             '}'
