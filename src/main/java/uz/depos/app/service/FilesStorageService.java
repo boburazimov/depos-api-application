@@ -16,7 +16,6 @@ import uz.depos.app.repository.AttachmentRepository;
 import uz.depos.app.service.dto.AttachmentMeetingDTO;
 import uz.depos.app.service.mapper.AttachmentMapper;
 
-//@RequiredArgsConstructor
 @Service
 public class FilesStorageService {
 
@@ -41,7 +40,7 @@ public class FilesStorageService {
         }
     }
 
-    public AttachmentMeetingDTO save(MultipartFile file, Long meetingId) { // , Long agendaId
+    public AttachmentMeetingDTO save(MultipartFile file, Long meetingId, Long agendaId) {
         Attachment attachment = new Attachment();
         try {
             UUID uuid = UUID.randomUUID();
@@ -53,7 +52,7 @@ public class FilesStorageService {
             attachment.setPath(savedPath.toString()); //C://users/user/uploads - absolute path, /uploads - relative path
             attachment.setFileSize(file.getSize());
             attachment.setMeetingId(meetingId);
-            //            if (agendaId != null) attachment.setAgendaId(agendaId);
+            if (agendaId != null) attachment.setAgendaId(agendaId);
             attachment.setContentType(file.getContentType());
             attachment.setFileName(uuid.toString());
             attachment.setOriginalFileName(file.getOriginalFilename());

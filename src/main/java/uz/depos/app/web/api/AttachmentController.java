@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class AttachmentController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation(value = "Upload file", notes = "This method is upload file with MeetingID and AgendaID (if exist)")
-    public ResponseEntity<?> uploadFile(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId) { // , @RequestParam("agendaId") Long agendaId
+    public ResponseEntity<?> uploadFile(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId, Long agendaId) {
         log.debug("REST request to save File : {}", file);
         if (meetingId == null) throw new BadRequestAlertException(
             "Meeting ID must not be null!",
@@ -46,7 +47,7 @@ public class AttachmentController {
         );
 
         try {
-            AttachmentMeetingDTO attachmentMeetingDTO = filesStorageService.save(file, meetingId); // agendaId
+            AttachmentMeetingDTO attachmentMeetingDTO = filesStorageService.save(file, meetingId, agendaId);
             return ResponseEntity.status(HttpStatus.OK).body(attachmentMeetingDTO);
         } catch (Exception e) {
             e.printStackTrace();
