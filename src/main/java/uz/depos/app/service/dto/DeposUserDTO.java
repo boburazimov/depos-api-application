@@ -19,7 +19,6 @@ public class DeposUserDTO {
     private Long id;
 
     @NotBlank(message = "Login must not be null and whitespace character")
-    @Pattern(regexp = Constants.LOGIN_REGEX)
     @Size(min = 1, max = 50)
     private String login;
 
@@ -34,7 +33,7 @@ public class DeposUserDTO {
     @Size(min = 5, max = 254)
     private String email;
 
-    private boolean activated;
+    private boolean activated = true;
 
     private Set<String> authorities;
 
@@ -54,11 +53,9 @@ public class DeposUserDTO {
 
     private UserAuthTypeEnum authTypeEnum;
 
-    private String country;
+    private boolean isResident = true;
 
-    @NotNull(message = "INN must not be NULL!")
     @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
-    @Column(unique = true)
     private String inn;
 
     private String phoneNumber;
@@ -81,7 +78,7 @@ public class DeposUserDTO {
         this.pinfl = user.getPinfl();
         this.groupEnum = user.getGroupEnum();
         this.authTypeEnum = user.getAuthTypeEnum();
-        this.country = user.getCountry();
+        this.isResident = user.isResident();
         this.inn = user.getInn();
         this.phoneNumber = user.getPhoneNumber();
     }
@@ -182,12 +179,12 @@ public class DeposUserDTO {
         this.authTypeEnum = authTypeEnum;
     }
 
-    public String getCountry() {
-        return country;
+    public boolean isResident() {
+        return isResident;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setResident(boolean resident) {
+        isResident = resident;
     }
 
     public String getInn() {
@@ -238,9 +235,8 @@ public class DeposUserDTO {
             groupEnum +
             ", authTypeEnum=" +
             authTypeEnum +
-            ", country='" +
-            country +
-            '\'' +
+            ", isResident=" +
+            isResident +
             ", inn='" +
             inn +
             '\'' +

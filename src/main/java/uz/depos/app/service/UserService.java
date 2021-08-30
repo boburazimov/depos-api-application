@@ -116,12 +116,12 @@ public class UserService {
         } else throw new EmailAlreadyUsedException();
     }
 
-    public String generateLogin(String inn) {
-        // Generate new login from @INN by adding to begin bit-word "UZ-"
+    public String generateLogin(String pinfl) {
+        // Generate new login from @PINFL by adding to begin bit-word "UZ-"
         String bitWord = "UZ-";
         StringBuilder login = new StringBuilder();
         login.insert(0, bitWord);
-        login.insert(3, inn);
+        login.insert(3, pinfl);
         userRepository
             .findOneByLogin(login.toString())
             .ifPresent(
@@ -129,7 +129,7 @@ public class UserService {
                     throw new UsernameAlreadyUsedException();
                 }
             );
-        log.debug("Generated Login from INN Information for User: {}", login);
+        log.debug("Generated Login from PINFL Information for User: {}", login);
         return login.toString();
     }
 
@@ -217,7 +217,7 @@ public class UserService {
         if (StringUtils.isNoneBlank(userDTO.getPinfl())) newUser.setPinfl(userDTO.getPinfl());
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-        if (StringUtils.isNoneBlank(userDTO.getCountry())) newUser.setCountry(userDTO.getCountry());
+        newUser.setResident(userDTO.isResident());
         if (userDTO.getInn() != null) newUser.setInn(userDTO.getInn());
         if (userDTO.getPhoneNumber() != null) newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
@@ -402,7 +402,7 @@ public class UserService {
                     if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
                     user.setGroupEnum(userDTO.getGroupEnum());
                     user.setAuthTypeEnum(userDTO.getAuthTypeEnum());
-                    if (StringUtils.isNoneBlank(userDTO.getCountry())) user.setCountry(userDTO.getCountry());
+                    user.setResident(userDTO.isResident());
                     if (ObjectUtils.isNotEmpty(userDTO.getInn())) user.setInn(userDTO.getInn());
                     if (StringUtils.isNoneBlank(userDTO.getPhoneNumber())) user.setPhoneNumber(userDTO.getPhoneNumber());
                     this.clearUserCaches(user);

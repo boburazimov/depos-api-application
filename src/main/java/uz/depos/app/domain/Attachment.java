@@ -21,6 +21,7 @@ public class Attachment {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
+    @NotNull
     @Column(name = "meeting_id")
     private Long meetingId;
 

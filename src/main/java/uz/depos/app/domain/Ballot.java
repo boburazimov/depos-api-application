@@ -10,10 +10,6 @@ import uz.depos.app.domain.enums.BallotOptionEnum;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class Ballot extends AbstractAuditingEntity {
 
     @Id

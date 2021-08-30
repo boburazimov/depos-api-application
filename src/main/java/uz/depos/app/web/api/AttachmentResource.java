@@ -25,14 +25,14 @@ import uz.depos.app.web.rest.errors.BadRequestAlertException;
 @Controller
 @RequestMapping("/api/file")
 @Api(tags = "File")
-public class AttachmentController {
+public class AttachmentResource {
 
-    private final Logger log = LoggerFactory.getLogger(BallotResource.class);
+    private final Logger log = LoggerFactory.getLogger(AttachmentResource.class);
 
     private final FilesStorageService filesStorageService;
 
     @Autowired
-    public AttachmentController(FilesStorageService filesStorageService) {
+    public AttachmentResource(FilesStorageService filesStorageService) {
         this.filesStorageService = filesStorageService;
     }
 

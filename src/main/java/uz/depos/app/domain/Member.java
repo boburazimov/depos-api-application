@@ -40,13 +40,35 @@ public class Member extends AbstractAuditingEntity {
     @Column(name = "is_speaker")
     private Boolean isSpeaker;
 
+    @Column(name = "is_chairmen", columnDefinition = "boolean default false")
+    private Boolean isChairmen;
+
+    // Тип документа, удостоверяющего личность
+    @Column(name = "hld_it")
+    private String hldIt;
+
+    // Должность участника
+    @Column(name = "position")
+    private String position;
+
     //    // Представитель государство
     //    @Column(name = "nation_vakeel")
     //    private Boolean nationVakeel;
 
     public Member() {}
 
-    public Member(Long id, Meeting meeting, User user, Boolean isRemotely, Boolean isConfirmed, Boolean isInvolved, Boolean isSpeaker) {
+    public Member(
+        Long id,
+        Meeting meeting,
+        User user,
+        Boolean isRemotely,
+        Boolean isConfirmed,
+        Boolean isInvolved,
+        Boolean isSpeaker,
+        Boolean isChairmen,
+        String hldIt,
+        String position
+    ) {
         this.id = id;
         this.meeting = meeting;
         this.user = user;
@@ -54,6 +76,9 @@ public class Member extends AbstractAuditingEntity {
         this.isConfirmed = isConfirmed;
         this.isInvolved = isInvolved;
         this.isSpeaker = isSpeaker;
+        this.isChairmen = isChairmen;
+        this.hldIt = hldIt;
+        this.position = position;
     }
 
     public Long getId() {
@@ -112,6 +137,30 @@ public class Member extends AbstractAuditingEntity {
         isSpeaker = speaker;
     }
 
+    public Boolean getChairmen() {
+        return isChairmen;
+    }
+
+    public void setChairmen(Boolean chairmen) {
+        isChairmen = chairmen;
+    }
+
+    public String getHldIt() {
+        return hldIt;
+    }
+
+    public void setHldIt(String hldIt) {
+        this.hldIt = hldIt;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
     @Override
     public String toString() {
         return (
@@ -130,6 +179,14 @@ public class Member extends AbstractAuditingEntity {
             isInvolved +
             ", isSpeaker=" +
             isSpeaker +
+            ", isChairmen=" +
+            isChairmen +
+            ", hldIt='" +
+            hldIt +
+            '\'' +
+            ", position='" +
+            position +
+            '\'' +
             '}'
         );
     }

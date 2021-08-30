@@ -48,6 +48,9 @@ public class MemberService {
         member.setConfirmed(false);
         member.setInvolved(false);
         member.setSpeaker(memberDTO.getSpeaker());
+        member.setChairmen(memberDTO.getChairmen());
+        member.setHldIt(memberDTO.getHldIt());
+        member.setPosition(memberDTO.getPosition());
 
         Member savedMember = memberRepository.saveAndFlush(member);
         log.debug("Created Information for Member: {}", savedMember);
@@ -71,6 +74,9 @@ public class MemberService {
                     member.setConfirmed(memberDTO.getConfirmed());
                     member.setInvolved(memberDTO.getInvolved());
                     member.setSpeaker(memberDTO.getSpeaker());
+                    member.setChairmen(memberDTO.getChairmen());
+                    member.setHldIt(memberDTO.getHldIt());
+                    member.setPosition(memberDTO.getPosition());
                     log.debug("Changed Information for Member: {}", member);
                     return memberRepository.saveAndFlush(member);
                 }

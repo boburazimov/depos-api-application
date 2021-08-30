@@ -65,29 +65,25 @@ public class DeposUserResource {
     /**
      * {@code POST  /moder/generate-login}  : Generate login.
      * <p>
-     * 1. Checking is true @param isUzb
-     * 2. Checking is not Empty @param INN, to already used INN and check is Empty login,
-     * 3. Generate a new login from INN
+     * Checking is not Empty @param PINFL, to already used PINFL and check is Empty login,
      *
-     * @param inn the user to create.
-     * @return the String login with status {@code 201 (Generated)} or with status {@code 400 (Bad Request)} if the login or INN is already in use.
-     * @throws InnAlreadyUsedException {@code 400 (Bad Request)} if the inn is already in use.
+     * @param pinfl the user to create.
+     * @return the String login with status {@code 201 (Generated)} or with status {@code 400 (Bad Request)} if the login or PINFL is already in use.
+     * @throws PinflAlreadyUsedException {@code 400 (Bad Request)} if the PINFL is already in use.
      */
-    @GetMapping("/generate-login/{inn}")
+    @GetMapping("/generate-login/{pinfl}")
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Generate login", notes = "This method is generate new login from present INN.")
-    public ResponseEntity<String> generateLogin(
-        @ApiParam(value = "Length must be 9 characters!") @PathVariable @Pattern(regexp = Constants.INN_REGEX) String inn
-    ) {
-        log.debug("REST request to generate login from INN : {}", inn);
+    @ApiOperation(value = "Generate login", notes = "This method is generate new login from present PINFL.")
+    public ResponseEntity<String> generateLogin(@ApiParam(value = "Length must be 14 characters!") @PathVariable String pinfl) {
+        log.debug("REST request to generate login from PINFL : {}", pinfl);
 
-        if (inn != null) {
-            Optional<User> existingUserByInn = userRepository.findOneByInn(inn);
-            boolean present = existingUserByInn.isPresent();
-            if (present) throw new InnAlreadyUsedException();
-        } else throw new NullPointerException("INN not must be null!");
+        if (pinfl != null) {
+            Optional<User> existingUserByPinfl = userRepository.findOneByPinfl(pinfl);
+            boolean present = existingUserByPinfl.isPresent();
+            if (present) throw new PinflAlreadyUsedException();
+        } else throw new NullPointerException("PINFL must not be null!");
 
-        String login = userService.generateLogin(inn);
+        String login = userService.generateLogin(pinfl);
         return ResponseEntity.ok(login);
     }
 

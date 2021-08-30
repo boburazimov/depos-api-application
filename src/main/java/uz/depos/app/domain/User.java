@@ -117,9 +117,9 @@ public class User extends AbstractAuditingEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserAuthTypeEnum authTypeEnum;
 
-    // Страна
+    // Резидент или Нерезидент
     @Column(length = 64)
-    private String country;
+    private boolean isResident;
 
     // Номер ИНН
     @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
@@ -275,12 +275,12 @@ public class User extends AbstractAuditingEntity implements Serializable {
         this.authTypeEnum = authTypeEnum;
     }
 
-    public String getCountry() {
-        return country;
+    public boolean isResident() {
+        return isResident;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    public void setResident(boolean resident) {
+        isResident = resident;
     }
 
     public String getInn() {
@@ -338,7 +338,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
             ", pinfl='" + pinfl + '\'' +
             ", groupEnum=" + groupEnum +
             ", authTypeEnum=" + authTypeEnum +
-            ", country='" + country + '\'' +
+            ", isResident='" + isResident + '\'' +
             ", inn=" + inn +
             ", phoneNumber='" + phoneNumber + '\'' +
             '}';

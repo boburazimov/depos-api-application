@@ -24,6 +24,12 @@ public class MemberDTO {
 
     private Boolean isSpeaker;
 
+    private Boolean isChairmen;
+
+    private String hldIt;
+
+    private String position;
+
     public MemberDTO() {}
 
     public MemberDTO(Member member) {
@@ -34,6 +40,9 @@ public class MemberDTO {
         this.isConfirmed = member.getConfirmed();
         this.isInvolved = member.getInvolved();
         this.isSpeaker = member.getSpeaker();
+        this.isChairmen = member.getChairmen();
+        this.hldIt = member.getHldIt();
+        this.position = member.getPosition();
     }
 
     public Long getId() {
@@ -92,6 +101,30 @@ public class MemberDTO {
         isSpeaker = speaker;
     }
 
+    public Boolean getChairmen() {
+        return isChairmen;
+    }
+
+    public void setChairmen(Boolean chairmen) {
+        isChairmen = chairmen;
+    }
+
+    public String getHldIt() {
+        return hldIt;
+    }
+
+    public void setHldIt(String hldIt) {
+        this.hldIt = hldIt;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
     @Override
     public String toString() {
         return (
@@ -110,6 +143,14 @@ public class MemberDTO {
             isInvolved +
             ", isSpeaker=" +
             isSpeaker +
+            ", isChairmen=" +
+            isChairmen +
+            ", hldIt='" +
+            hldIt +
+            '\'' +
+            ", position='" +
+            position +
+            '\'' +
             '}'
         );
     }
