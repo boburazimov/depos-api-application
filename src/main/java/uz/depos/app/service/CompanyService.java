@@ -17,4 +17,6 @@ public interface CompanyService {
     Optional<Company> getCompanyById(Long id);
 
     Page<CompanyDTO> getAllManagedCompanies(Pageable pageable);
+
+    void deleteCompanyLogo(Long companyId);
 }

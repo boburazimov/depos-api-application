@@ -13,8 +13,8 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
     // Get Reestr excel file
     Optional<Attachment> findOneByMeetingIdAndIsReestrTrue(Long meeting_id);
 
-    // Get Company logo file
-    Optional<Attachment> findByCompanyIdAndIsReestrFalse(Long company_id);
-
     void deleteByMeetingIdAndIsReestrTrue(Long meeting_id);
+
+    // Get Company logo file
+    Optional<Attachment> findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(Long company_id);
 }

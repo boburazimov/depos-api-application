@@ -73,30 +73,19 @@ public class FilesStorageService {
         }
     }
 
-    public AttachLogoDTO uploadCompanyLogo(MultipartFile file, Long companyId) {
-        Attachment attachment = uploadGeneral(file);
-        try {
-            attachment.setReestr(false);
-            attachment.setMeetingId(null);
-            attachment.setAgendaId(null);
-            attachment.setCompanyId(companyId);
-            attachment = attachmentRepository.save(attachment);
-            log.debug("Saved Information for Attachment: {}", attachment);
-            return attachmentMapper.attachmentToAttachmentLogoDTO(attachment);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
-        }
-    }
-
     public Attachment uploadGeneral(MultipartFile file) {
         Attachment attachment = new Attachment();
         try {
             UUID uuid = UUID.randomUUID();
+            // Generate path for saving to static folder
             Path savedPath = this.root.resolve(uuid.toString());
+            // Check for exist the static folder.
             if (!Files.exists(root)) {
                 this.init();
             }
+            // Save to static folder
             Files.copy(file.getInputStream(), savedPath);
+            // Start to fill attachment model for write to Database
             attachment.setPath(savedPath.toString());
             attachment.setFileSize(file.getSize());
             attachment.setContentType(file.getContentType());
@@ -133,9 +122,43 @@ public class FilesStorageService {
             .ifPresent(
                 attachment -> {
                     try {
+                        // Delete from static folder
                         Files.delete(Paths.get(attachment.getPath()));
+                        // Delete from Database
                         attachmentRepository.deleteById(attachment.getId());
                         log.debug("Deleted Reestr Excel File by Meeting ID: {}", meetingId);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            );
+    }
+
+    public AttachLogoDTO uploadCompanyLogo(MultipartFile file, Long companyId) {
+        Attachment attachment = uploadGeneral(file);
+        try {
+            attachment.setReestr(false);
+            attachment.setMeetingId(null);
+            attachment.setAgendaId(null);
+            attachment.setCompanyId(companyId);
+            attachment = attachmentRepository.save(attachment);
+            log.debug("Saved Information for Company logo Attachment: {}", attachment);
+            return attachmentMapper.attachmentToAttachmentLogoDTO(attachment);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not store the Company logo. Error: " + e.getMessage());
+        }
+    }
+
+    public void deleteCompanyLogo(Long companyId) {
+        attachmentRepository
+            .findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(companyId)
+            .ifPresent(
+                attachment -> {
+                    try {
+                        // Delete from static folder
+                        Files.delete(Paths.get(attachment.getPath()));
+                        // Delete from Database
+                        attachmentRepository.deleteById(attachment.getId());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

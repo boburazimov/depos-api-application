@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.depos.app.domain.Attachment;
+import uz.depos.app.repository.CompanyRepository;
+import uz.depos.app.service.CompanyService;
 import uz.depos.app.service.FilesStorageService;
+import uz.depos.app.service.dto.AttachLogoDTO;
 import uz.depos.app.service.dto.AttachMeetingDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
@@ -29,15 +33,19 @@ public class AttachmentResource {
     private final Logger log = LoggerFactory.getLogger(AttachmentResource.class);
 
     private final FilesStorageService filesStorageService;
+    private final CompanyService companyService;
+    private final CompanyRepository companyRepository;
 
     @Autowired
-    public AttachmentResource(FilesStorageService filesStorageService) {
+    public AttachmentResource(FilesStorageService filesStorageService, CompanyService companyService, CompanyRepository companyRepository) {
         this.filesStorageService = filesStorageService;
+        this.companyService = companyService;
+        this.companyRepository = companyRepository;
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation(value = "Upload file", notes = "This method is upload file with MeetingID and AgendaID (if exist)")
-    public ResponseEntity<?> uploadFile(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId, Long agendaId) {
+    public ResponseEntity<?> uploadMeetingFile(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId, Long agendaId) {
         log.debug("REST request to save File : {}", file);
         if (meetingId == null) throw new BadRequestAlertException(
             "Meeting ID must not be null!",
@@ -78,5 +86,28 @@ public class AttachmentResource {
         log.debug("Get Information for Attachments by MeetingID: {}", meetingId);
         List<Attachment> fileInfos = filesStorageService.loadAllByMeetingId(meetingId);
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
+    }
+
+    @PostMapping(value = "/upload/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ApiOperation(value = "Upload logo", notes = "This method is upload Company logo with CompanyID")
+    public ResponseEntity<?> uploadLogo(@RequestPart MultipartFile file, @RequestParam("companyId") Long companyId) {
+        log.debug("REST request to save Logo : {}", file);
+        if (companyId == null) {
+            throw new BadRequestAlertException("Company ID must not be null!", "attachmentManagement", "companyNotExists");
+        } else if (!companyRepository.findById(companyId).isPresent()) {
+            throw new ResourceNotFoundException("Company not found by ID: " + companyId);
+        } else if (file == null) {
+            throw new BadRequestAlertException("File must not be null!", "attachmentManagement", "fileNullPionter");
+        }
+
+        try {
+            // Clear previous company logo from current Company before upload.
+            companyService.deleteCompanyLogo(companyId);
+
+            AttachLogoDTO attachLogoDTO = filesStorageService.uploadCompanyLogo(file, companyId);
+            return ResponseEntity.status(HttpStatus.OK).body(attachLogoDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
+        }
     }
 }

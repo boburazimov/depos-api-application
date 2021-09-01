@@ -32,17 +32,20 @@ public class CompanyServiceImpl implements CompanyService {
     private final UserRepository userRepository;
     private final CompanyMapper companyMapper;
     private final CacheManager cacheManager;
+    private final FilesStorageService filesStorageService;
 
     public CompanyServiceImpl(
         CompanyRepository companyRepository,
         UserRepository userRepository,
         CompanyMapper companyMapper,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        FilesStorageService filesStorageService
     ) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
         this.companyMapper = companyMapper;
         this.cacheManager = cacheManager;
+        this.filesStorageService = filesStorageService;
     }
 
     /**
@@ -153,6 +156,15 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional(readOnly = true)
     public Page<CompanyDTO> getAllManagedCompanies(Pageable pageable) {
         return companyRepository.findAll(pageable).map(CompanyDTO::new);
+    }
+
+    @Override
+    public void deleteCompanyLogo(Long companyId) {
+        try {
+            filesStorageService.deleteCompanyLogo(companyId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
