@@ -51,6 +51,7 @@ public class MemberService {
         member.setChairmen(memberDTO.getChairmen());
         member.setHldIt(memberDTO.getHldIt());
         member.setPosition(memberDTO.getPosition());
+        member.setFromReestr(false);
 
         Member savedMember = memberRepository.saveAndFlush(member);
         log.debug("Created Information for Member: {}", savedMember);
@@ -77,6 +78,7 @@ public class MemberService {
                     member.setChairmen(memberDTO.getChairmen());
                     member.setHldIt(memberDTO.getHldIt());
                     member.setPosition(memberDTO.getPosition());
+                    member.setFromReestr(false);
                     log.debug("Changed Information for Member: {}", member);
                     return memberRepository.saveAndFlush(member);
                 }
@@ -101,6 +103,20 @@ public class MemberService {
                 member -> {
                     memberRepository.delete(member);
                     log.debug("Deleted Member: {}", member);
+                }
+            );
+    }
+
+    /**
+     * @param meetingId to delete all Members by Meeting ID
+     */
+    public void deleteAllByMeetingId(Long meetingId) {
+        memberRepository
+            .findAllByMeetingIdAndFromReestrTrue(meetingId)
+            .ifPresent(
+                members -> {
+                    memberRepository.deleteAllByMeetingIdAndFromReestrTrue(meetingId);
+                    log.debug("Deleted Members by Meeting ID: {}", meetingId);
                 }
             );
     }

@@ -102,11 +102,11 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private String fullName;
 
     // Require to LowerCase
-    @Size(max = 50)
+    @Size(max = 9)
     @Column(length = 9)
     private String passport;
 
-    @Size(max = 50)
+    @Size(max = 14)
     @Column(length = 14, unique = true)
     private String pinfl;
 
@@ -118,16 +118,14 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private UserAuthTypeEnum authTypeEnum;
 
     // Резидент или Нерезидент
-    @Column(length = 64)
-    private boolean isResident;
+    private boolean isResident = true;
 
     // Номер ИНН
-    @Length(min = 9, max = 9, message = "INN Length must be 9 characters!")
-    @Column(unique = true)
+    @Column(length = 9)
     private String inn;
 
     // Номер телефона
-    @Column(length = 13, name = "phone_number")
+    @Column(name = "phone_number")
     private String phoneNumber;
 
     public Long getId() {

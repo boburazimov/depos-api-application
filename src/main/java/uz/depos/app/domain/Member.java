@@ -51,6 +51,9 @@ public class Member extends AbstractAuditingEntity {
     @Column(name = "position")
     private String position;
 
+    @Column(name = "from_reestr")
+    private Boolean fromReestr;
+
     //    // Представитель государство
     //    @Column(name = "nation_vakeel")
     //    private Boolean nationVakeel;
@@ -67,7 +70,8 @@ public class Member extends AbstractAuditingEntity {
         Boolean isSpeaker,
         Boolean isChairmen,
         String hldIt,
-        String position
+        String position,
+        Boolean fromReestr
     ) {
         this.id = id;
         this.meeting = meeting;
@@ -79,6 +83,7 @@ public class Member extends AbstractAuditingEntity {
         this.isChairmen = isChairmen;
         this.hldIt = hldIt;
         this.position = position;
+        this.fromReestr = fromReestr;
     }
 
     public Long getId() {
@@ -161,6 +166,14 @@ public class Member extends AbstractAuditingEntity {
         this.position = position;
     }
 
+    public Boolean getFromReestr() {
+        return fromReestr;
+    }
+
+    public void setFromReestr(Boolean fromReestr) {
+        this.fromReestr = fromReestr;
+    }
+
     @Override
     public String toString() {
         return (
@@ -187,6 +200,8 @@ public class Member extends AbstractAuditingEntity {
             ", position='" +
             position +
             '\'' +
+            ", fromReestr=" +
+            fromReestr +
             '}'
         );
     }

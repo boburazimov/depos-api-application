@@ -1,5 +1,6 @@
 package uz.depos.app.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
@@ -19,9 +20,9 @@ import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.security.AuthoritiesConstants;
+import uz.depos.app.service.dto.AttachReestrDTO;
 import uz.depos.app.service.mapper.ExcelHelpers;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
-import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 
 /**
  * Service class for managing reestr.
@@ -42,6 +43,7 @@ public class ReestrService {
     private final AuthorityRepository authorityRepository;
     private final PasswordEncoder passwordEncoder;
     private final CompanyRepository companyRepository;
+    private final FilesStorageService filesStorageService;
 
     public ReestrService(
         MeetingRepository meetingRepository,
@@ -51,7 +53,8 @@ public class ReestrService {
         UserService userService,
         AuthorityRepository authorityRepository,
         PasswordEncoder passwordEncoder,
-        CompanyRepository companyRepository
+        CompanyRepository companyRepository,
+        FilesStorageService filesStorageService
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -61,6 +64,7 @@ public class ReestrService {
         this.authorityRepository = authorityRepository;
         this.passwordEncoder = passwordEncoder;
         this.companyRepository = companyRepository;
+        this.filesStorageService = filesStorageService;
     }
 
     public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell) {
@@ -72,9 +76,10 @@ public class ReestrService {
         if (duplicate != null) {
             throw new BadRequestAlertException("Column contains duplicate value: " + duplicate, "reestrManagement", "duplicateExist");
         }
+        log.debug("Checked Information for Reestr Sheet: {}", sheet);
     }
 
-    public List<Member> parse(MultipartFile file, Long meetingId) throws IOException {
+    public AttachReestrDTO parse(MultipartFile file, Long meetingId) throws IOException {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0); // Get first sheet from book.
 
@@ -83,7 +88,6 @@ public class ReestrService {
 
         Iterator<Row> rows = sheet.iterator();
         List<Member> memberList = new ArrayList<Member>();
-
         DataFormatter formatter = new DataFormatter();
 
         int rowNumber = 0;
@@ -94,7 +98,6 @@ public class ReestrService {
                 rowNumber++;
                 continue;
             }
-            //            Iterator<Cell> cellsInRow = currentRow.iterator();
             String currentRowPinfl = formatter.formatCellValue(currentRow.getCell(2)); // Get pinfl.
 
             // Try to get User by PINFL orElse create new User.
@@ -113,7 +116,7 @@ public class ReestrService {
             Set<Authority> authorities = new HashSet<>();
             authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
             user.setAuthorities(authorities);
-            //            user.setPinfl(currentRowPinfl);
+            if (user.getId() == null) user.setPinfl(currentRowPinfl);
             user.setAuthTypeEnum(UserAuthTypeEnum.ANY);
             user.setPassport(currentRow.getCell(4).getStringCellValue());
             user.setPhoneNumber(currentRow.getCell(5).getStringCellValue());
@@ -123,7 +126,11 @@ public class ReestrService {
                 user1 -> {
                     if (
                         user.getId() == null || !(user.getId() != null && user1.getId().equals(user.getId()))
-                    ) throw new EmailAlreadyUsedException();
+                    ) throw new BadRequestAlertException(
+                        "Email: " + user1.getEmail() + " already in use by User (PINFL): " + user1.getPinfl(),
+                        "reestrManagement",
+                        "emailExist"
+                    );
                 }
             );
             user.setEmail(currentRow.getCell(6).getStringCellValue());
@@ -150,10 +157,26 @@ public class ReestrService {
                 );
             member.setHldIt(currentRow.getCell(3).getStringCellValue());
             member.setPosition(currentRow.getCell(7).getStringCellValue());
+            member.setFromReestr(true);
             Member savedMember = memberRepository.saveAndFlush(member);
             memberList.add(savedMember);
         }
         workbook.close();
-        return memberList;
+
+        AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
+        savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
+        log.debug("Parsed Information for Reestr: {}", workbook);
+        return savedReestr;
+    }
+
+    /** Get Excel Reestr by Meeting ID.
+     * @param meetingId
+     * @return ByteArrayInputStream
+     */
+    public ByteArrayInputStream getExcelReestr(Long meetingId) {
+        Optional<List<Member>> allByMeetingIdAndFromReestrTrue = memberRepository.findAllByMeetingIdAndFromReestrTrue(meetingId);
+        List<Member> members = new ArrayList<>();
+        allByMeetingIdAndFromReestrTrue.ifPresent(members::addAll);
+        return excelHelpers.MembersToExcelReestr(members);
     }
 }

@@ -21,12 +21,16 @@ public class Attachment {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-    @NotNull
     @Column(name = "meeting_id")
     private Long meetingId;
 
+    private boolean isReestr;
+
     @Column(name = "agenda_id")
     private Long agendaId;
+
+    @Column(name = "company_id")
+    private Long companyId;
 
     @NotNull
     @Column(name = "path")
@@ -58,7 +62,9 @@ public class Attachment {
     public Attachment(
         Long id,
         Long meetingId,
+        boolean isReestr,
         Long agendaId,
+        Long companyId,
         String path,
         String originalFileName,
         String fileName,
@@ -68,7 +74,9 @@ public class Attachment {
     ) {
         this.id = id;
         this.meetingId = meetingId;
+        this.isReestr = isReestr;
         this.agendaId = agendaId;
+        this.companyId = companyId;
         this.path = path;
         this.originalFileName = originalFileName;
         this.fileName = fileName;
@@ -93,12 +101,28 @@ public class Attachment {
         this.meetingId = meetingId;
     }
 
+    public boolean isReestr() {
+        return isReestr;
+    }
+
+    public void setReestr(boolean reestr) {
+        isReestr = reestr;
+    }
+
     public Long getAgendaId() {
         return agendaId;
     }
 
     public void setAgendaId(Long agendaId) {
         this.agendaId = agendaId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public String getPath() {
@@ -157,8 +181,12 @@ public class Attachment {
             id +
             ", meetingId=" +
             meetingId +
+            ", isReestr=" +
+            isReestr +
             ", agendaId=" +
             agendaId +
+            ", companyId=" +
+            companyId +
             ", path='" +
             path +
             '\'' +

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import uz.depos.app.domain.Attachment;
 import uz.depos.app.service.FilesStorageService;
-import uz.depos.app.service.dto.AttachmentMeetingDTO;
+import uz.depos.app.service.dto.AttachMeetingDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 @Controller
@@ -45,10 +44,9 @@ public class AttachmentResource {
             "attachmentManagement",
             "meetingNotExists"
         );
-
         try {
-            AttachmentMeetingDTO attachmentMeetingDTO = filesStorageService.save(file, meetingId, agendaId);
-            return ResponseEntity.status(HttpStatus.OK).body(attachmentMeetingDTO);
+            AttachMeetingDTO attachMeetingDTO = filesStorageService.uploadMeetingFiles(file, meetingId, agendaId);
+            return ResponseEntity.status(HttpStatus.OK).body(attachMeetingDTO);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());

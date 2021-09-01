@@ -29,6 +29,7 @@ import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.UserDTO;
 import uz.depos.app.service.mapper.UserMapper;
+import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PhoneNumberAlreadyUsedException;
@@ -117,13 +118,13 @@ public class UserService {
     }
 
     public String generateLogin(String pinfl) {
-        // Generate new login from @PINFL by adding to begin bit-word "UZ-"
-        String bitWord = "UZ-";
+        // Generate new login from @PINFL by adding to begin bit-word "uz-"
+        String bitWord = "uz-";
         StringBuilder login = new StringBuilder();
         login.insert(0, bitWord);
         login.insert(3, pinfl);
         userRepository
-            .findOneByLogin(login.toString())
+            .findOneByLogin(login.toString().toLowerCase())
             .ifPresent(
                 user -> {
                     throw new UsernameAlreadyUsedException();
@@ -139,19 +140,19 @@ public class UserService {
 
         // Checking field @Login, @Passport, @PhoneNumber and @INN to already used
         userRepository
-            .findOneByLogin(userDTO.getLogin())
+            .findOneByLogin(userDTO.getLogin().toLowerCase())
             .ifPresent(
                 user -> {
                     throw new UsernameAlreadyUsedException();
                 }
             );
-        userRepository
-            .findOneByInn(userDTO.getInn())
-            .ifPresent(
-                user -> {
-                    throw new InnAlreadyUsedException();
-                }
-            );
+        //        userRepository
+        //            .findOneByInn(userDTO.getInn())
+        //            .ifPresent(
+        //                user -> {
+        //                    throw new InnAlreadyUsedException();
+        //                }
+        //            );
         if (userDTO.getPassport() != null) userRepository
             .findOneByPassport(userDTO.getPassword().toUpperCase())
             .ifPresent(

@@ -1,11 +1,9 @@
 package uz.depos.app.service.dto;
 
-import java.io.Serializable;
-import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Attachment;
 
-public class AttachmentMeetingDTO implements Serializable {
+public class AttachMeetingDTO {
 
     private Long id;
 
@@ -23,9 +21,9 @@ public class AttachmentMeetingDTO implements Serializable {
 
     private Long fileSize;
 
-    public AttachmentMeetingDTO() {}
+    public AttachMeetingDTO() {}
 
-    public AttachmentMeetingDTO(Attachment attachment) {
+    public AttachMeetingDTO(Attachment attachment) {
         this.id = attachment.getId();
         this.meetingId = attachment.getMeetingId() != null ? attachment.getMeetingId() : null;
         this.agendaId = attachment.getAgendaId() != null ? attachment.getAgendaId() : null;
@@ -94,7 +92,7 @@ public class AttachmentMeetingDTO implements Serializable {
     @Override
     public String toString() {
         return (
-            "AttachmentMeetingDTO{" +
+            "AttachMeetingDTO{" +
             "id=" +
             id +
             ", meetingId=" +

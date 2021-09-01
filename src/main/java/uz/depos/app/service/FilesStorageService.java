@@ -10,10 +10,13 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import uz.depos.app.domain.Attachment;
 import uz.depos.app.repository.AttachmentRepository;
-import uz.depos.app.service.dto.AttachmentMeetingDTO;
+import uz.depos.app.service.dto.AttachLogoDTO;
+import uz.depos.app.service.dto.AttachMeetingDTO;
+import uz.depos.app.service.dto.AttachReestrDTO;
 import uz.depos.app.service.mapper.AttachmentMapper;
 
 @Service
@@ -40,7 +43,52 @@ public class FilesStorageService {
         }
     }
 
-    public AttachmentMeetingDTO save(MultipartFile file, Long meetingId, Long agendaId) {
+    public AttachMeetingDTO uploadMeetingFiles(MultipartFile file, Long meetingId, Long agendaId) {
+        Attachment attachment = uploadGeneral(file);
+        try {
+            attachment.setReestr(false);
+            attachment.setMeetingId(meetingId);
+            if (agendaId != null) attachment.setAgendaId(agendaId);
+            attachment.setCompanyId(null);
+            attachment = attachmentRepository.save(attachment);
+            log.debug("Saved Information for Attachment: {}", attachment);
+            return attachmentMapper.attachmentToAttachmentMeetingDTO(attachment);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+        }
+    }
+
+    public AttachReestrDTO uploadReestrExcel(MultipartFile file, Long meetingId) {
+        Attachment attachment = uploadGeneral(file);
+        try {
+            attachment.setReestr(true);
+            attachment.setMeetingId(meetingId);
+            attachment.setAgendaId(null);
+            attachment.setCompanyId(null);
+            attachment = attachmentRepository.save(attachment);
+            log.debug("Saved Information for Attachment: {}", attachment);
+            return attachmentMapper.attachmentToAttachmentReestrDTO(attachment);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+        }
+    }
+
+    public AttachLogoDTO uploadCompanyLogo(MultipartFile file, Long companyId) {
+        Attachment attachment = uploadGeneral(file);
+        try {
+            attachment.setReestr(false);
+            attachment.setMeetingId(null);
+            attachment.setAgendaId(null);
+            attachment.setCompanyId(companyId);
+            attachment = attachmentRepository.save(attachment);
+            log.debug("Saved Information for Attachment: {}", attachment);
+            return attachmentMapper.attachmentToAttachmentLogoDTO(attachment);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+        }
+    }
+
+    public Attachment uploadGeneral(MultipartFile file) {
         Attachment attachment = new Attachment();
         try {
             UUID uuid = UUID.randomUUID();
@@ -49,17 +97,12 @@ public class FilesStorageService {
                 this.init();
             }
             Files.copy(file.getInputStream(), savedPath);
-            attachment.setPath(savedPath.toString()); //C://users/user/uploads - absolute path, /uploads - relative path
+            attachment.setPath(savedPath.toString());
             attachment.setFileSize(file.getSize());
-            attachment.setMeetingId(meetingId);
-            if (agendaId != null) attachment.setAgendaId(agendaId);
             attachment.setContentType(file.getContentType());
             attachment.setFileName(uuid.toString());
             attachment.setOriginalFileName(file.getOriginalFilename());
-            attachment = attachmentRepository.save(attachment);
-            log.debug("Saved Information for Attachment: {}", attachment);
-            AttachmentMeetingDTO attachmentMeetingDTO = attachmentMapper.attachmentToAttachmentMeetingDTO(attachment);
-            return attachmentMeetingDTO;
+            return attachment;
         } catch (Exception e) {
             throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
@@ -76,7 +119,27 @@ public class FilesStorageService {
     }
 
     public List<Attachment> loadAllByMeetingId(Long meetingId) {
-        List<Attachment> attachments = attachmentRepository.findAllByMeetingId(meetingId);
-        return attachments;
+        return attachmentRepository.findAllByMeetingIdAndIsReestrTrue(meetingId).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public Attachment getReestr(Long meetingId) {
+        return attachmentRepository.findOneByMeetingIdAndIsReestrTrue(meetingId).orElse(null);
+    }
+
+    public void deleteReestrFile(Long meetingId) {
+        attachmentRepository
+            .findOneByMeetingIdAndIsReestrTrue(meetingId)
+            .ifPresent(
+                attachment -> {
+                    try {
+                        Files.delete(Paths.get(attachment.getPath()));
+                        attachmentRepository.deleteById(attachment.getId());
+                        log.debug("Deleted Reestr Excel File by Meeting ID: {}", meetingId);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            );
     }
 }

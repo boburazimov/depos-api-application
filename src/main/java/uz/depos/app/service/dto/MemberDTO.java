@@ -1,5 +1,6 @@
 package uz.depos.app.service.dto;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
 
@@ -30,6 +31,8 @@ public class MemberDTO {
 
     private String position;
 
+    private Boolean fromReestr;
+
     public MemberDTO() {}
 
     public MemberDTO(Member member) {
@@ -43,6 +46,7 @@ public class MemberDTO {
         this.isChairmen = member.getChairmen();
         this.hldIt = member.getHldIt();
         this.position = member.getPosition();
+        this.fromReestr = member.getFromReestr();
     }
 
     public Long getId() {
@@ -125,6 +129,14 @@ public class MemberDTO {
         this.position = position;
     }
 
+    public Boolean getFromReestr() {
+        return fromReestr;
+    }
+
+    public void setFromReestr(Boolean fromReestr) {
+        this.fromReestr = fromReestr;
+    }
+
     @Override
     public String toString() {
         return (
@@ -151,6 +163,8 @@ public class MemberDTO {
             ", position='" +
             position +
             '\'' +
+            ", fromReestr=" +
+            fromReestr +
             '}'
         );
     }

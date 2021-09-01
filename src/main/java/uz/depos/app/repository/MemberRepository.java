@@ -1,5 +1,6 @@
 package uz.depos.app.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findOneByUserId(Long user_id);
 
     Page<Member> findAllByIdNotNullAndMeetingIdNotNull(Pageable pageable);
+
+    Optional<List<Member>> findAllByMeetingIdAndFromReestrTrue(Long meeting_id);
+
+    void deleteAllByMeetingIdAndFromReestrTrue(Long meeting_id);
 }

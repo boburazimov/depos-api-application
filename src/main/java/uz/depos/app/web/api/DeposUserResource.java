@@ -12,6 +12,7 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -71,7 +73,7 @@ public class DeposUserResource {
      * @return the String login with status {@code 201 (Generated)} or with status {@code 400 (Bad Request)} if the login or PINFL is already in use.
      * @throws PinflAlreadyUsedException {@code 400 (Bad Request)} if the PINFL is already in use.
      */
-    @GetMapping("/generate-login/{pinfl}")
+    @PostMapping("/generate-login/{pinfl:[a-zA-Z0-9]{14}}")
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Generate login", notes = "This method is generate new login from present PINFL.")
     public ResponseEntity<String> generateLogin(@ApiParam(value = "Length must be 14 characters!") @PathVariable String pinfl) {
