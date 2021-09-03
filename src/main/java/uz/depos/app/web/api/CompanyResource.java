@@ -23,10 +23,13 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.Company;
+import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.service.CompanyService;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.CompanyDTO;
+import uz.depos.app.service.dto.CompanyNameDTO;
+import uz.depos.app.service.mapper.CompanyMapper;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.InvalidPasswordException;
@@ -47,10 +50,12 @@ public class CompanyResource {
 
     final CompanyService companyService;
     final CompanyRepository companyRepository;
+    final CompanyMapper companyMapper;
 
-    public CompanyResource(CompanyService companyService, CompanyRepository companyRepository) {
+    public CompanyResource(CompanyService companyService, CompanyRepository companyRepository, CompanyMapper companyMapper) {
         this.companyService = companyService;
         this.companyRepository = companyRepository;
+        this.companyMapper = companyMapper;
     }
 
     /**
@@ -156,7 +161,48 @@ public class CompanyResource {
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Delete company", notes = "This method to delete one of company by ID")
     public HttpEntity<ApiResponse> deleteCompany(@PathVariable Long id) {
+        log.debug("REST request to delete Company : {}", id);
         ApiResponse response = companyService.deleteCompany(id);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
+    }
+
+    /**
+     * Search Companies by name
+     *
+     * @param name for search must be min 3 characters.
+     * @return List of CompanyNameDTO (ID, NAME).
+     */
+    @GetMapping("/search")
+    @ApiOperation(value = "Search company", notes = "This method to search companies by name containing")
+    public ResponseEntity<List<CompanyNameDTO>> searchCompany(@RequestParam(required = false) String name) {
+        log.debug("REST request to search Companies name of : {}", name);
+        try {
+            List<CompanyNameDTO> companyNameDTOs = companyService.searchCompanyByName(name);
+            return new ResponseEntity<>(companyNameDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Filters for header table Company.
+     *
+     * @param field    - Column in the table (entity).
+     * @param value     - fragment of word to search by him.
+     * @param pageable - params for pageable.
+     * @return - List of CompanyDTO.
+     */
+    @GetMapping("/filter")
+    @ApiOperation(value = "Filter company", notes = "This method to filter companies by field and search-value in pageable form.")
+    public ResponseEntity<List<CompanyDTO>> filterCompany(
+        @RequestParam CompanySearchFieldEnum field,
+        @RequestParam String value,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Companies field : {}", field);
+
+        final Page<CompanyDTO> page = companyService.filterCompany(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

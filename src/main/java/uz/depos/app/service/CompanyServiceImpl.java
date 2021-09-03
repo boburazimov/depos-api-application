@@ -1,5 +1,9 @@
 package uz.depos.app.service;
 
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
@@ -7,16 +11,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
+import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.CompanyDTO;
+import uz.depos.app.service.dto.CompanyNameDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
 
 /**
@@ -168,13 +176,68 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    public List<CompanyNameDTO> searchCompanyByName(String name) {
+        List<Company> companies = new ArrayList<Company>();
+        if (name == null) companies.addAll(companyRepository.findAll()); else companyRepository
+            .findByNameIgnoreCaseContaining(name)
+            .ifPresent(companies::addAll);
+        if (companies.isEmpty()) {
+            return null;
+        }
+        return companyMapper.companiesToCompanyNameDTOs(companies);
+    }
+
+    @Override
+    public Page<CompanyDTO> filterCompany(CompanySearchFieldEnum field, String value, Pageable pageable) {
+        Company company = new Company();
+        switch (field) {
+            case NAME:
+                company.setName(value);
+                break;
+            case INN:
+                company.setInn(value);
+                break;
+            case EMAIL:
+                company.setEmail(value);
+                break;
+            case PHONE_NUMBER:
+                company.setPhoneNumber(value);
+                break;
+            case WEB_PAGE:
+                company.setWebPage(value);
+                break;
+            default:
+                break;
+        }
+
+        ExampleMatcher matcher = ExampleMatcher
+            .matching()
+            .withMatcher("name", contains().ignoreCase())
+            .withMatcher("inn", contains().ignoreCase())
+            .withMatcher("email", contains().ignoreCase())
+            .withMatcher("phoneNumber", contains().ignoreCase())
+            .withMatcher("webPage", contains().ignoreCase())
+            .withIgnorePaths("createdBy", "createdDate", "lastModifiedBy", "lastModifiedDate");
+
+        if (value == null) {
+            return companyRepository.findAll(pageable).map(CompanyDTO::new);
+        } else {
+            //            Example<Company> searchExample = Example.of(company, matcher);
+            //            Page<Company> all = companyRepository.findAll(searchExample, pageable);
+            //            List<CompanyDTO> companyDTOS = companyMapper.companiesToCompanyDTOs(all.getContent());
+            Page<CompanyDTO> dtoPage = companyRepository.findAll(Example.of(company, matcher), pageable).map(CompanyDTO::new);
+            return dtoPage;
+        }
+    }
+
+    @Override
     public ApiResponse deleteCompany(Long id) {
         Company company = companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("getCompany"));
         try {
             companyRepository.delete(company);
             return new ApiResponse(company.getName() + " Удален!", true);
         } catch (Exception e) {
-            return new ApiResponse(company.getName() + "НЕ Удален!", false);
+            return new ApiResponse(company.getName() + "НЕ Удален! Error: " + e.getMessage(), false);
         }
     }
 

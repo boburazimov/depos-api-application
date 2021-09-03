@@ -33,8 +33,6 @@ public class ReestrService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    static String[] HEADERs = { "Id", "Title", "Description", "Published" };
-
     private final MeetingRepository meetingRepository;
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
