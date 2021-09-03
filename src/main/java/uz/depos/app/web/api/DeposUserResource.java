@@ -34,7 +34,9 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.UsernameAlreadyUsedException;
 import uz.depos.app.service.dto.ApiResponse;
+import uz.depos.app.service.dto.CompanyNameDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
+import uz.depos.app.service.dto.DeposUserNameDTO;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
@@ -256,5 +258,17 @@ public class DeposUserResource {
         log.debug("REST request to delete User: {}", id);
         ApiResponse response = userService.removeUser(id);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
+    }
+
+    @GetMapping("/search")
+    @ApiOperation(value = "Search user", notes = "This method to search users by name containing")
+    public ResponseEntity<List<DeposUserNameDTO>> searchUsers(@RequestParam(required = false) String name) {
+        log.debug("REST request to search Users name of : {}", name);
+        try {
+            List<DeposUserNameDTO> userNameDTOs = userService.searchUserByName(name);
+            return new ResponseEntity<>(userNameDTOs, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

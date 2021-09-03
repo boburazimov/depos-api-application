@@ -184,6 +184,7 @@ public class CompanyServiceImpl implements CompanyService {
         if (companies.isEmpty()) {
             return null;
         }
+        log.debug("Find Information for Company by name: {}", name);
         return companyMapper.companiesToCompanyNameDTOs(companies);
     }
 
@@ -222,6 +223,7 @@ public class CompanyServiceImpl implements CompanyService {
         if (value == null) {
             return companyRepository.findAll(pageable).map(CompanyDTO::new);
         } else {
+            log.debug("Filtered Information for Company by filed: {}", field);
             return companyRepository.findAll(Example.of(company, matcher), pageable).map(CompanyDTO::new);
         }
     }
@@ -231,6 +233,7 @@ public class CompanyServiceImpl implements CompanyService {
         Company company = companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("getCompany"));
         try {
             companyRepository.delete(company);
+            log.debug("Deleted Information for Company by ID: {}", id);
             return new ApiResponse(company.getName() + " Удален!", true);
         } catch (Exception e) {
             return new ApiResponse(company.getName() + "НЕ Удален! Error: " + e.getMessage(), false);

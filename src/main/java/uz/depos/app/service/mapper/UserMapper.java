@@ -10,6 +10,7 @@ import uz.depos.app.domain.Authority;
 import uz.depos.app.domain.User;
 import uz.depos.app.service.dto.AdminUserDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
+import uz.depos.app.service.dto.DeposUserNameDTO;
 import uz.depos.app.service.dto.UserDTO;
 
 /**
@@ -39,6 +40,10 @@ public class UserMapper {
 
     public DeposUserDTO userToDeposUserDTO(User user) {
         return new DeposUserDTO(user);
+    }
+
+    public DeposUserNameDTO userToDeposUserNameDTO(User user) {
+        return new DeposUserNameDTO(user);
     }
 
     public List<User> userDTOsToUsers(List<AdminUserDTO> userDTOs) {
@@ -150,5 +155,9 @@ public class UserMapper {
         }
 
         return userSet;
+    }
+
+    public List<DeposUserNameDTO> usersToDeposUserDTO(List<User> users) {
+        return users.stream().filter(Objects::nonNull).map(this::userToDeposUserNameDTO).collect(Collectors.toList());
     }
 }

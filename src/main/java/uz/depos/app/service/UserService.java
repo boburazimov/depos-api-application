@@ -19,15 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.security.RandomUtil;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.Authority;
+import uz.depos.app.domain.Company;
 import uz.depos.app.domain.User;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
-import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.DeposUserDTO;
-import uz.depos.app.service.dto.UserDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
@@ -553,5 +551,17 @@ public class UserService {
         if (user.getEmail() != null) {
             Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE)).evict(user.getEmail());
         }
+    }
+
+    public List<DeposUserNameDTO> searchUserByName(String name) {
+        List<User> users = new ArrayList<>();
+        if (name == null) users.addAll(userRepository.findAll()); else userRepository
+            .findByFullNameIgnoreCaseContaining(name)
+            .ifPresent(users::addAll);
+        if (users.isEmpty()) {
+            return null;
+        }
+        log.debug("Found searched Information for User by name: {}", name);
+        return userMapper.usersToDeposUserDTO(users);
     }
 }
