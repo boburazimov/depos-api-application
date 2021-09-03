@@ -177,7 +177,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public List<CompanyNameDTO> searchCompanyByName(String name) {
-        List<Company> companies = new ArrayList<Company>();
+        List<Company> companies = new ArrayList<>();
         if (name == null) companies.addAll(companyRepository.findAll()); else companyRepository
             .findByNameIgnoreCaseContaining(name)
             .ifPresent(companies::addAll);
@@ -217,16 +217,12 @@ public class CompanyServiceImpl implements CompanyService {
             .withMatcher("email", contains().ignoreCase())
             .withMatcher("phoneNumber", contains().ignoreCase())
             .withMatcher("webPage", contains().ignoreCase())
-            .withIgnorePaths("createdBy", "createdDate", "lastModifiedBy", "lastModifiedDate");
+            .withIgnorePaths("createdDate", "lastModifiedDate");
 
         if (value == null) {
             return companyRepository.findAll(pageable).map(CompanyDTO::new);
         } else {
-            //            Example<Company> searchExample = Example.of(company, matcher);
-            //            Page<Company> all = companyRepository.findAll(searchExample, pageable);
-            //            List<CompanyDTO> companyDTOS = companyMapper.companiesToCompanyDTOs(all.getContent());
-            Page<CompanyDTO> dtoPage = companyRepository.findAll(Example.of(company, matcher), pageable).map(CompanyDTO::new);
-            return dtoPage;
+            return companyRepository.findAll(Example.of(company, matcher), pageable).map(CompanyDTO::new);
         }
     }
 

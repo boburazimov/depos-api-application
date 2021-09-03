@@ -23,9 +23,12 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.enums.CompanySearchFieldEnum;
+import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingService;
+import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
@@ -155,5 +158,27 @@ public class MeetingResource {
             .noContent()
             .headers(HeaderUtil.createAlert(applicationName, "meetingManagement.deleted", id.toString()))
             .build();
+    }
+
+    /**
+     * Filters for header table Meeting.
+     *
+     * @param field    - Column in the table (entity).
+     * @param value     - fragment of word to search by him.
+     * @param pageable - params for pageable.
+     * @return - List of MeetingDTO.
+     */
+    @GetMapping("/filter")
+    @ApiOperation(value = "Filter meeting", notes = "This method to filter meetings by field and search-value in pageable form.")
+    public ResponseEntity<List<MeetingDTO>> filterMeeting(
+        @RequestParam MeetingSearchFieldEnum field,
+        @RequestParam String value,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Meetings field : {}", field);
+
+        final Page<MeetingDTO> page = meetingService.filterMeeting(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

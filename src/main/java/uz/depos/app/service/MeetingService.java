@@ -1,8 +1,13 @@
 package uz.depos.app.service;
 
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
+
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -11,7 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.City;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
+import uz.depos.app.domain.enums.MeetingStatusEnum;
+import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.repository.*;
+import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 
@@ -31,6 +40,7 @@ public class MeetingService {
     final MemberRepository memberRepository;
     final AgendaRepository agendaRepository;
     final MeetingMapper meetingMapper;
+    final CompanyService companyService;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -39,7 +49,8 @@ public class MeetingService {
         CityRepository cityRepository,
         MemberRepository memberRepository,
         AgendaRepository agendaRepository,
-        MeetingMapper meetingMapper
+        MeetingMapper meetingMapper,
+        CompanyService companyService
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -48,6 +59,7 @@ public class MeetingService {
         this.memberRepository = memberRepository;
         this.agendaRepository = agendaRepository;
         this.meetingMapper = meetingMapper;
+        this.companyService = companyService;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
@@ -130,5 +142,49 @@ public class MeetingService {
                     log.debug("Deleted Meeting: {}", meeting);
                 }
             );
+    }
+
+    public Page<MeetingDTO> filterMeeting(MeetingSearchFieldEnum field, String value, Pageable pageable) {
+        Meeting meeting = new Meeting();
+
+        switch (field) {
+            case COMPANY:
+                Company company = new Company();
+                company.setName(value);
+                meeting.setCompany(company);
+                break;
+            case STATUS:
+                meeting.setStatus(MeetingStatusEnum.valueOf(value));
+                break;
+            case TYPE_ENUM:
+                meeting.setTypeEnum(MeetingTypeEnum.valueOf(value));
+                break;
+            case START_DATE:
+                Instant instant = Instant.parse(value); // "2018-11-30T18:35:24.00Z"
+                meeting.setStartDate(instant);
+                break;
+            case CITY:
+                City city = new City();
+                city.setNameUz(value);
+                meeting.setCity(city);
+                break;
+            default:
+                break;
+        }
+
+        ExampleMatcher matcher = ExampleMatcher
+            .matching()
+            .withMatcher("company", contains().ignoreCase())
+            .withMatcher("status", contains().ignoreCase())
+            .withMatcher("typeEnum", contains().ignoreCase())
+            .withMatcher("startDate", contains().ignoreCase())
+            .withMatcher("city", contains().ignoreCase())
+            .withIgnorePaths("createdDate", "lastModifiedDate");
+
+        if (value == null) {
+            return meetingRepository.findAll(pageable).map(MeetingDTO::new);
+        } else {
+            return meetingRepository.findAll(Example.of(meeting, matcher), pageable).map(MeetingDTO::new);
+        }
     }
 }
