@@ -175,6 +175,20 @@ public class DeposUserResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+    /**
+     * {@code GET /moder/user/names} : get all user's name.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all user's name.
+     */
+    @GetMapping("/names")
+    @ApiOperation(value = "Get names", notes = "This method to get all user's name for search fields")
+    public ResponseEntity<List<DeposUserNameDTO>> getAllUserNames() {
+        log.debug("REST request to get all User's name.");
+
+        final List<DeposUserNameDTO> userNameDTOs = userService.getAllManagedDeposUsersName();
+        return new ResponseEntity<>(userNameDTOs, HttpStatus.OK);
+    }
+
     private boolean onlyContainsAllowedProperties(Pageable pageable) {
         return pageable.getSort().stream().map(Sort.Order::getProperty).allMatch(ALLOWED_ORDERED_PROPERTIES::contains);
     }

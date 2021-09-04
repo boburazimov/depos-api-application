@@ -510,6 +510,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public List<DeposUserNameDTO> getAllManagedDeposUsersName() {
+        return userRepository.findAll().stream().map(DeposUserNameDTO::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
     }
