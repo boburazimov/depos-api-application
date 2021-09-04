@@ -4,7 +4,7 @@ import javax.persistence.*;
 import lombok.*;
 
 /**
- * Участники заседание (отдельно от users -> могут быть приглашенные) TODO - новый файл от Ёркинжон для реестр
+ * Участники заседание (отдельно от users -> могут быть приглашенные)
  **/
 
 @EqualsAndHashCode(callSuper = true)

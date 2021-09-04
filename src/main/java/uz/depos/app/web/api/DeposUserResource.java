@@ -30,13 +30,12 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.User;
+import uz.depos.app.domain.enums.CompanySearchFieldEnum;
+import uz.depos.app.domain.enums.UserSearchFieldEnum;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.UsernameAlreadyUsedException;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.CompanyNameDTO;
-import uz.depos.app.service.dto.DeposUserDTO;
-import uz.depos.app.service.dto.DeposUserNameDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
@@ -270,5 +269,27 @@ public class DeposUserResource {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Filters for header table User.
+     *
+     * @param field    - Column in the table (entity).
+     * @param value     - fragment of word to search by him.
+     * @param pageable - params for pageable.
+     * @return - List of DeposUserDTO.
+     */
+    @GetMapping("/filter")
+    @ApiOperation(value = "Filter user", notes = "This method to filter users by field and search-value in pageable form.")
+    public ResponseEntity<List<DeposUserDTO>> filterUser(
+        @RequestParam UserSearchFieldEnum field,
+        @RequestParam String value,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Users field : {}", field);
+
+        final Page<DeposUserDTO> page = userService.filterUsers(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

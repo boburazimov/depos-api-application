@@ -102,9 +102,6 @@ public class MemberResource {
             throw new ResourceNotFoundException("User not found by ID: " + memberDTO.getUserId());
         }
 
-        // TODO - Нужно сделать проверку, есть ли member с ID user и с ID meeting при загрузке реестра.
-        // нужно взять в один массив пинфл реестра и проверить на повторяющийся элементы
-
         MemberDTO savedMemberDTO = memberService.createMember(memberDTO);
         return ResponseEntity
             .created(new URI("/api/member/" + savedMemberDTO.getId()))

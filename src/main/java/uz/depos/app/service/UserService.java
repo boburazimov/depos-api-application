@@ -1,5 +1,7 @@
 package uz.depos.app.service;
 
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -10,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,6 +25,8 @@ import uz.depos.app.config.Constants;
 import uz.depos.app.domain.Authority;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.User;
+import uz.depos.app.domain.enums.UserGroupEnum;
+import uz.depos.app.domain.enums.UserSearchFieldEnum;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
@@ -563,5 +569,44 @@ public class UserService {
         }
         log.debug("Found searched Information for User by name: {}", name);
         return userMapper.usersToDeposUserDTO(users);
+    }
+
+    public Page<DeposUserDTO> filterUsers(UserSearchFieldEnum field, String value, Pageable pageable) {
+        User user = new User();
+        switch (field) {
+            case FULL_NAME:
+                user.setFullName(value);
+                break;
+            case EMAIL:
+                user.setEmail(value);
+                break;
+            case PHONE_NUMBER:
+                user.setPhoneNumber(value);
+                break;
+            case GROUP:
+                user.setGroupEnum(UserGroupEnum.valueOf(value.toUpperCase()));
+                break;
+            case PINFL:
+                user.setPinfl(value);
+                break;
+            default:
+                break;
+        }
+
+        ExampleMatcher matcher = ExampleMatcher
+            .matching()
+            .withMatcher("fullName", contains().ignoreCase())
+            .withMatcher("email", contains().ignoreCase())
+            .withMatcher("phoneNumber", contains().ignoreCase())
+            .withMatcher("groupEnum", contains().ignoreCase())
+            .withMatcher("pinfl", contains().ignoreCase())
+            .withIgnorePaths("createdDate", "lastModifiedDate", "authorities", "activated", "isResident");
+
+        if (value == null) {
+            return userRepository.findAll(pageable).map(DeposUserDTO::new);
+        } else {
+            log.debug("Filtered Information for User by filed: {}", field);
+            return userRepository.findAll(Example.of(user, matcher), pageable).map(DeposUserDTO::new);
+        }
     }
 }
