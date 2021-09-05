@@ -27,6 +27,8 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.config.Constants;
+import uz.depos.app.domain.enums.CompanySearchFieldEnum;
+import uz.depos.app.domain.enums.MemberSearchFieldEnum;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
@@ -34,6 +36,7 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.dto.AdminUserDTO;
+import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
@@ -189,5 +192,27 @@ public class MemberResource {
             .noContent()
             .headers(HeaderUtil.createAlert(applicationName, "memberManagement.deleted", id.toString()))
             .build();
+    }
+
+    /**
+     * Filters for header table Member.
+     *
+     * @param field    - Column in the table (entity).
+     * @param value     - fragment of word to search by him.
+     * @param pageable - params for pageable.
+     * @return - List of MemberDTO.
+     */
+    @GetMapping("/filter")
+    @ApiOperation(value = "Filter member", notes = "This method to filter members by field and search-value in pageable form.")
+    public ResponseEntity<List<MemberDTO>> filterMember(
+        @RequestParam MemberSearchFieldEnum field,
+        @RequestParam String value,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Members field : {}", field);
+
+        final Page<MemberDTO> page = memberService.filterMembers(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

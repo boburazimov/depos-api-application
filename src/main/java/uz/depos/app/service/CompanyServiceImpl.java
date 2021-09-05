@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.ApiResponse;
+import uz.depos.app.service.dto.CompanyByUserDTO;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.CompanyNameDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
@@ -134,7 +136,6 @@ public class CompanyServiceImpl implements CompanyService {
                             .findById(companyDTO.getSecretaryId())
                             .orElseThrow(() -> new ResourceNotFoundException("getSecretary"))
                     );
-
                     log.debug("Changed Information for Company: {}", company);
                     return company;
                 }
@@ -226,6 +227,25 @@ public class CompanyServiceImpl implements CompanyService {
             log.debug("Filtered Information for Company by filed: {}", field);
             return companyRepository.findAll(Example.of(company, matcher), pageable).map(CompanyDTO::new);
         }
+    }
+
+    @Override
+    public Page<CompanyDTO> getAllCompaniesByChairman(Long userId, Pageable pageable) {
+        return companyRepository.findAllByChairmanId(userId, pageable).map(CompanyDTO::new);
+    }
+
+    @Override
+    public Page<CompanyDTO> getAllCompaniesBySecretary(Long userId, Pageable pageable) {
+        return companyRepository.findAllByChairmanId(userId, pageable).map(CompanyDTO::new);
+    }
+
+    @Override
+    public List<CompanyByUserDTO> getAllCompaniesByChairmanAndSecretary(Long userId) {
+        return companyRepository
+            .findAllByChairmanIdOrSecretaryId(userId, userId)
+            .stream()
+            .map(CompanyByUserDTO::new)
+            .collect(Collectors.toList());
     }
 
     @Override

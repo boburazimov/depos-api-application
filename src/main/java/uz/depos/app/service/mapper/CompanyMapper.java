@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uz.depos.app.domain.City;
 import uz.depos.app.domain.Company;
 import uz.depos.app.service.dto.CityDTO;
+import uz.depos.app.service.dto.CompanyByUserDTO;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.CompanyNameDTO;
 
@@ -33,6 +34,14 @@ public class CompanyMapper {
 
     public List<CompanyNameDTO> companiesToCompanyNameDTOs(List<Company> companies) {
         return companies.stream().filter(Objects::nonNull).map(this::companyToCompanyNameDTO).collect(Collectors.toList());
+    }
+
+    public CompanyByUserDTO companyToCompanyByUserDTO(Company company) {
+        return new CompanyByUserDTO(company);
+    }
+
+    public List<CompanyByUserDTO> companiesToCompanyByUserDTOs(List<Company> companies) {
+        return companies.stream().filter(Objects::nonNull).map(this::companyToCompanyByUserDTO).collect(Collectors.toList());
     }
 
     public CityDTO cityToCityDTO(City city) {

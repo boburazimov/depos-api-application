@@ -27,6 +27,7 @@ import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.service.CompanyService;
 import uz.depos.app.service.dto.ApiResponse;
+import uz.depos.app.service.dto.CompanyByUserDTO;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.CompanyNameDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
@@ -156,6 +157,22 @@ public class CompanyResource {
         final Page<CompanyDTO> page = companyService.getAllManagedCompanies(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /company/user/:userId} : get all companies with all the details - calling this are only allowed for the Chaerman and Secretary.
+     *
+     * @param id the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all companies.
+     */
+    @GetMapping("/user/{id}")
+    //        @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.CHAIRMAN + "\")")
+    @ApiOperation(value = "Get companies", notes = "This method to get companies by user")
+    public ResponseEntity<List<CompanyByUserDTO>> getCompaniesByUser(@PathVariable Long id) {
+        log.debug("REST request to get all Companies by User for an chairman or secretary");
+
+        final List<CompanyByUserDTO> companies = companyService.getAllCompaniesByChairmanAndSecretary(id);
+        return new ResponseEntity<>(companies, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

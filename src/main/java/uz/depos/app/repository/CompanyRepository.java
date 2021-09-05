@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.depos.app.domain.Company;
 
@@ -31,6 +32,16 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findOneByInn(String inn);
 
     Optional<List<Company>> findByNameIgnoreCaseContaining(String name);
-    //    @Query(value = "select * from company where lower(description) like %?1%", nativeQuery = true)
-    //    Optional<List<Company>> qidirish(String name);
+
+    Page<Company> findAllByChairmanId(Long chairman_id, Pageable pageable);
+
+    Page<Company> findAllBySecretaryId(Long secretary_id, Pageable pageable);
+    //
+    //    @Query(value = "select c.id, c.name from company c where chairman_id=:userId or secretary_id=:userId", nativeQuery = true)
+    //    List<Company> getAllByChairAndSecr(@Param("userId") Long userId);
+
+    //    @Query(value = "select c.id, c.name from Company c where c.chairman_id=:chairman_id or c.secretary_id=:secretary_id", nativeQuery = true)
+    //    List<Company> findAllByChairmanIdOrSecretaryId(@Param("chairman_id") Long chairman_id, @Param("secretary_id") Long secretary_id);
+
+    List<Company> findAllByChairmanIdOrSecretaryId(Long chairman_id, Long secretary_id);
 }

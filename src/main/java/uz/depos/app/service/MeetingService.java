@@ -1,6 +1,7 @@
 package uz.depos.app.service;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
+import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -146,7 +147,6 @@ public class MeetingService {
 
     public Page<MeetingDTO> filterMeeting(MeetingSearchFieldEnum field, String value, Pageable pageable) {
         Meeting meeting = new Meeting();
-
         switch (field) {
             case COMPANY:
                 Company company = new Company();
@@ -172,12 +172,11 @@ public class MeetingService {
                 break;
         }
 
-        ExampleMatcher matcher = ExampleMatcher
-            .matching()
-            .withMatcher("company", contains().ignoreCase())
-            .withMatcher("status", contains().ignoreCase())
-            .withMatcher("typeEnum", contains().ignoreCase())
-            .withMatcher("startDate", contains().ignoreCase())
+        ExampleMatcher matcher = matching()
+            .withMatcher("company.name", contains().ignoreCase())
+            .withMatcher("status", (ExampleMatcher.GenericPropertyMatcher) matching())
+            .withMatcher("typeEnum", (ExampleMatcher.GenericPropertyMatcher) matching())
+            .withMatcher("startDate", (ExampleMatcher.GenericPropertyMatcher) matching())
             .withMatcher("city", contains().ignoreCase())
             .withIgnorePaths("createdDate", "lastModifiedDate");
 
