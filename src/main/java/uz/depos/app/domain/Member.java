@@ -20,6 +20,10 @@ public class Member extends AbstractAuditingEntity {
     @ManyToOne(optional = false)
     private Meeting meeting;
 
+    // Компания
+    @ManyToOne(optional = false)
+    private Company company;
+
     // Привязка пользователя к участнику заседание
     @ManyToOne(optional = false)
     private User user;
@@ -63,6 +67,7 @@ public class Member extends AbstractAuditingEntity {
     public Member(
         Long id,
         Meeting meeting,
+        Company company,
         User user,
         Boolean isRemotely,
         Boolean isConfirmed,
@@ -75,6 +80,7 @@ public class Member extends AbstractAuditingEntity {
     ) {
         this.id = id;
         this.meeting = meeting;
+        this.company = company;
         this.user = user;
         this.isRemotely = isRemotely;
         this.isConfirmed = isConfirmed;
@@ -100,6 +106,14 @@ public class Member extends AbstractAuditingEntity {
 
     public void setMeeting(Meeting meeting) {
         this.meeting = meeting;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 
     public User getUser() {
@@ -182,6 +196,8 @@ public class Member extends AbstractAuditingEntity {
             id +
             ", meeting=" +
             meeting +
+            ", company=" +
+            company +
             ", user=" +
             user +
             ", isRemotely=" +

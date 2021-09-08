@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.depos.app.domain.Company;
+import uz.depos.app.service.dto.CompanyByUserDTO;
 
 /**
  * Spring Data JPA repository for the {@link Company} entity.
@@ -36,11 +37,14 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Page<Company> findAllByChairmanId(Long chairman_id, Pageable pageable);
 
     Page<Company> findAllBySecretaryId(Long secretary_id, Pageable pageable);
-    //
-    //    @Query(value = "select c.id, c.name from company c where chairman_id=:userId or secretary_id=:userId", nativeQuery = true)
-    //    List<Company> getAllByChairAndSecr(@Param("userId") Long userId);
 
-    //    @Query(value = "select c.id, c.name from Company c where c.chairman_id=:chairman_id or c.secretary_id=:secretary_id", nativeQuery = true)
+    @Query(
+        value = "select distinct c.* from company as c inner join member as m on m.company_id=c.id where m.user_id=:user_id",
+        nativeQuery = true
+    )
+    List<Company> findCompanyByUser(@Param("user_id") Long user_id);
+
+    //    @Query(value = "select c.id, c.name from Company c where c.chairman.id=:chairman_id or c.secretary.id=:secretary_id")//jpa
     //    List<Company> findAllByChairmanIdOrSecretaryId(@Param("chairman_id") Long chairman_id, @Param("secretary_id") Long secretary_id);
 
     List<Company> findAllByChairmanIdOrSecretaryId(Long chairman_id, Long secretary_id);

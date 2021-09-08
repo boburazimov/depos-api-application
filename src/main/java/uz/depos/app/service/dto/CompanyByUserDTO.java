@@ -1,7 +1,5 @@
 package uz.depos.app.service.dto;
 
-import javax.validation.constraints.NotBlank;
-import org.apache.commons.lang3.ObjectUtils;
 import uz.depos.app.domain.Company;
 
 /**

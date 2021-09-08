@@ -166,12 +166,11 @@ public class CompanyResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all companies.
      */
     @GetMapping("/user/{id}")
-    //        @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.CHAIRMAN + "\")")
     @ApiOperation(value = "Get companies", notes = "This method to get companies by user")
     public ResponseEntity<List<CompanyByUserDTO>> getCompaniesByUser(@PathVariable Long id) {
         log.debug("REST request to get all Companies by User for an chairman or secretary");
 
-        final List<CompanyByUserDTO> companies = companyService.getAllCompaniesByChairmanAndSecretary(id);
+        final List<CompanyByUserDTO> companies = companyService.getCompaniesByUser(id);
         return new ResponseEntity<>(companies, HttpStatus.OK);
     }
 

@@ -39,4 +39,7 @@ public interface CompanyService {
 
     @Transactional(readOnly = true)
     List<CompanyByUserDTO> getAllCompaniesByChairmanAndSecretary(Long userId);
+
+    @Transactional(readOnly = true)
+    List<CompanyByUserDTO> getCompaniesByUser(Long id);
 }

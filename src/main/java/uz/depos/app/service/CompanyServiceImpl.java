@@ -240,6 +240,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    public List<CompanyByUserDTO> getCompaniesByUser(Long id) {
+        List<Company> companiesByUser = companyRepository.findCompanyByUser(id);
+        List<CompanyByUserDTO> companyByUserDTOs = companyMapper.companiesToCompanyByUserDTOs(companiesByUser);
+        return companyByUserDTOs;
+    }
+
+    @Override
     public List<CompanyByUserDTO> getAllCompaniesByChairmanAndSecretary(Long userId) {
         return companyRepository
             .findAllByChairmanIdOrSecretaryId(userId, userId)

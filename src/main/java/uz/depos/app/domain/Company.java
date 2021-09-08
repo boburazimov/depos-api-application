@@ -22,7 +22,7 @@ public class Company extends AbstractAuditingEntity {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    //  Наименование компании
+    // Наименование компании
     @Column(unique = true, nullable = false, length = 64)
     private String name;
 

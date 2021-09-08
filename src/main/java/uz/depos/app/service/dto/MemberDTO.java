@@ -1,6 +1,5 @@
 package uz.depos.app.service.dto;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
 
@@ -11,10 +10,13 @@ public class MemberDTO {
 
     private Long id;
 
-    @NotNull(message = "Meeting not must be null")
+    @NotNull(message = "MeetingID not must be null")
     private Long meetingId;
 
-    @NotNull(message = "User not must be null")
+    @NotNull(message = "CompanyID not must be null")
+    private Long companyId;
+
+    @NotNull(message = "UserID not must be null")
     private Long userId;
 
     private Boolean isRemotely;
@@ -38,6 +40,7 @@ public class MemberDTO {
     public MemberDTO(Member member) {
         this.id = member.getId();
         this.meetingId = member.getMeeting().getId();
+        this.companyId = member.getCompany().getId();
         this.userId = member.getUser().getId();
         this.isRemotely = member.getRemotely();
         this.isConfirmed = member.getConfirmed();
@@ -63,6 +66,14 @@ public class MemberDTO {
 
     public void setMeetingId(Long meetingId) {
         this.meetingId = meetingId;
+    }
+
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
     }
 
     public Long getUserId() {
@@ -145,6 +156,8 @@ public class MemberDTO {
             id +
             ", meetingId=" +
             meetingId +
+            ", companyId=" +
+            companyId +
             ", userId=" +
             userId +
             ", isRemotely=" +

@@ -135,7 +135,18 @@ public class ReestrService {
             User savedUser = userRepository.save(user);
 
             Member member = new Member(); // Create member for fill from current row.
-            meetingRepository.findOneById(meetingId).ifPresent(member::setMeeting); // Set Meeting
+            meetingRepository
+                .findOneById(meetingId)
+                .ifPresent(
+                    meeting -> {
+                        member.setMeeting(meeting); // Set Meeting
+                        if (meeting.getCompany() != null) {
+                            companyRepository.findById(meeting.getCompany().getId()).ifPresent(member::setCompany); // Set Company
+                        } else {
+                            throw new NullPointerException("Company must not be null for meeting!");
+                        }
+                    }
+                );
             member.setUser(savedUser);
             member.setRemotely(true);
             member.setConfirmed(false);
@@ -167,7 +178,9 @@ public class ReestrService {
         return savedReestr;
     }
 
-    /** Get Excel Reestr by Meeting ID.
+    /**
+     * Get Excel Reestr by Meeting ID.
+     *
      * @param meetingId
      * @return ByteArrayInputStream
      */
