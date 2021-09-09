@@ -20,13 +20,12 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
+import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.UserRepository;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.CompanyByUserDTO;
-import uz.depos.app.service.dto.CompanyDTO;
-import uz.depos.app.service.dto.CompanyNameDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.CompanyMapper;
 
 /**
@@ -43,19 +42,22 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyMapper companyMapper;
     private final CacheManager cacheManager;
     private final FilesStorageService filesStorageService;
+    private final MeetingRepository meetingRepository;
 
     public CompanyServiceImpl(
         CompanyRepository companyRepository,
         UserRepository userRepository,
         CompanyMapper companyMapper,
         CacheManager cacheManager,
-        FilesStorageService filesStorageService
+        FilesStorageService filesStorageService,
+        MeetingRepository meetingRepository
     ) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
         this.companyMapper = companyMapper;
         this.cacheManager = cacheManager;
         this.filesStorageService = filesStorageService;
+        this.meetingRepository = meetingRepository;
     }
 
     /**
@@ -240,10 +242,19 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public List<CompanyByUserDTO> getCompaniesByUser(Long id) {
-        List<Company> companiesByUser = companyRepository.findCompanyByUser(id);
+    public List<CompanyByUserDTO> getCompaniesByUser(Long userId) {
+        List<Company> companiesByUser = companyRepository.findCompanyByUser(userId);
         List<CompanyByUserDTO> companyByUserDTOs = companyMapper.companiesToCompanyByUserDTOs(companiesByUser);
-        return companyByUserDTOs;
+        return companyByUserDTOs
+            .stream()
+            .peek(
+                companyByUserDTO -> {
+                    List<Meeting> meetingsByUser = meetingRepository.findMeetingsByUser(userId, companyByUserDTO.getId());
+                    companyByUserDTO.setMeetings(meetingsByUser.stream().map(MeetingByUserDTO::new).collect(Collectors.toList()));
+                    companyByUserDTO.setMeetingCount(meetingsByUser.size());
+                }
+            )
+            .collect(Collectors.toList());
     }
 
     @Override

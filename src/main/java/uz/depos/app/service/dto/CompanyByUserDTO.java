@@ -1,5 +1,6 @@
 package uz.depos.app.service.dto;
 
+import java.util.List;
 import uz.depos.app.domain.Company;
 
 /**
@@ -13,6 +14,8 @@ public class CompanyByUserDTO {
     private String description;
     private String webPage;
     private String imageUrl;
+    private List<MeetingByUserDTO> meetings;
+    private long meetingCount;
 
     public CompanyByUserDTO() {}
 
@@ -73,6 +76,22 @@ public class CompanyByUserDTO {
         this.imageUrl = imageUrl;
     }
 
+    public List<MeetingByUserDTO> getMeetings() {
+        return meetings;
+    }
+
+    public void setMeetings(List<MeetingByUserDTO> meetings) {
+        this.meetings = meetings;
+    }
+
+    public long getMeetingCount() {
+        return meetingCount;
+    }
+
+    public void setMeetingCount(long meetingCount) {
+        this.meetingCount = meetingCount;
+    }
+
     @Override
     public String toString() {
         return (
@@ -93,6 +112,10 @@ public class CompanyByUserDTO {
             ", imageUrl='" +
             imageUrl +
             '\'' +
+            ", meetings=" +
+            meetings +
+            ", meetingCount=" +
+            meetingCount +
             '}'
         );
     }

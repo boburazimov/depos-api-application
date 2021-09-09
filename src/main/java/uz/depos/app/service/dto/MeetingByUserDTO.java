@@ -13,22 +13,16 @@ import uz.depos.app.domain.enums.MeetingTypeEnum;
 public class MeetingByUserDTO {
 
     private Long id;
-
     private MeetingStatusEnum status;
-
     private MeetingTypeEnum typeEnum;
-
     private Instant startDate;
-
     private Instant startRegistration;
-
     private Instant endRegistration;
 
     @NotNull(message = "Company have must be not empty")
     private Long companyId;
 
     private Integer cityId;
-
     private String address;
 
     @NotBlank(message = "Description must not be null")

@@ -21,7 +21,6 @@ import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.repository.*;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 
@@ -41,7 +40,6 @@ public class MeetingService {
     final MemberRepository memberRepository;
     final AgendaRepository agendaRepository;
     final MeetingMapper meetingMapper;
-    final CompanyService companyService;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -50,8 +48,7 @@ public class MeetingService {
         CityRepository cityRepository,
         MemberRepository memberRepository,
         AgendaRepository agendaRepository,
-        MeetingMapper meetingMapper,
-        CompanyService companyService
+        MeetingMapper meetingMapper
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -60,7 +57,6 @@ public class MeetingService {
         this.memberRepository = memberRepository;
         this.agendaRepository = agendaRepository;
         this.meetingMapper = meetingMapper;
-        this.companyService = companyService;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
