@@ -22,8 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
+import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.CompanyMapper;
@@ -43,6 +45,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CacheManager cacheManager;
     private final FilesStorageService filesStorageService;
     private final MeetingRepository meetingRepository;
+    private final MemberRepository memberRepository;
 
     public CompanyServiceImpl(
         CompanyRepository companyRepository,
@@ -50,7 +53,8 @@ public class CompanyServiceImpl implements CompanyService {
         CompanyMapper companyMapper,
         CacheManager cacheManager,
         FilesStorageService filesStorageService,
-        MeetingRepository meetingRepository
+        MeetingRepository meetingRepository,
+        MemberRepository memberRepository
     ) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -58,6 +62,7 @@ public class CompanyServiceImpl implements CompanyService {
         this.cacheManager = cacheManager;
         this.filesStorageService = filesStorageService;
         this.meetingRepository = meetingRepository;
+        this.memberRepository = memberRepository;
     }
 
     /**
@@ -81,9 +86,24 @@ public class CompanyServiceImpl implements CompanyService {
         if (StringUtils.isNoneBlank(companyDTO.getWebPage())) company.setWebPage(companyDTO.getWebPage());
         if (StringUtils.isNoneBlank(companyDTO.getPhoneNumber())) company.setPhoneNumber(companyDTO.getPhoneNumber());
         if (StringUtils.isNoneBlank(companyDTO.getImageUrl())) company.setImageUrl(companyDTO.getImageUrl());
-        if (companyDTO.getChairmanId() != null && companyDTO.getChairmanId() > 0) company.setChairman(
-            userRepository.findById(companyDTO.getChairmanId()).orElseThrow(() -> new ResourceNotFoundException("getChairman"))
-        );
+        if (companyDTO.getChairmanId() != null && companyDTO.getChairmanId() > 0) {
+            userRepository
+                .findById(companyDTO.getChairmanId())
+                .ifPresent(
+                    user -> {
+                        company.setChairman(user);
+                        memberRepository
+                            .findOneByUserId(user.getId())
+                            .ifPresent(
+                                member -> {
+                                    if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
+                                        MemberTypeEnum.CHAIRMAN
+                                    );
+                                }
+                            );
+                    }
+                );
+        }
         if (companyDTO.getSecretaryId() != null && companyDTO.getSecretaryId() > 0) company.setSecretary(
             userRepository.findById(companyDTO.getSecretaryId()).orElseThrow(() -> new ResourceNotFoundException("getSecretary"))
         );
@@ -129,14 +149,27 @@ public class CompanyServiceImpl implements CompanyService {
                     // Image-URL
                     company.setImageUrl(companyDTO.getImageUrl());
                     // Chairman
-                    if (ObjectUtils.isNotEmpty(companyDTO.getChairmanId())) company.setChairman(
-                        userRepository.findById(companyDTO.getChairmanId()).orElseThrow(() -> new ResourceNotFoundException("getChairman"))
-                    );
+                    if (ObjectUtils.isNotEmpty(companyDTO.getChairmanId())) {
+                        userRepository
+                            .findById(companyDTO.getChairmanId())
+                            .ifPresent(
+                                user -> {
+                                    company.setChairman(user);
+                                    memberRepository
+                                        .findOneByUserId(user.getId())
+                                        .ifPresent(
+                                            member -> {
+                                                if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
+                                                    MemberTypeEnum.CHAIRMAN
+                                                );
+                                            }
+                                        );
+                                }
+                            );
+                    }
                     // Secretary
                     if (ObjectUtils.isNotEmpty(companyDTO.getSecretaryId())) company.setSecretary(
-                        userRepository
-                            .findById(companyDTO.getSecretaryId())
-                            .orElseThrow(() -> new ResourceNotFoundException("getSecretary"))
+                        userRepository.findById(companyDTO.getSecretaryId()).orElse(null)
                     );
                     log.debug("Changed Information for Company: {}", company);
                     return company;

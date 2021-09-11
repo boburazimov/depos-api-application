@@ -116,7 +116,7 @@ public class ExcelHelpers {
     }
 
     /**
-     * @param members
+     * @param members for export to Excel file.
      * @return ByteArrayInputStream
      */
     public ByteArrayInputStream MembersToExcelReestr(List<Member> members) {
@@ -153,7 +153,7 @@ public class ExcelHelpers {
             workbook.write(byteArrayOutputStream);
             return new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         } catch (IOException e) {
-            throw new RuntimeException("fail to import data to Excel file: " + e.getMessage());
+            throw new RuntimeException("Fail to import data to Excel file: " + e.getMessage());
         }
     }
 }

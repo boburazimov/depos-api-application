@@ -2,6 +2,7 @@ package uz.depos.app.domain;
 
 import javax.persistence.*;
 import lombok.*;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 
 /**
  * Участники заседание (отдельно от users -> могут быть приглашенные)
@@ -40,12 +41,16 @@ public class Member extends AbstractAuditingEntity {
     @Column(name = "is_involved")
     private Boolean isInvolved;
 
-    // Является ли участник заседание докладчиком
-    @Column(name = "is_speaker")
-    private Boolean isSpeaker;
+    // Тип участника - роль
+    @Enumerated(EnumType.STRING)
+    private MemberTypeEnum memberTypeEnum;
 
-    @Column(name = "is_chairmen", columnDefinition = "boolean default false")
-    private Boolean isChairmen;
+    // Является ли участник заседание докладчиком
+    //    @Column(name = "is_speaker")
+    //    private Boolean isSpeaker;
+
+    //    @Column(name = "is_chairmen", columnDefinition = "boolean default false")
+    //    private Boolean isChairmen;
 
     // Тип документа, удостоверяющего личность
     @Column(name = "hld_it")
@@ -72,8 +77,7 @@ public class Member extends AbstractAuditingEntity {
         Boolean isRemotely,
         Boolean isConfirmed,
         Boolean isInvolved,
-        Boolean isSpeaker,
-        Boolean isChairmen,
+        MemberTypeEnum memberTypeEnum,
         String hldIt,
         String position,
         Boolean fromReestr
@@ -85,8 +89,7 @@ public class Member extends AbstractAuditingEntity {
         this.isRemotely = isRemotely;
         this.isConfirmed = isConfirmed;
         this.isInvolved = isInvolved;
-        this.isSpeaker = isSpeaker;
-        this.isChairmen = isChairmen;
+        this.memberTypeEnum = memberTypeEnum;
         this.hldIt = hldIt;
         this.position = position;
         this.fromReestr = fromReestr;
@@ -148,20 +151,12 @@ public class Member extends AbstractAuditingEntity {
         isInvolved = involved;
     }
 
-    public Boolean getSpeaker() {
-        return isSpeaker;
+    public MemberTypeEnum getMemberTypeEnum() {
+        return memberTypeEnum;
     }
 
-    public void setSpeaker(Boolean speaker) {
-        isSpeaker = speaker;
-    }
-
-    public Boolean getChairmen() {
-        return isChairmen;
-    }
-
-    public void setChairmen(Boolean chairmen) {
-        isChairmen = chairmen;
+    public void setMemberTypeEnum(MemberTypeEnum memberTypeEnum) {
+        this.memberTypeEnum = memberTypeEnum;
     }
 
     public String getHldIt() {
@@ -206,10 +201,8 @@ public class Member extends AbstractAuditingEntity {
             isConfirmed +
             ", isInvolved=" +
             isInvolved +
-            ", isSpeaker=" +
-            isSpeaker +
-            ", isChairmen=" +
-            isChairmen +
+            ", memberTypeEnum=" +
+            memberTypeEnum +
             ", hldIt='" +
             hldIt +
             '\'' +

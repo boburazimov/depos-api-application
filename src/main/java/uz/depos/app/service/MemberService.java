@@ -69,8 +69,7 @@ public class MemberService {
         member.setRemotely(memberDTO.getRemotely());
         member.setConfirmed(false);
         member.setInvolved(false);
-        member.setSpeaker(memberDTO.getSpeaker());
-        member.setChairmen(memberDTO.getChairmen());
+        member.setMemberTypeEnum(memberDTO.getMemberTypeEnum());
         member.setHldIt(memberDTO.getHldIt());
         member.setPosition(memberDTO.getPosition());
         member.setFromReestr(false);
@@ -107,8 +106,7 @@ public class MemberService {
                     member.setRemotely(memberDTO.getRemotely());
                     member.setConfirmed(memberDTO.getConfirmed());
                     member.setInvolved(memberDTO.getInvolved());
-                    member.setSpeaker(memberDTO.getSpeaker());
-                    member.setChairmen(memberDTO.getChairmen());
+                    member.setMemberTypeEnum(memberDTO.getMemberTypeEnum());
                     member.setHldIt(memberDTO.getHldIt());
                     member.setPosition(memberDTO.getPosition());
                     member.setFromReestr(false);

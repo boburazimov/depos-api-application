@@ -17,6 +17,7 @@ import tech.jhipster.security.RandomUtil;
 import uz.depos.app.domain.Authority;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.security.AuthoritiesConstants;
@@ -151,19 +152,17 @@ public class ReestrService {
             member.setRemotely(true);
             member.setConfirmed(false);
             member.setInvolved(false);
-            member.setSpeaker(false);
             meetingRepository
                 .findOneById(meetingId)
                 .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
                 .ifPresent(
                     company -> {
                         if (company.getChairman() != null) {
-                            if (company.getChairman().getPinfl().equals(currentRowPinfl)) {
-                                member.setChairmen(true);
-                            } else member.setChairmen(false);
+                            if (company.getChairman().getPinfl().equals(currentRowPinfl)) member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
                         }
                     }
                 );
+            member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
             member.setHldIt(currentRow.getCell(3).getStringCellValue());
             member.setPosition(currentRow.getCell(7).getStringCellValue());
             member.setFromReestr(true);
@@ -181,7 +180,7 @@ public class ReestrService {
     /**
      * Get Excel Reestr by Meeting ID.
      *
-     * @param meetingId
+     * @param meetingId for get Excel by meeting ID
      * @return ByteArrayInputStream
      */
     public ByteArrayInputStream getExcelReestr(Long meetingId) {

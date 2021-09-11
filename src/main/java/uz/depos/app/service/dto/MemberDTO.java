@@ -2,6 +2,7 @@ package uz.depos.app.service.dto;
 
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 
 /**
  * A DTO representing a member.
@@ -25,9 +26,7 @@ public class MemberDTO {
 
     private Boolean isInvolved;
 
-    private Boolean isSpeaker;
-
-    private Boolean isChairmen;
+    private MemberTypeEnum memberTypeEnum;
 
     private String hldIt;
 
@@ -45,8 +44,7 @@ public class MemberDTO {
         this.isRemotely = member.getRemotely();
         this.isConfirmed = member.getConfirmed();
         this.isInvolved = member.getInvolved();
-        this.isSpeaker = member.getSpeaker();
-        this.isChairmen = member.getChairmen();
+        this.memberTypeEnum = member.getMemberTypeEnum();
         this.hldIt = member.getHldIt();
         this.position = member.getPosition();
         this.fromReestr = member.getFromReestr();
@@ -108,20 +106,12 @@ public class MemberDTO {
         isInvolved = involved;
     }
 
-    public Boolean getSpeaker() {
-        return isSpeaker;
+    public MemberTypeEnum getMemberTypeEnum() {
+        return memberTypeEnum;
     }
 
-    public void setSpeaker(Boolean speaker) {
-        isSpeaker = speaker;
-    }
-
-    public Boolean getChairmen() {
-        return isChairmen;
-    }
-
-    public void setChairmen(Boolean chairmen) {
-        isChairmen = chairmen;
+    public void setMemberTypeEnum(MemberTypeEnum memberTypeEnum) {
+        this.memberTypeEnum = memberTypeEnum;
     }
 
     public String getHldIt() {
@@ -166,10 +156,8 @@ public class MemberDTO {
             isConfirmed +
             ", isInvolved=" +
             isInvolved +
-            ", isSpeaker=" +
-            isSpeaker +
-            ", isChairmen=" +
-            isChairmen +
+            ", memberTypeEnum=" +
+            memberTypeEnum +
             ", hldIt='" +
             hldIt +
             '\'' +

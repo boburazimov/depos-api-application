@@ -5,7 +5,6 @@ package uz.depos.app.domain.enums;
  */
 
 public enum RegistriesStatusEnum {
-    UPLOADING, // Загрузка
     LOADED, // Загружен
     PROCESSING, // Обработка
     COMPLETED, // Обработан

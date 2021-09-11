@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.service.dto.CompanyDTO;
+import uz.depos.app.service.dto.MeetingByUserDTO;
 import uz.depos.app.service.dto.MeetingDTO;
 
 /**
@@ -17,5 +18,9 @@ public class MeetingMapper {
 
     public MeetingDTO meetingToMeetingDTO(Meeting meeting) {
         return new MeetingDTO(meeting);
+    }
+
+    public MeetingByUserDTO meetingToMeetingByUserDTO(Meeting meeting) {
+        return new MeetingByUserDTO();
     }
 }
