@@ -39,13 +39,15 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Page<Company> findAllBySecretaryId(Long secretary_id, Pageable pageable);
 
     @Query(
-        value = "select distinct c.* from company as c inner join member as m on m.company_id=c.id where m.user_id=:user_id",
+        value = "select distinct c.*\n" +
+        "from company as c\n" +
+        "         left join member as m on m.company_id = c.id\n" +
+        "where c.chairman_id =:user_id\n" +
+        "   or c.secretary_id =:user_id\n" +
+        "   or m.user_id =:user_id",
         nativeQuery = true
     )
     List<Company> findCompanyByUser(@Param("user_id") Long user_id);
-
-    //    @Query(value = "select c.id, c.name from Company c where c.chairman.id=:chairman_id or c.secretary.id=:secretary_id")//jpa
-    //    List<Company> findAllByChairmanIdOrSecretaryId(@Param("chairman_id") Long chairman_id, @Param("secretary_id") Long secretary_id);
 
     List<Company> findAllByChairmanIdOrSecretaryId(Long chairman_id, Long secretary_id);
 }
