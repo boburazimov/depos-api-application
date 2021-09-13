@@ -564,15 +564,15 @@ public class UserService {
         }
     }
 
-    public List<DeposUserNameDTO> searchUserByName(String name) {
+    public List<DeposUserNameDTO> searchUserByName(String searchValue) {
         List<User> users = new ArrayList<>();
-        if (name == null) users.addAll(userRepository.findAll()); else userRepository
-            .findByFullNameIgnoreCaseContaining(name)
+        if (searchValue == null) users.addAll(userRepository.findAll()); else userRepository
+            .findByFullNameOrPinfl(searchValue)
             .ifPresent(users::addAll);
         if (users.isEmpty()) {
             return null;
         }
-        log.debug("Found searched Information for User by name: {}", name);
+        log.debug("Found searched Information for User by name: {}", searchValue);
         return userMapper.usersToDeposUserDTO(users);
     }
 

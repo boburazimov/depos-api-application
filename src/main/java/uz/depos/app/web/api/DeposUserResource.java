@@ -181,9 +181,9 @@ public class DeposUserResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all user's name.
      */
     @GetMapping("/names")
-    @ApiOperation(value = "Get names", notes = "This method to get all user's name for search fields")
-    public ResponseEntity<List<DeposUserNameDTO>> getAllUserNames() {
-        log.debug("REST request to get all User's name.");
+    @ApiOperation(value = "Get name and pinfl", notes = "This method to get all user's name and pinfl for search fields")
+    public ResponseEntity<List<DeposUserNameDTO>> getAllUsersNameAndPinfl() {
+        log.debug("REST request to get all User's name and pinfl.");
 
         final List<DeposUserNameDTO> userNameDTOs = userService.getAllManagedDeposUsersName();
         return new ResponseEntity<>(userNameDTOs, HttpStatus.OK);
@@ -274,11 +274,11 @@ public class DeposUserResource {
     }
 
     @GetMapping("/search")
-    @ApiOperation(value = "Search user", notes = "This method to search users by name containing")
-    public ResponseEntity<List<DeposUserNameDTO>> searchUsers(@RequestParam(required = false) String name) {
-        log.debug("REST request to search Users name of : {}", name);
+    @ApiOperation(value = "Search users", notes = "This method to search users by name or pinfl containing")
+    public ResponseEntity<List<DeposUserNameDTO>> searchUsers(@RequestParam(required = false) String searchValue) {
+        log.debug("REST request to search Users name of : {}", searchValue);
         try {
-            List<DeposUserNameDTO> userNameDTOs = userService.searchUserByName(name);
+            List<DeposUserNameDTO> userNameDTOs = userService.searchUserByName(searchValue);
             return new ResponseEntity<>(userNameDTOs, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

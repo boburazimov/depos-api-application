@@ -8,14 +8,15 @@ import uz.depos.app.domain.User;
 public class DeposUserNameDTO {
 
     private Long id;
-
     private String fullName;
+    private String pinfl;
 
     public DeposUserNameDTO() {}
 
     public DeposUserNameDTO(User user) {
         this.id = user.getId();
         this.fullName = user.getFullName();
+        this.pinfl = user.getPinfl();
     }
 
     public Long getId() {
@@ -34,8 +35,16 @@ public class DeposUserNameDTO {
         this.fullName = fullName;
     }
 
+    public String getPinfl() {
+        return pinfl;
+    }
+
+    public void setPinfl(String pinfl) {
+        this.pinfl = pinfl;
+    }
+
     @Override
     public String toString() {
-        return "DeposUserNameDTO{" + "id=" + id + ", fullName='" + fullName + '\'' + '}';
+        return "DeposUserNameDTO{" + "id=" + id + ", fullName='" + fullName + '\'' + ", pinfl='" + pinfl + '\'' + '}';
     }
 }

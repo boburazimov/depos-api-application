@@ -3,11 +3,14 @@ package uz.depos.app.repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import javax.validation.constraints.Size;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uz.depos.app.domain.User;
 
@@ -51,5 +54,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Page<User> findAllByIdNotNullAndActivatedIsTrue(Pageable pageable);
 
-    Optional<List<User>> findByFullNameIgnoreCaseContaining(String full_name);
+    @Query(
+        value = "select * from jhi_user as u where lower(concat(u.full_name, u.pinfl))  like lower(concat('%', :searchValue, '%'))",
+        nativeQuery = true
+    )
+    Optional<List<User>> findByFullNameOrPinfl(@Param("searchValue") String searchValue);
 }
