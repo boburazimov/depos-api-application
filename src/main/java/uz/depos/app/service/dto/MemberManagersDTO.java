@@ -1,6 +1,5 @@
 package uz.depos.app.service.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.enums.MemberTypeEnum;
@@ -10,7 +9,6 @@ import uz.depos.app.domain.enums.MemberTypeEnum;
  */
 public class MemberManagersDTO {
 
-    @JsonIgnore
     private Long id;
 
     @NotNull
@@ -22,7 +20,6 @@ public class MemberManagersDTO {
     @NotNull
     private Long userId;
 
-    @JsonIgnore
     private String pinfl;
 
     @NotNull

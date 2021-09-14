@@ -97,7 +97,7 @@ public class AttachmentResource {
         } else if (!companyRepository.findById(companyId).isPresent()) {
             throw new ResourceNotFoundException("Company not found by ID: " + companyId);
         } else if (file == null) {
-            throw new BadRequestAlertException("File must not be null!", "attachmentManagement", "fileNullPionter");
+            throw new BadRequestAlertException("File must not be null!", "attachmentManagement", "fileNullPointer");
         }
 
         try {

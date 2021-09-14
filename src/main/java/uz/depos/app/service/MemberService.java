@@ -31,7 +31,7 @@ import uz.depos.app.service.mapper.MemberMapper;
 @Transactional
 public class MemberService {
 
-    private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final Logger log = LoggerFactory.getLogger(MemberService.class);
 
     private final MeetingRepository meetingRepository;
     private final UserRepository userRepository;
@@ -185,6 +185,7 @@ public class MemberService {
             .withMatcher("user.phoneNumber", contains().ignoreCase())
             .withIgnorePaths("createdDate", "lastModifiedDate");
 
+        log.debug("Filtered Members by value: {}", value);
         if (value == null) {
             return memberRepository.findAll(pageable).map(MemberDTO::new);
         } else {
@@ -204,6 +205,7 @@ public class MemberService {
             member.setMemberTypeEnum(managersDTO.getMemberTypeEnum());
             member.setFromReestr(false);
             Member savedMember = memberRepository.saveAndFlush(member);
+            log.debug("Created Manager-member: {}", savedMember);
             return memberMapper.memberToMemberManagersDTO(savedMember);
         } else {
             throw new ResourceNotFoundException("User not found by ID: " + managersDTO.getUserId());
