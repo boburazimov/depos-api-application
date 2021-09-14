@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
@@ -32,6 +33,7 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
@@ -222,7 +224,9 @@ public class MemberResource {
      */
     @PostMapping("managers")
     @ApiOperation(value = "Add Managers", notes = "This method to members (managers)for current meeting.")
-    public ResponseEntity<MemberManagersDTO> addManagers(@Valid @RequestBody MemberManagersDTO managersDTO) throws URISyntaxException {
+    public ResponseEntity<MemberManagersDTO> addManagers(
+        @Valid @RequestBody @JsonView(value = View.MemberView.Post.class) MemberManagersDTO managersDTO
+    ) throws URISyntaxException {
         log.debug("REST request to add Managers by user ID : {}", managersDTO.getUserId());
         MemberManagersDTO memberManagersDTO = memberService.addManagers(managersDTO);
         return ResponseEntity

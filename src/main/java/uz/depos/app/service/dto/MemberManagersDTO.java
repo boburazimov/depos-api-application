@@ -1,28 +1,36 @@
 package uz.depos.app.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.enums.MemberTypeEnum;
+import uz.depos.app.service.view.View;
 
 /**
  * A DTO representing a member (managers).
  */
 public class MemberManagersDTO {
 
+    @JsonView(value = { View.MemberView.External.class })
     private Long id;
 
     @NotNull
+    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
     private Long meetingId;
 
     @NotNull
+    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
     private Long companyId;
 
     @NotNull
+    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
     private Long userId;
 
+    @JsonView(value = { View.MemberView.External.class })
     private String pinfl;
 
     @NotNull
+    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
     private MemberTypeEnum memberTypeEnum;
 
     public MemberManagersDTO() {}
