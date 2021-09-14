@@ -87,26 +87,11 @@ public class CompanyServiceImpl implements CompanyService {
         if (StringUtils.isNoneBlank(companyDTO.getPhoneNumber())) company.setPhoneNumber(companyDTO.getPhoneNumber());
         if (StringUtils.isNoneBlank(companyDTO.getImageUrl())) company.setImageUrl(companyDTO.getImageUrl());
         if (companyDTO.getChairmanId() != null && companyDTO.getChairmanId() > 0) {
-            userRepository
-                .findById(companyDTO.getChairmanId())
-                .ifPresent(
-                    user -> {
-                        company.setChairman(user);
-                        memberRepository
-                            .findOneByUserId(user.getId())
-                            .ifPresent(
-                                member -> {
-                                    if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
-                                        MemberTypeEnum.CHAIRMAN
-                                    );
-                                }
-                            );
-                    }
-                );
+            userRepository.findById(companyDTO.getChairmanId()).ifPresent(company::setChairman);
         }
-        if (companyDTO.getSecretaryId() != null && companyDTO.getSecretaryId() > 0) company.setSecretary(
-            userRepository.findById(companyDTO.getSecretaryId()).orElseThrow(() -> new ResourceNotFoundException("getSecretary"))
-        );
+        if (companyDTO.getSecretaryId() != null && companyDTO.getSecretaryId() > 0) userRepository
+            .findById(companyDTO.getSecretaryId())
+            .ifPresent(company::setSecretary);
         Company savedCompany = companyRepository.save(company);
         CompanyDTO companyDTO1 = companyMapper.companyToCompanyDTO(savedCompany);
         //        this.clearCompanyCaches(savedCompany);
