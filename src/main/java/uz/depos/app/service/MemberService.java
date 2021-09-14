@@ -10,6 +10,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Member;
@@ -20,6 +21,7 @@ import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.MemberDTO;
+import uz.depos.app.service.dto.MemberManagersDTO;
 import uz.depos.app.service.mapper.MemberMapper;
 
 /**
@@ -187,6 +189,24 @@ public class MemberService {
             return memberRepository.findAll(pageable).map(MemberDTO::new);
         } else {
             return memberRepository.findAll(Example.of(member, matcher), pageable).map(MemberDTO::new);
+        }
+    }
+
+    public MemberManagersDTO addManagers(MemberManagersDTO managersDTO) {
+        if (userRepository.findById(managersDTO.getUserId()).isPresent()) {
+            Member member = new Member();
+            meetingRepository.findById(managersDTO.getMeetingId()).ifPresent(member::setMeeting);
+            companyRepository.findById(managersDTO.getCompanyId()).ifPresent(member::setCompany);
+            userRepository.findById(managersDTO.getUserId()).ifPresent(member::setUser);
+            member.setRemotely(true);
+            member.setConfirmed(false);
+            member.setInvolved(false);
+            member.setMemberTypeEnum(managersDTO.getMemberTypeEnum());
+            member.setFromReestr(false);
+            Member savedMember = memberRepository.saveAndFlush(member);
+            return memberMapper.memberToMemberManagersDTO(savedMember);
+        } else {
+            throw new ResourceNotFoundException("User not found by ID: " + managersDTO.getUserId());
         }
     }
 }

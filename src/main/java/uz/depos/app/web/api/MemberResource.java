@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,24 +19,19 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import uz.depos.app.config.Constants;
-import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.domain.enums.MemberSearchFieldEnum;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
-import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.MemberService;
-import uz.depos.app.service.dto.AdminUserDTO;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MemberDTO;
+import uz.depos.app.service.dto.MemberManagersDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
@@ -198,7 +192,7 @@ public class MemberResource {
      * Filters for header table Member.
      *
      * @param field    - Column in the table (entity).
-     * @param value     - fragment of word to search by him.
+     * @param value    - fragment of word to search by him.
      * @param pageable - params for pageable.
      * @return - List of MemberDTO.
      */
@@ -214,5 +208,26 @@ public class MemberResource {
         final Page<MemberDTO> page = memberService.filterMembers(field, value, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code POST  /managers}  : Creates a new manager-member.
+     * <p>
+     * Creates a new manager-member if the meeting and user is not empty, and return MemberManagersDTO
+     *
+     * @param managersDTO the manager-member to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new manager-member, or with status {@code 400 (Bad Request)} if the required fields empty.
+     * and have incorrect id.
+     * @throws URISyntaxException if the required fields is Empty.
+     */
+    @PostMapping("managers")
+    @ApiOperation(value = "Add Managers", notes = "This method to members (managers)for current meeting.")
+    public ResponseEntity<MemberManagersDTO> addManagers(@Valid @RequestBody MemberManagersDTO managersDTO) throws URISyntaxException {
+        log.debug("REST request to add Managers by user ID : {}", managersDTO.getUserId());
+        MemberManagersDTO memberManagersDTO = memberService.addManagers(managersDTO);
+        return ResponseEntity
+            .created(new URI("/api/meeting/managers"))
+            .headers(HeaderUtil.createAlert(applicationName, "managerManagement.created", memberManagersDTO.getId().toString()))
+            .body(memberManagersDTO);
     }
 }

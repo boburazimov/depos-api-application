@@ -1,7 +1,7 @@
 package uz.depos.app.domain.enums;
 
 /**
- * Type of members
+ * Type (Role) of members
  */
 
 public enum MemberTypeEnum {
@@ -9,4 +9,5 @@ public enum MemberTypeEnum {
     SECRETARY, // Секретарь
     SPEAKER, // Докладчик
     SIMPLE, // Обычный
+    WATCHER, // Наблюдатель
 }
