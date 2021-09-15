@@ -11,26 +11,26 @@ import uz.depos.app.service.view.View;
  */
 public class MemberManagersDTO {
 
-    @JsonView(value = { View.MemberView.External.class })
+    @JsonView(value = { View.ModelView.External.class })
     private Long id;
 
     @NotNull
-    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long meetingId;
 
     @NotNull
-    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long companyId;
 
     @NotNull
-    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long userId;
 
-    @JsonView(value = { View.MemberView.External.class })
+    @JsonView(value = { View.ModelView.External.class })
     private String pinfl;
 
     @NotNull
-    @JsonView(value = { View.MemberView.External.class, View.MemberView.Post.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private MemberTypeEnum memberTypeEnum;
 
     public MemberManagersDTO() {}

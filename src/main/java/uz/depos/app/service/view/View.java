@@ -4,7 +4,7 @@ public interface View {
     /**
      * Enclosing type to define member views
      */
-    public static interface MemberView {
+    public static interface ModelView {
         /**
          * View for external members
          */

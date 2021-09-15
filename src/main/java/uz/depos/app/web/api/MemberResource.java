@@ -225,7 +225,7 @@ public class MemberResource {
     @PostMapping("managers")
     @ApiOperation(value = "Add Managers", notes = "This method to members (managers)for current meeting.")
     public ResponseEntity<MemberManagersDTO> addManagers(
-        @Valid @RequestBody @JsonView(value = View.MemberView.Post.class) MemberManagersDTO managersDTO
+        @Valid @RequestBody @JsonView(value = View.ModelView.Post.class) MemberManagersDTO managersDTO
     ) throws URISyntaxException {
         log.debug("REST request to add Managers by user ID : {}", managersDTO.getUserId());
         MemberManagersDTO memberManagersDTO = memberService.addManagers(managersDTO);
