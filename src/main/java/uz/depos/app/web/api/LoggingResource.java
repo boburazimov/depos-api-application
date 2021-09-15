@@ -75,7 +75,7 @@ public class LoggingResource {
      * @throws URISyntaxException if the required fields is Empty.
      */
     @PostMapping
-    @ApiOperation(value = "Add Meeting-logging", notes = "This method to add logging for current meeting.")
+    @ApiOperation(value = "Create Meeting-logging", notes = "This method to add logging for current meeting.")
     public ResponseEntity<MeetingLoggingDTO> addLogging(
         @Valid @RequestBody @JsonView(value = View.ModelView.Post.class) MeetingLoggingDTO loggingDTO
     ) throws URISyntaxException {
@@ -96,11 +96,11 @@ public class LoggingResource {
      */
     @PatchMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Update logging", notes = "This method will change a logging status for hide or show")
-    public ResponseEntity<MeetingLoggingDTO> updateMeetingLogging(@PathVariable Long id) {
+    @ApiOperation(value = "Switch status", notes = "This method will to switch a logging status")
+    public ResponseEntity<MeetingLoggingDTO> switchLoggingStatus(@PathVariable Long id) {
         log.debug("REST request to update status Logging : {}", id.toString());
 
-        Optional<MeetingLoggingDTO> loggingDTO = meetingLoggingService.updateLoggingStatus(id);
+        Optional<MeetingLoggingDTO> loggingDTO = meetingLoggingService.switchLoggingStatus(id);
         return ResponseUtil.wrapOrNotFound(loggingDTO, HeaderUtil.createAlert(applicationName, "loggingManagement.updated", id.toString()));
     }
 

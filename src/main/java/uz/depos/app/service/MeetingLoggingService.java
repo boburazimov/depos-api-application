@@ -89,7 +89,7 @@ public class MeetingLoggingService {
             );
     }
 
-    public Optional<MeetingLoggingDTO> updateLoggingStatus(Long id) {
+    public Optional<MeetingLoggingDTO> switchLoggingStatus(Long id) {
         return Optional
             .of(meetingLoggingRepository.findById(id))
             .filter(Optional::isPresent)

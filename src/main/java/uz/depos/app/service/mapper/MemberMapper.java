@@ -11,7 +11,6 @@ import uz.depos.app.service.dto.MemberManagersDTO;
  * Normal mappers are generated using MapStruct, this one is hand-coded as MapStruct
  * support is still in beta, and requires a manual step with an IDE.
  */
-
 @Service
 public class MemberMapper {
 
