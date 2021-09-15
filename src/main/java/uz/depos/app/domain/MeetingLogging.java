@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 /**
  * Модель "Комментирование" для "Председателя и Секретаря"
  */
-
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class MeetingLogging extends AbstractAuditingEntity implements Serializable {
@@ -25,10 +24,6 @@ public class MeetingLogging extends AbstractAuditingEntity implements Serializab
     @Column(nullable = false, name = "user_id")
     private Long userId;
 
-    // Участник заседания
-    @Column(nullable = false, name = "member_id")
-    private Long memberId;
-
     // Вопрос
     @Column(nullable = false, name = "logging_text")
     private String loggingText;
@@ -39,11 +34,10 @@ public class MeetingLogging extends AbstractAuditingEntity implements Serializab
 
     public MeetingLogging() {}
 
-    public MeetingLogging(Long id, Long meetingId, Long userId, Long memberId, String loggingText, Boolean isActive) {
+    public MeetingLogging(Long id, Long meetingId, Long userId, String loggingText, Boolean isActive) {
         this.id = id;
         this.meetingId = meetingId;
         this.userId = userId;
-        this.memberId = memberId;
         this.loggingText = loggingText;
         this.isActive = isActive;
     }
@@ -72,14 +66,6 @@ public class MeetingLogging extends AbstractAuditingEntity implements Serializab
         this.userId = userId;
     }
 
-    public Long getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(Long memberId) {
-        this.memberId = memberId;
-    }
-
     public String getLoggingText() {
         return loggingText;
     }
@@ -106,8 +92,6 @@ public class MeetingLogging extends AbstractAuditingEntity implements Serializab
             meetingId +
             ", userId=" +
             userId +
-            ", memberId=" +
-            memberId +
             ", loggingText='" +
             loggingText +
             '\'' +

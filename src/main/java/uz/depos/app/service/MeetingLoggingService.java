@@ -52,8 +52,6 @@ public class MeetingLoggingService {
             throw new ResourceNotFoundException("Meeting not found by ID: " + loggingDTO.getMeetingId());
         } else if (!userRepository.findById(loggingDTO.getUserId()).isPresent()) {
             throw new ResourceNotFoundException("User not found by ID: " + loggingDTO.getUserId());
-        } else if (!memberRepository.findById(loggingDTO.getMemberId()).isPresent()) {
-            throw new ResourceNotFoundException("Member not found by ID: " + loggingDTO.getMemberId());
         } else if (StringUtils.isBlank(loggingDTO.getLoggingText())) {
             throw new ResourceNotFoundException("Logging text must not be Empty!");
         } else if (
@@ -63,7 +61,6 @@ public class MeetingLoggingService {
         MeetingLogging logging = new MeetingLogging();
         meetingRepository.findById(loggingDTO.getMeetingId()).ifPresent(meeting -> logging.setMeetingId(meeting.getId()));
         userRepository.findById(loggingDTO.getUserId()).ifPresent(user -> logging.setUserId(user.getId()));
-        memberRepository.findById(loggingDTO.getMemberId()).ifPresent(member -> logging.setMemberId(member.getId()));
         logging.setLoggingText(loggingDTO.getLoggingText());
         logging.setActive(true);
         MeetingLogging savedLogging = meetingLoggingRepository.saveAndFlush(logging);
@@ -77,8 +74,8 @@ public class MeetingLoggingService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MeetingLoggingDTO> getAllMeetingLoggings(Pageable pageable) {
-        return meetingLoggingRepository.findAll(pageable).map(MeetingLoggingDTO::new);
+    public Page<MeetingLoggingDTO> getAllLoggingsByMeeting(Long meetingId, Pageable pageable) {
+        return meetingLoggingRepository.findAllByMeetingId(meetingId, pageable).map(MeetingLoggingDTO::new);
     }
 
     public void deleteMeetingLogging(Long id) {

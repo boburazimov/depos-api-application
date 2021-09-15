@@ -23,10 +23,6 @@ public class MeetingLoggingDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long userId;
 
-    @NotNull(message = "Member ID must not be null!")
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
-    private Long memberId;
-
     @NotBlank(message = "Logging text must not be empty!")
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private String loggingText;
@@ -43,7 +39,6 @@ public class MeetingLoggingDTO {
         this.id = logging.getId();
         this.meetingId = logging.getMeetingId();
         this.userId = logging.getUserId();
-        this.memberId = logging.getMemberId();
         this.loggingText = logging.getLoggingText();
         this.active = logging.getActive();
         this.createdDate = logging.getCreatedDate();
@@ -71,14 +66,6 @@ public class MeetingLoggingDTO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
-    }
-
-    public Long getMemberId() {
-        return memberId;
-    }
-
-    public void setMemberId(Long memberId) {
-        this.memberId = memberId;
     }
 
     public String getLoggingText() {
@@ -115,8 +102,6 @@ public class MeetingLoggingDTO {
             meetingId +
             ", userId=" +
             userId +
-            ", memberId=" +
-            memberId +
             ", loggingText='" +
             loggingText +
             '\'' +

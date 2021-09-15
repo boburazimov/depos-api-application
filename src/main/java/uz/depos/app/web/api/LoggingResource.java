@@ -126,11 +126,11 @@ public class LoggingResource {
      */
     @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get loggings", notes = "This method get all meeting-loggings")
-    public ResponseEntity<List<MeetingLoggingDTO>> getAllMeetingLoggings(Pageable pageable) {
+    @ApiOperation(value = "Get loggings", notes = "This method get all loggings by Meeting")
+    public ResponseEntity<List<MeetingLoggingDTO>> getAllLoggingsByMeeting(@RequestParam Long meetingId, Pageable pageable) {
         log.debug("REST request to get all Meeting-loggings.");
 
-        final Page<MeetingLoggingDTO> page = meetingLoggingService.getAllMeetingLoggings(pageable);
+        final Page<MeetingLoggingDTO> page = meetingLoggingService.getAllLoggingsByMeeting(meetingId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
