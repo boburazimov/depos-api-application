@@ -30,6 +30,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     //    @Cacheable(cacheNames = COMPANIES_BY_EMAIL_CACHE)
     Optional<Company> findOneByEmailIgnoreCase(String email);
 
+    Optional<Company> findOneByPhoneNumberIgnoreCase(String phone);
+
     Optional<Company> findOneByInn(String inn);
 
     Optional<List<Company>> findByNameIgnoreCaseContaining(String name);

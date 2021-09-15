@@ -31,7 +31,7 @@ public class Company extends AbstractAuditingEntity {
     private String inn;
 
     // Юридический адрес
-    @Column(length = 264, nullable = false, name = "legal_address")
+    @Column(length = 512, nullable = false, name = "legal_address")
     private String legalAddress;
 
     // Электронный адрес
@@ -39,15 +39,15 @@ public class Company extends AbstractAuditingEntity {
     private String email;
 
     // Описание компании
-    @Column(length = 128, nullable = false)
+    @Column(length = 256, nullable = false)
     private String description;
 
     // Почтовый адрес
-    @Column(length = 64, nullable = false, name = "postal_address")
+    @Column(length = 512, nullable = false, name = "postal_address")
     private String postalAddress;
 
     // Веб сайт
-    @Column(length = 64, name = "web_page")
+    @Column(length = 128, name = "web_page")
     private String webPage;
 
     // Телефон номер

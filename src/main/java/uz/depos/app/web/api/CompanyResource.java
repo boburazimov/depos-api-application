@@ -31,10 +31,7 @@ import uz.depos.app.service.dto.CompanyByUserDTO;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.CompanyNameDTO;
 import uz.depos.app.service.mapper.CompanyMapper;
-import uz.depos.app.web.rest.errors.BadRequestAlertException;
-import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
-import uz.depos.app.web.rest.errors.InvalidPasswordException;
-import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
+import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.errors.company.CompanyEmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.company.CompanyInnAlreadyUsedException;
 import uz.depos.app.web.rest.errors.company.CompanyNameAlreadyUsedException;
@@ -85,6 +82,8 @@ public class CompanyResource {
             throw new CompanyEmailAlreadyUsedException();
         } else if (StringUtils.isNoneBlank(companyDTO.getInn()) && companyRepository.findOneByInn(companyDTO.getInn()).isPresent()) {
             throw new CompanyInnAlreadyUsedException();
+        } else if (companyRepository.findOneByPhoneNumberIgnoreCase(companyDTO.getPhoneNumber()).isPresent()) {
+            throw new PhoneNumberAlreadyUsedException();
         } else {
             CompanyDTO company = companyService.createCompany(companyDTO);
             return ResponseEntity
