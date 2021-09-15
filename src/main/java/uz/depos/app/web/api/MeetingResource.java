@@ -23,12 +23,11 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.Meeting;
-import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
+import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MeetingService;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
@@ -46,11 +45,18 @@ public class MeetingResource {
     final MeetingService meetingService;
     final MeetingRepository meetingRepository;
     final CompanyRepository companyRepository;
+    final MeetingLoggingService meetingLoggingService;
 
-    public MeetingResource(MeetingService meetingService, MeetingRepository meetingRepository, CompanyRepository companyRepository) {
+    public MeetingResource(
+        MeetingService meetingService,
+        MeetingRepository meetingRepository,
+        CompanyRepository companyRepository,
+        MeetingLoggingService meetingLoggingService
+    ) {
         this.meetingService = meetingService;
         this.meetingRepository = meetingRepository;
         this.companyRepository = companyRepository;
+        this.meetingLoggingService = meetingLoggingService;
     }
 
     /**
@@ -164,7 +170,7 @@ public class MeetingResource {
      * Filters for header table Meeting.
      *
      * @param field    - Column in the table (entity).
-     * @param value     - fragment of word to search by him.
+     * @param value    - fragment of word to search by him.
      * @param pageable - params for pageable.
      * @return - List of MeetingDTO.
      */

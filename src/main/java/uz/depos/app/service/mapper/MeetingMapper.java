@@ -3,9 +3,11 @@ package uz.depos.app.service.mapper;
 import org.springframework.stereotype.Service;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.MeetingLogging;
 import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingByUserDTO;
 import uz.depos.app.service.dto.MeetingDTO;
+import uz.depos.app.service.dto.MeetingLoggingDTO;
 
 /**
  * Mapper for the entity {@link Company} and its DTO called {@link CompanyDTO}.
@@ -22,5 +24,9 @@ public class MeetingMapper {
 
     public MeetingByUserDTO meetingToMeetingByUserDTO(Meeting meeting) {
         return new MeetingByUserDTO();
+    }
+
+    public MeetingLoggingDTO meetingLoggingToMeetingLoggingDTO(MeetingLogging logging) {
+        return new MeetingLoggingDTO(logging);
     }
 }
