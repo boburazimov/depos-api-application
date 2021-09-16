@@ -53,7 +53,7 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     //    private List<VotingOption> votingOptions;
 
     // Доп инфо
-    @Column(length = 128, name = "extra_info")
+    @Column(length = 255, name = "extra_info")
     private String extraInfo;
 
     public Agenda() {}

@@ -10,7 +10,5 @@ import uz.depos.app.domain.Agenda;
  */
 @Repository
 public interface AgendaRepository extends JpaRepository<Agenda, Long> {
-    Optional<Agenda> findOneBySubject(String subject);
-
-    Optional<Agenda> findOneBySubjectContainsAndMeetingId(String subject, Long meeting_id);
+    Optional<Agenda> findOneBySubjectIgnoreCaseContainsAndMeetingId(String subject, Long meetingId);
 }

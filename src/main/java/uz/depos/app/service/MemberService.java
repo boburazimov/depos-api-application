@@ -196,11 +196,17 @@ public class MemberService {
     public MemberManagersDTO addManagers(MemberManagersDTO managersDTO) {
         if (userRepository.findById(managersDTO.getUserId()).isPresent()) {
             Member member = new Member();
-            meetingRepository.findById(managersDTO.getMeetingId()).ifPresent(member::setMeeting);
-            companyRepository.findById(managersDTO.getCompanyId()).ifPresent(member::setCompany);
+            meetingRepository
+                .findById(managersDTO.getMeetingId())
+                .ifPresent(
+                    meeting -> {
+                        member.setMeeting(meeting);
+                        companyRepository.findById(meeting.getCompany().getId()).ifPresent(member::setCompany);
+                    }
+                );
             userRepository.findById(managersDTO.getUserId()).ifPresent(member::setUser);
             member.setRemotely(true);
-            member.setConfirmed(false);
+            member.setConfirmed(true);
             member.setInvolved(false);
             member.setMemberTypeEnum(managersDTO.getMemberTypeEnum());
             member.setFromReestr(false);

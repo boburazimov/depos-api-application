@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
@@ -23,6 +24,8 @@ import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.service.AgendaService;
 import uz.depos.app.service.dto.AgendaDTO;
+import uz.depos.app.service.dto.QuestionDTO;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
@@ -59,22 +62,9 @@ public class AgendaResource {
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Create agenda", notes = "This method creates a new agenda")
-    public ResponseEntity<AgendaDTO> createAgenda(@Valid @RequestBody AgendaDTO agendaDTO) throws URISyntaxException {
+    public ResponseEntity<AgendaDTO> createAgenda(@Valid @RequestBody @JsonView(value = View.ModelView.Post.class) AgendaDTO agendaDTO)
+        throws URISyntaxException {
         log.debug("REST request to create Agenda : {}", agendaDTO);
-
-        if (agendaDTO.getId() != null && agendaDTO.getId() > 0) {
-            throw new BadRequestAlertException("A new agenda cannot already have an ID", "userManagement", "idexists");
-        }
-
-        agendaRepository
-            .findOneBySubjectContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
-            .ifPresent(
-                agenda -> {
-                    if (Objects.equals(agendaDTO.getSubject(), agenda.getSubject())) {
-                        throw new AgendaSubjectAlreadyUsedException();
-                    }
-                }
-            );
 
         AgendaDTO savedAgendaDTO = agendaService.createAgenda(agendaDTO);
         return ResponseEntity
@@ -136,21 +126,32 @@ public class AgendaResource {
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update agenda", notes = "This method to update agenda fields")
-    public ResponseEntity<AgendaDTO> updateAgenda(@Valid @RequestBody AgendaDTO agendaDTO) {
+    public ResponseEntity<AgendaDTO> updateAgenda(@Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) AgendaDTO agendaDTO) {
         log.debug("REST request to update Agenda : {}", agendaDTO);
 
-        agendaRepository
-            .findOneBySubjectContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
-            .ifPresent(
-                agenda -> {
-                    if (!agenda.getId().equals(agendaDTO.getId())) {
-                        if (Objects.equals(agendaDTO.getSubject(), agenda.getSubject())) throw new AgendaSubjectAlreadyUsedException();
-                    }
-                }
-            );
-
         Optional<AgendaDTO> updatedAgendaDTO = agendaService.updateAgenda(agendaDTO);
+        return ResponseUtil.wrapOrNotFound(
+            updatedAgendaDTO,
+            HeaderUtil.createAlert(applicationName, "agendaManagement.edited", agendaDTO.getSubject())
+        );
+    }
 
+    /**
+     * {@code PATCH /agenda} : Switch to status an existing agenda with adding comment.
+     *
+     * @param agendaDTO the agenda to switch.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated agenda.
+     * @throws AgendaSubjectAlreadyUsedException {@code 400 (Bad Request)} if the subject is already use in this meeting.
+     */
+    @PatchMapping
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Switch status", notes = "This method to switch agenda status with additional comment")
+    public ResponseEntity<AgendaDTO> switchAgendaStatus(
+        @Valid @RequestBody @JsonView(value = View.ModelView.PATCH.class) AgendaDTO agendaDTO
+    ) {
+        log.debug("REST request to switch agenda status : {}", agendaDTO);
+
+        Optional<AgendaDTO> updatedAgendaDTO = agendaService.switchAgendaStatus(agendaDTO);
         return ResponseUtil.wrapOrNotFound(
             updatedAgendaDTO,
             HeaderUtil.createAlert(applicationName, "agendaManagement.edited", agendaDTO.getSubject())

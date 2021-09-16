@@ -21,8 +21,8 @@ public interface View {
          */
         public static interface Post {}
 
-        public static interface Get {}
-
         public static interface PUT {}
+
+        public static interface PATCH {}
     }
 }

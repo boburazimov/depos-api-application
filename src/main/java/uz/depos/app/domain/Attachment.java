@@ -24,6 +24,7 @@ public class Attachment {
     @Column(name = "meeting_id")
     private Long meetingId;
 
+    @Column(name = "is_reestr")
     private boolean isReestr;
 
     @Column(name = "agenda_id")

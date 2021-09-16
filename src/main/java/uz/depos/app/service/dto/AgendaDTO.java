@@ -1,27 +1,41 @@
 package uz.depos.app.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Agenda;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
 import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
+import uz.depos.app.service.view.View;
 
 /**
  * A DTO representing a agenda.
  */
 public class AgendaDTO {
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long id;
 
+    @NotNull
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long meetingId;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private String subject;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long speakerId;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private AgendaSpeakTimeEnum speakTimeEnum;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private AgendaDebateEnum debateEnum;
 
-    private Boolean isActive;
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
+    private Boolean active;
+
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
+    private String extraInfo;
 
     public AgendaDTO() {}
 
@@ -32,7 +46,8 @@ public class AgendaDTO {
         this.speakerId = agenda.getSpeaker() != null ? agenda.getSpeaker().getId() : null;
         this.speakTimeEnum = agenda.getSpeakTimeEnum();
         this.debateEnum = agenda.getDebateEnum();
-        this.isActive = agenda.getActive();
+        this.active = agenda.getActive();
+        this.extraInfo = agenda.getExtraInfo();
     }
 
     public Long getId() {
@@ -84,11 +99,19 @@ public class AgendaDTO {
     }
 
     public Boolean getActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(Boolean active) {
-        isActive = active;
+        this.active = active;
+    }
+
+    public String getExtraInfo() {
+        return extraInfo;
+    }
+
+    public void setExtraInfo(String extraInfo) {
+        this.extraInfo = extraInfo;
     }
 
     @Override
@@ -108,8 +131,11 @@ public class AgendaDTO {
             speakTimeEnum +
             ", debateEnum=" +
             debateEnum +
-            ", isActive=" +
-            isActive +
+            ", active=" +
+            active +
+            ", extraInfo='" +
+            extraInfo +
+            '\'' +
             '}'
         );
     }

@@ -18,9 +18,10 @@ public class MemberManagersDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long meetingId;
 
-    @NotNull
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
-    private Long companyId;
+    //
+    //    @NotNull
+    //    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
+    //    private Long companyId;
 
     @NotNull
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
@@ -38,7 +39,6 @@ public class MemberManagersDTO {
     public MemberManagersDTO(Member member) {
         this.id = member.getId();
         this.meetingId = member.getMeeting().getId();
-        this.companyId = member.getCompany().getId();
         this.userId = member.getUser().getId();
         this.pinfl = member.getUser().getPinfl();
         this.memberTypeEnum = member.getMemberTypeEnum();
@@ -58,14 +58,6 @@ public class MemberManagersDTO {
 
     public void setMeetingId(Long meetingId) {
         this.meetingId = meetingId;
-    }
-
-    public Long getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(Long companyId) {
-        this.companyId = companyId;
     }
 
     public Long getUserId() {
@@ -100,8 +92,6 @@ public class MemberManagersDTO {
             id +
             ", meetingId=" +
             meetingId +
-            ", companyId=" +
-            companyId +
             ", userId=" +
             userId +
             ", pinfl='" +

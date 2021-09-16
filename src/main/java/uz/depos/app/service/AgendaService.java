@@ -1,11 +1,14 @@
 package uz.depos.app.service;
 
+import java.util.Objects;
 import java.util.Optional;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Agenda;
@@ -14,6 +17,8 @@ import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
+import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
+import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
  * Service class for managing agenda.
@@ -48,6 +53,30 @@ public class AgendaService {
      * @return created agenda.
      */
     public AgendaDTO createAgenda(AgendaDTO agendaDTO) {
+        if (
+            agendaDTO.getMeetingId() == null || agendaDTO.getMeetingId() == 0 || (!meetingRepository.existsById(agendaDTO.getMeetingId()))
+        ) {
+            throw new ResourceNotFoundException("Meeting not found by ID: " + agendaDTO.getMeetingId());
+        } else if (agendaDTO.getId() != null && agendaDTO.getId() > 0) {
+            throw new BadRequestAlertException("A new agenda cannot already have an ID", "agendaManagement", "idExists");
+        } else if (
+            agendaDTO.getSpeakerId() != null &&
+            agendaDTO.getSpeakerId() > 0 &&
+            (!memberRepository.findById(agendaDTO.getSpeakerId()).isPresent())
+        ) {
+            throw new ResourceNotFoundException("Speaker not found by ID: " + agendaDTO.getSpeakerId());
+        }
+
+        agendaRepository
+            .findOneBySubjectIgnoreCaseContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
+            .ifPresent(
+                agenda -> {
+                    if (Objects.equals(agendaDTO.getSubject(), agenda.getSubject())) {
+                        throw new AgendaSubjectAlreadyUsedException();
+                    }
+                }
+            );
+
         Agenda agenda = new Agenda();
         if (agendaDTO.getMeetingId() != null) meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
         if (StringUtils.isNoneBlank(agendaDTO.getSubject())) agenda.setSubject(agendaDTO.getSubject());
@@ -82,13 +111,16 @@ public class AgendaService {
         return agendaRepository.findAll(pageable).map(AgendaDTO::new);
     }
 
-    /**
-     * Edit all information for a specific agenda, and return the modified agenda.
-     *
-     * @param agendaDTO agenda to edit.
-     * @return edited agenda.
-     */
     public Optional<AgendaDTO> updateAgenda(AgendaDTO agendaDTO) {
+        agendaRepository
+            .findOneBySubjectIgnoreCaseContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
+            .ifPresent(
+                agenda -> {
+                    if (!agenda.getId().equals(agendaDTO.getId())) {
+                        if (Objects.equals(agendaDTO.getSubject(), agenda.getSubject())) throw new AgendaSubjectAlreadyUsedException();
+                    }
+                }
+            );
         return Optional
             .of(agendaRepository.findById(agendaDTO.getId()))
             .filter(Optional::isPresent)
@@ -103,6 +135,23 @@ public class AgendaService {
                     agenda.setActive(agendaDTO.getActive());
                     Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
                     log.debug("Changed Information for Agenda: {}", savedAgenda);
+                    return savedAgenda;
+                }
+            )
+            .map(AgendaDTO::new);
+    }
+
+    public Optional<AgendaDTO> switchAgendaStatus(AgendaDTO agendaDTO) {
+        return Optional
+            .of(agendaRepository.findById(agendaDTO.getId()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(
+                agenda -> {
+                    agenda.setActive(!agenda.getActive());
+                    if (ObjectUtils.isNotEmpty(agendaDTO.getExtraInfo())) agenda.setExtraInfo(agendaDTO.getExtraInfo());
+                    Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
+                    log.debug("Changed Status Information for Agenda: {}", savedAgenda);
                     return savedAgenda;
                 }
             )
