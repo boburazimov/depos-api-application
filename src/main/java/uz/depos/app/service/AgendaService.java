@@ -82,6 +82,7 @@ public class AgendaService {
         if (StringUtils.isNoneBlank(agendaDTO.getSubject())) agenda.setSubject(agendaDTO.getSubject());
         memberRepository.findOneById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
         agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
+        agenda.setTypeEnum(agendaDTO.getTypeEnum());
         agenda.setDebateEnum(agendaDTO.getDebateEnum());
         agenda.setActive(agendaDTO.getActive());
         Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
@@ -131,6 +132,7 @@ public class AgendaService {
                     agenda.setSubject(agendaDTO.getSubject());
                     memberRepository.findById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
                     agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
+                    agenda.setTypeEnum(agendaDTO.getTypeEnum());
                     agenda.setDebateEnum(agendaDTO.getDebateEnum());
                     agenda.setActive(agendaDTO.getActive());
                     Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);

@@ -1,16 +1,15 @@
 package uz.depos.app.domain;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.*;
-import lombok.*;
+import lombok.EqualsAndHashCode;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
 import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
+import uz.depos.app.domain.enums.AgendaTypeEnum;
 
 /**
  * Повестка дня - вопросы для голосование
  */
-
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class Agenda extends AbstractAuditingEntity implements Serializable {
@@ -31,6 +30,9 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     // Докладчик "memberID"
     @ManyToOne
     private Member speaker;
+
+    @Enumerated(EnumType.STRING)
+    private AgendaTypeEnum typeEnum;
 
     // Время для доклада
     @Enumerated(EnumType.STRING)
@@ -63,6 +65,7 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         Meeting meeting,
         String subject,
         Member speaker,
+        AgendaTypeEnum typeEnum,
         AgendaSpeakTimeEnum speakTimeEnum,
         AgendaDebateEnum debateEnum,
         Boolean isActive,
@@ -72,6 +75,7 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         this.meeting = meeting;
         this.subject = subject;
         this.speaker = speaker;
+        this.typeEnum = typeEnum;
         this.speakTimeEnum = speakTimeEnum;
         this.debateEnum = debateEnum;
         this.isActive = isActive;
@@ -108,6 +112,14 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
 
     public void setSpeaker(Member speaker) {
         this.speaker = speaker;
+    }
+
+    public AgendaTypeEnum getTypeEnum() {
+        return typeEnum;
+    }
+
+    public void setTypeEnum(AgendaTypeEnum typeEnum) {
+        this.typeEnum = typeEnum;
     }
 
     public AgendaSpeakTimeEnum getSpeakTimeEnum() {
@@ -155,6 +167,8 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
             '\'' +
             ", speaker=" +
             speaker +
+            ", typeEnum=" +
+            typeEnum +
             ", speakTimeEnum=" +
             speakTimeEnum +
             ", debateEnum=" +

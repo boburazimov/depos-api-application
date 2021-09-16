@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Agenda;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
 import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
+import uz.depos.app.domain.enums.AgendaTypeEnum;
 import uz.depos.app.service.view.View;
 
 /**
@@ -26,6 +27,9 @@ public class AgendaDTO {
     private Long speakerId;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
+    private AgendaTypeEnum typeEnum;
+
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private AgendaSpeakTimeEnum speakTimeEnum;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
@@ -45,6 +49,7 @@ public class AgendaDTO {
         this.subject = agenda.getSubject();
         this.speakerId = agenda.getSpeaker() != null ? agenda.getSpeaker().getId() : null;
         this.speakTimeEnum = agenda.getSpeakTimeEnum();
+        this.typeEnum = agenda.getTypeEnum();
         this.debateEnum = agenda.getDebateEnum();
         this.active = agenda.getActive();
         this.extraInfo = agenda.getExtraInfo();
@@ -80,6 +85,14 @@ public class AgendaDTO {
 
     public void setSpeakerId(Long speakerId) {
         this.speakerId = speakerId;
+    }
+
+    public AgendaTypeEnum getTypeEnum() {
+        return typeEnum;
+    }
+
+    public void setTypeEnum(AgendaTypeEnum typeEnum) {
+        this.typeEnum = typeEnum;
     }
 
     public AgendaSpeakTimeEnum getSpeakTimeEnum() {
@@ -127,6 +140,8 @@ public class AgendaDTO {
             '\'' +
             ", speakerId=" +
             speakerId +
+            ", typeEnum=" +
+            typeEnum +
             ", speakTimeEnum=" +
             speakTimeEnum +
             ", debateEnum=" +
