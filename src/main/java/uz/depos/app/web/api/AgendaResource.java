@@ -24,6 +24,7 @@ import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.service.AgendaService;
 import uz.depos.app.service.dto.AgendaDTO;
+import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
@@ -98,12 +99,30 @@ public class AgendaResource {
     @ApiOperation(value = "Get agendas", notes = "This method to get all agendas in pageable")
     public ResponseEntity<List<AgendaDTO>> getAllAgendas(Pageable pageable) {
         log.debug("REST request to get all Agendas");
-
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
-
         final Page<AgendaDTO> page = agendaService.getAllAgendas(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /agendas} : get agendas by the meeting with all the details - calling this are only allowed for the administrators.
+     *
+     * @param meetingId the member ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all agendas by the meeting.
+     */
+    @GetMapping("/by-meeting")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get agendas by meeting", notes = "This method to get agendas by meeting ID")
+    public ResponseEntity<List<AgendaDTO>> getAgendasByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+        log.debug("REST request to get Agendas by Meeting ID: " + meetingId);
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Page<AgendaDTO> page = agendaService.getAgendasByMeeting(meetingId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

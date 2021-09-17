@@ -297,9 +297,9 @@ public class CompanyServiceImpl implements CompanyService {
         try {
             companyRepository.delete(company);
             log.debug("Deleted Information for Company by ID: {}", id);
-            return new ApiResponse(company.getName() + " Удален!", true);
+            return new ApiResponse(company.getName() + " Deleted!", true);
         } catch (Exception e) {
-            return new ApiResponse(company.getName() + "НЕ Удален! Error: " + e.getMessage(), false);
+            return new ApiResponse(company.getName() + "Error in deleting! Error: " + e.getMessage(), false);
         }
     }
 

@@ -150,9 +150,9 @@ public class MemberResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all members.
      */
-    @GetMapping("/by-meeting")
+    @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Get ll members", notes = "This method to get all members")
+    @ApiOperation(value = "Get all members", notes = "This method to get all members")
     public ResponseEntity<List<MemberDTO>> getAllMembers(Pageable pageable) {
         log.debug("REST request to get all Members");
         if (!onlyContainsAllowedProperties(pageable)) {
@@ -171,7 +171,7 @@ public class MemberResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all members by the meeting.
      */
-    @GetMapping
+    @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Get members by meeting", notes = "This method to get members by meeting ID")
     public ResponseEntity<List<MemberDTO>> getMembersByMeeting(@RequestParam Long meetingId, Pageable pageable) {

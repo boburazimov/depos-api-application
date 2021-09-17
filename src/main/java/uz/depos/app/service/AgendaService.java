@@ -16,6 +16,7 @@ import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.service.dto.AgendaDTO;
+import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -172,5 +173,10 @@ public class AgendaService {
     private void accept(Agenda agenda) {
         agendaRepository.delete(agenda);
         log.debug("Deleted Agenda: {}", agenda);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<AgendaDTO> getAgendasByMeeting(Long meetingId, Pageable pageable) {
+        return agendaRepository.findAllByMeetingId(meetingId, pageable).map(AgendaDTO::new);
     }
 }
