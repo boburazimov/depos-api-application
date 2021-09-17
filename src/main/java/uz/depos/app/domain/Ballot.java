@@ -7,7 +7,6 @@ import uz.depos.app.domain.enums.BallotOptionEnum;
 /**
  * Голосование - процесс голосование (каждая строка - один голос)
  */
-
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class Ballot extends AbstractAuditingEntity {
@@ -17,13 +16,13 @@ public class Ballot extends AbstractAuditingEntity {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-    // Привязка к участнику заседания "userID"
-    @ManyToOne(optional = false)
-    private Member member;
-
     // Привязка к заседанию "meetingID"
     @ManyToOne(optional = false)
     private Meeting meeting;
+
+    // Привязка к участнику заседания "userID"
+    @ManyToOne(optional = false)
+    private Member member;
 
     // Привязка к повестки дня "agendaID"
     @ManyToOne(optional = false)

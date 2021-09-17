@@ -1,30 +1,38 @@
 package uz.depos.app.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Ballot;
 import uz.depos.app.domain.enums.BallotOptionEnum;
+import uz.depos.app.service.view.View;
 
 /**
  * A DTO representing a ballot.
  */
 public class BallotDTO {
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class })
     private Long id;
 
-    @NotNull(message = "Member ID must NOT be null!")
-    private Long memberId;
-
     @NotNull(message = "Meeting ID must NOT be null!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long meetingId;
 
+    @NotNull(message = "Member ID must NOT be null!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
+    private Long memberId;
+
     @NotNull(message = "Agenda ID must NOT be null!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long agendaId;
 
     @NotNull(message = "Voting-option ID must NOT be null!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long votingOptionId;
 
     @NotBlank(message = "Ballot-option must NOT be blank!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private BallotOptionEnum options;
 
     public BallotDTO() {}

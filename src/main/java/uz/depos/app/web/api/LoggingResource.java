@@ -76,7 +76,7 @@ public class LoggingResource {
      */
     @PostMapping
     @ApiOperation(value = "Create Meeting-logging", notes = "This method to add logging for current meeting.")
-    public ResponseEntity<MeetingLoggingDTO> addLogging(
+    public ResponseEntity<MeetingLoggingDTO> createLogging(
         @Valid @RequestBody @JsonView(value = View.ModelView.Post.class) MeetingLoggingDTO loggingDTO
     ) throws URISyntaxException {
         log.debug("REST request to add Logging to Meeting ID : {}", loggingDTO.getMeetingId());
@@ -124,7 +124,7 @@ public class LoggingResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meeting-loggings.
      */
-    @GetMapping
+    @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get loggings", notes = "This method get all loggings by Meeting")
     public ResponseEntity<List<MeetingLoggingDTO>> getAllLoggingsByMeeting(@RequestParam Long meetingId, Pageable pageable) {

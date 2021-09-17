@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
@@ -24,10 +25,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import uz.depos.app.repository.*;
+import uz.depos.app.domain.enums.BallotOptionEnum;
+import uz.depos.app.repository.BallotRepository;
 import uz.depos.app.service.BallotService;
 import uz.depos.app.service.dto.BallotDTO;
-import uz.depos.app.web.rest.errors.BadRequestAlertException;
+import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 
@@ -46,25 +49,10 @@ public class BallotResource {
     private final Logger log = LoggerFactory.getLogger(BallotResource.class);
 
     final BallotRepository ballotRepository;
-    final MeetingRepository meetingRepository;
-    final MemberRepository memberRepository;
-    final AgendaRepository agendaRepository;
-    final VotingRepository votingRepository;
     final BallotService ballotService;
 
-    public BallotResource(
-        BallotRepository ballotRepository,
-        MeetingRepository meetingRepository,
-        MemberRepository memberRepository,
-        AgendaRepository agendaRepository,
-        VotingRepository votingRepository,
-        BallotService ballotService
-    ) {
+    public BallotResource(BallotRepository ballotRepository, BallotService ballotService) {
         this.ballotRepository = ballotRepository;
-        this.meetingRepository = meetingRepository;
-        this.memberRepository = memberRepository;
-        this.agendaRepository = agendaRepository;
-        this.votingRepository = votingRepository;
         this.ballotService = ballotService;
     }
 
@@ -82,29 +70,9 @@ public class BallotResource {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Create ballot", notes = "This method creates a new ballot")
-    public ResponseEntity<BallotDTO> createBallot(@Valid @RequestBody BallotDTO ballotDTO) throws URISyntaxException {
+    public ResponseEntity<BallotDTO> createBallot(@Valid @RequestBody @JsonView(value = View.ModelView.Post.class) BallotDTO ballotDTO)
+        throws URISyntaxException {
         log.debug("REST request to create Ballot : {}", ballotDTO);
-
-        if (ballotDTO.getId() != null && ballotDTO.getId() > 0) {
-            throw new BadRequestAlertException("A new ballot cannot already have an ID", "ballotManagement", "idExists");
-        } else if (ballotDTO.getMeetingId() == null || ballotDTO.getMeetingId() == 0) {
-            throw new BadRequestAlertException("Meeting ID must NOT be null and zero", "ballotManagement", "meetingIDNull");
-        } else if (ballotDTO.getMemberId() == null || ballotDTO.getMemberId() == 0) {
-            throw new BadRequestAlertException("Member ID must NOT be null and zero", "ballotManagement", "memberIDNull");
-        } else if (ballotDTO.getAgendaId() == null || ballotDTO.getAgendaId() == 0) {
-            throw new BadRequestAlertException("Agenda ID must NOT be null and zero", "ballotManagement", "agendaIDNull");
-        } else if (ballotDTO.getVotingOptionId() == null || ballotDTO.getVotingOptionId() == 0) {
-            throw new BadRequestAlertException("Voting-option ID must NOT be null and zero", "ballotManagement", "votingOptionIDNull");
-        } else if (!meetingRepository.existsById(ballotDTO.getMeetingId())) {
-            throw new ResourceNotFoundException("Meeting not found by ID: " + ballotDTO.getMeetingId());
-        } else if (!memberRepository.existsById(ballotDTO.getMemberId())) {
-            throw new ResourceNotFoundException("Member not found by ID: " + ballotDTO.getMemberId());
-        } else if (!agendaRepository.existsById(ballotDTO.getAgendaId())) {
-            throw new ResourceNotFoundException("Agenda not found by ID: " + ballotDTO.getAgendaId());
-        } else if (!votingRepository.existsById(ballotDTO.getVotingOptionId())) {
-            throw new ResourceNotFoundException("Voting-option not found by ID: " + ballotDTO.getVotingOptionId());
-        }
-
         BallotDTO savedBallotDTO = ballotService.createBallot(ballotDTO);
         return ResponseEntity
             .created(new URI("/api/ballot/" + savedBallotDTO.getId()))
@@ -123,10 +91,9 @@ public class BallotResource {
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update ballot", notes = "This method is update exist ballot")
-    public ResponseEntity<BallotDTO> updateBallot(@Valid @RequestBody BallotDTO ballotDTO) {
+    public ResponseEntity<BallotDTO> updateBallot(@Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) BallotDTO ballotDTO) {
         log.debug("REST request to update Ballot : {}", ballotDTO);
         Optional<BallotDTO> savedBallotDTO = ballotService.updateBallot(ballotDTO);
-
         return ResponseUtil.wrapOrNotFound(
             savedBallotDTO,
             HeaderUtil.createAlert(applicationName, "ballotManagement.updated", ballotDTO.getId().toString())
@@ -155,9 +122,10 @@ public class BallotResource {
      */
     @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Get ballots", notes = "This method to get all ballots")
+    @ApiOperation(value = "Get all ballots", notes = "This method to get all ballots")
     public ResponseEntity<List<BallotDTO>> getAllBallots(Pageable pageable) {
         log.debug("REST request to get all Ballots");
+
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
@@ -192,5 +160,62 @@ public class BallotResource {
             .noContent()
             .headers(HeaderUtil.createAlert(applicationName, "ballotManagement.deleted", id.toString()))
             .build();
+    }
+
+    /**
+     * {@code GET /ballots} : get ballots by the meeting with all the details.
+     *
+     * @param meetingId the meeting ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all ballots by the meeting.
+     */
+    @GetMapping("/by-meeting")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by meeting", notes = "This method to get ballots by meeting ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+        log.debug("REST request to get Ballots by Meeting ID: " + meetingId);
+        final Page<BallotDTO> page = ballotService.getBallotsByMeeting(meetingId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/by-member")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by member", notes = "This method to get ballots by member ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByMember(@RequestParam Long memberId, Pageable pageable) {
+        log.debug("REST request to get Ballots by Member ID: " + memberId);
+        final Page<BallotDTO> page = ballotService.getBallotsByMember(memberId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/by-agenda")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by agenda", notes = "This method to get ballots by agenda ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByAgenda(@RequestParam Long agendaId, Pageable pageable) {
+        log.debug("REST request to get Ballots by Agenda ID: " + agendaId);
+        final Page<BallotDTO> page = ballotService.getBallotsByAgenda(agendaId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/by-voting")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by voting", notes = "This method to get ballots by voting ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByVoting(@RequestParam Long votingId, Pageable pageable) {
+        log.debug("REST request to get Ballots by Voting ID: " + votingId);
+        final Page<BallotDTO> page = ballotService.getBallotsByVoting(votingId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/by-option")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by option", notes = "This method to get ballots by option ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByOption(@RequestParam BallotOptionEnum option, Pageable pageable) {
+        log.debug("REST request to get Ballots by Option: " + option);
+        final Page<BallotDTO> page = ballotService.getBallotsByOption(option, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

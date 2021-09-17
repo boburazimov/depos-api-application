@@ -90,7 +90,7 @@ public class QuestionResource {
      */
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Update question", notes = "This method will update a question answer by current user")
+    @ApiOperation(value = "Update question", notes = "This method will update an answer of question by current user")
     public ResponseEntity<QuestionDTO> updateQuestionAnswer(
         @Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) QuestionDTO questionDTO
     ) {
