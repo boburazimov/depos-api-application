@@ -27,4 +27,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     void deleteAllByMeetingIdAndFromReestrTrue(Long meetingId);
 
     Optional<Member> findFirstByCompanyId(Long companyId);
+
+    Page<Member> findAllByMeetingId(Long meetingId, Pageable pageable);
 }

@@ -33,6 +33,7 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
+import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
@@ -137,7 +138,7 @@ public class MemberResource {
      */
     @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Get member", notes = "This method to get exist member")
+    @ApiOperation(value = "Get one member", notes = "This method to get exist member")
     public ResponseEntity<MemberDTO> getMember(@PathVariable Long id) {
         log.debug("REST request to get Member : {}", id);
         return ResponseUtil.wrapOrNotFound(memberService.getMember(id).map(MemberDTO::new));
@@ -149,9 +150,9 @@ public class MemberResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all members.
      */
-    @GetMapping
+    @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Get members", notes = "This method to get all members")
+    @ApiOperation(value = "Get ll members", notes = "This method to get all members")
     public ResponseEntity<List<MemberDTO>> getAllMembers(Pageable pageable) {
         log.debug("REST request to get all Members");
         if (!onlyContainsAllowedProperties(pageable)) {
@@ -159,6 +160,26 @@ public class MemberResource {
         }
 
         final Page<MemberDTO> page = memberService.getAllMembers(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /members} : get all members by the meeting with all the details - calling this are only allowed for the administrators.
+     *
+     * @param meetingId the member ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all members by the meeting.
+     */
+    @GetMapping
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get members by meeting", notes = "This method to get members by meeting ID")
+    public ResponseEntity<List<MemberDTO>> getMembersByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+        log.debug("REST request to get Members by Meeting ID: " + meetingId);
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+        final Page<MemberDTO> page = memberService.getMembersByMeeting(meetingId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

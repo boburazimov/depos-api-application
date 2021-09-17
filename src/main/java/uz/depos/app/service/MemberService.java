@@ -22,6 +22,7 @@ import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
+import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.service.mapper.MemberMapper;
 
 /**
@@ -216,5 +217,10 @@ public class MemberService {
         } else {
             throw new ResourceNotFoundException("User not found by ID: " + managersDTO.getUserId());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MemberDTO> getMembersByMeeting(Long meetingId, Pageable pageable) {
+        return memberRepository.findAllByMeetingId(meetingId, pageable).map(MemberDTO::new);
     }
 }
