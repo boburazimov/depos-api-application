@@ -21,13 +21,13 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.repository.VotingOptionRepository;
-import uz.depos.app.service.VotingOptionService;
-import uz.depos.app.service.dto.VotingOptionDTO;
+import uz.depos.app.service.VotingService;
+import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.VotinOptionTextAlreadyUsedException;
 
 @RestController
-@RequestMapping("/api/voting_option")
+@RequestMapping("/api/voting")
 @Api(tags = "Voting-option")
 public class VotingOptionResource {
 
@@ -41,17 +41,17 @@ public class VotingOptionResource {
     private final Logger log = LoggerFactory.getLogger(VotingOptionResource.class);
 
     final VotingOptionRepository votingOptionRepository;
-    final VotingOptionService votingOptionService;
+    final VotingService votingService;
 
-    public VotingOptionResource(VotingOptionRepository votingOptionRepository, VotingOptionService votingOptionService) {
+    public VotingOptionResource(VotingOptionRepository votingOptionRepository, VotingService votingService) {
         this.votingOptionRepository = votingOptionRepository;
-        this.votingOptionService = votingOptionService;
+        this.votingService = votingService;
     }
 
     /**
      * {@code POST  /voting_option} : register the VotingOption.
      *
-     * @param votingOptionDTO the managed agenda View Model.
+     * @param votingDTO the managed agenda View Model.
      * @return VotingOptionDTO with status {@code 201 (Created)}
      * @throws BadRequestAlertException {@code 400 (Bad Request)} if the id is already used.
      */
@@ -59,29 +59,28 @@ public class VotingOptionResource {
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Create votingOption", notes = "This method creates a new votingOption")
-    public ResponseEntity<VotingOptionDTO> createVotingOption(@Valid @RequestBody VotingOptionDTO votingOptionDTO)
-        throws URISyntaxException {
-        log.debug("REST request to create VotingOption : {}", votingOptionDTO);
+    public ResponseEntity<VotingDTO> createVotingOption(@Valid @RequestBody VotingDTO votingDTO) throws URISyntaxException {
+        log.debug("REST request to create VotingOption : {}", votingDTO);
 
-        if (votingOptionDTO.getId() != null && votingOptionDTO.getId() > 0) {
+        if (votingDTO.getId() != null && votingDTO.getId() > 0) {
             throw new BadRequestAlertException("A new votingOption cannot already have an ID", "votingOptionManagement", "idexists");
         }
 
         votingOptionRepository
-            .findOneByVotingTextAndAgendaId(votingOptionDTO.getVotingText(), votingOptionDTO.getAgendaId())
+            .findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingDTO.getAgendaId())
             .ifPresent(
                 votingOption -> {
-                    if (Objects.equals(votingOptionDTO.getVotingText(), votingOption.getVotingText())) {
+                    if (Objects.equals(votingDTO.getVotingText(), votingOption.getVotingText())) {
                         throw new VotinOptionTextAlreadyUsedException();
                     }
                 }
             );
 
-        VotingOptionDTO savedVotingOptionDTO = votingOptionService.createVotingOption(votingOptionDTO);
+        VotingDTO savedVotingDTO = votingService.createVotingOption(votingDTO);
         return ResponseEntity
-            .created(new URI("/api/voting_option/" + savedVotingOptionDTO.getId()))
-            .headers(HeaderUtil.createAlert(applicationName, "votingOptionManagement.created", savedVotingOptionDTO.getVotingText()))
-            .body(savedVotingOptionDTO);
+            .created(new URI("/api/voting/" + savedVotingDTO.getId()))
+            .headers(HeaderUtil.createAlert(applicationName, "votingOptionManagement.created", savedVotingDTO.getVotingText()))
+            .body(savedVotingDTO);
     }
 
     /**
@@ -93,9 +92,9 @@ public class VotingOptionResource {
     @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get votingOption", notes = "This method to get one votingOption by ID")
-    public ResponseEntity<VotingOptionDTO> getVotingOption(@PathVariable Long id) {
+    public ResponseEntity<VotingDTO> getVotingOption(@PathVariable Long id) {
         log.debug("REST request to get VotingOption : {}", id);
-        return ResponseUtil.wrapOrNotFound(votingOptionService.getVotingOption(id).map(VotingOptionDTO::new));
+        return ResponseUtil.wrapOrNotFound(votingService.getVotingOption(id).map(VotingDTO::new));
     }
 
     /**
@@ -107,14 +106,14 @@ public class VotingOptionResource {
     @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get votingOptions", notes = "This method to get all votingOptions in pageable")
-    public ResponseEntity<List<VotingOptionDTO>> getAllVotingOptions(Pageable pageable) {
+    public ResponseEntity<List<VotingDTO>> getAllVotingOptions(Pageable pageable) {
         log.debug("REST request to get all VotingOptions");
 
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
 
-        final Page<VotingOptionDTO> page = votingOptionService.getAllVotingOptions(pageable);
+        final Page<VotingDTO> page = votingService.getAllVotingOptions(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -130,33 +129,33 @@ public class VotingOptionResource {
     /**
      * {@code PUT /voting_option} : Updates an existing votingOptions.
      *
-     * @param votingOptionDTO the votingOptions to update.
+     * @param votingDTO the votingOptions to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated votingOptions.
      * @throws VotinOptionTextAlreadyUsedException {@code 400 (Bad Request)} if the votingText is already use in this agenda.
      */
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update votingOption", notes = "This method to update votingOption fields")
-    public ResponseEntity<VotingOptionDTO> updateVotingOption(@Valid @RequestBody VotingOptionDTO votingOptionDTO) {
-        log.debug("REST request to update VotingOption : {}", votingOptionDTO);
+    public ResponseEntity<VotingDTO> updateVotingOption(@Valid @RequestBody VotingDTO votingDTO) {
+        log.debug("REST request to update VotingOption : {}", votingDTO);
 
         votingOptionRepository
-            .findOneByVotingTextAndAgendaId(votingOptionDTO.getVotingText(), votingOptionDTO.getMeetingId())
+            .findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingDTO.getMeetingId())
             .ifPresent(
                 votingOption -> {
-                    if (!votingOption.getId().equals(votingOptionDTO.getId())) {
+                    if (!votingOption.getId().equals(votingDTO.getId())) {
                         if (
-                            Objects.equals(votingOptionDTO.getVotingText(), votingOption.getVotingText())
+                            Objects.equals(votingDTO.getVotingText(), votingOption.getVotingText())
                         ) throw new VotinOptionTextAlreadyUsedException();
                     }
                 }
             );
 
-        Optional<VotingOptionDTO> updatedVotingOptionDTO = votingOptionService.updateVotingOption(votingOptionDTO);
+        Optional<VotingDTO> updatedVotingOptionDTO = votingService.updateVotingOption(votingDTO);
 
         return ResponseUtil.wrapOrNotFound(
             updatedVotingOptionDTO,
-            HeaderUtil.createAlert(applicationName, "votingOptionManagement.edited", votingOptionDTO.getVotingText())
+            HeaderUtil.createAlert(applicationName, "votingOptionManagement.edited", votingDTO.getVotingText())
         );
     }
 
@@ -171,7 +170,7 @@ public class VotingOptionResource {
     public ResponseEntity<Void> deleteVotingOption(@PathVariable Long id) {
         log.debug("REST request to delete VotingOption: {}", id);
 
-        votingOptionService.deleteVotingOption(id);
+        votingService.deleteVotingOption(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createAlert(applicationName, "votingOptionManagement.deleted", id.toString()))

@@ -1,29 +1,35 @@
 package uz.depos.app.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.VotingOption;
-import uz.depos.app.domain.enums.VotingOptionTypeEnum;
+import uz.depos.app.service.view.View;
 
 /**
  * A DTO representing a voting-option, with only the public attributes.
  */
-public class VotingOptionDTO {
+public class VotingDTO {
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long id;
 
+    @NotNull(message = "Voting text must not be null.")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private String votingText;
 
-    private VotingOptionTypeEnum optionTypeEnum;
-
+    @NotNull(message = "Meeting ID must not be null.")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long meetingId;
 
+    @NotNull(message = "Agenda ID must not be null.")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long agendaId;
 
-    public VotingOptionDTO() {}
+    public VotingDTO() {}
 
-    public VotingOptionDTO(VotingOption votingOption) {
+    public VotingDTO(VotingOption votingOption) {
         this.id = votingOption.getId();
         this.votingText = votingOption.getVotingText();
-        this.optionTypeEnum = votingOption.getOptionTypeEnum();
         this.meetingId = votingOption.getMeeting().getId();
         this.agendaId = votingOption.getAgenda().getId();
     }
@@ -42,14 +48,6 @@ public class VotingOptionDTO {
 
     public void setVotingText(String votingText) {
         this.votingText = votingText;
-    }
-
-    public VotingOptionTypeEnum getOptionTypeEnum() {
-        return optionTypeEnum;
-    }
-
-    public void setOptionTypeEnum(VotingOptionTypeEnum optionTypeEnum) {
-        this.optionTypeEnum = optionTypeEnum;
     }
 
     public Long getMeetingId() {
@@ -77,8 +75,6 @@ public class VotingOptionDTO {
             ", votingText='" +
             votingText +
             '\'' +
-            ", optionTypeEnum=" +
-            optionTypeEnum +
             ", meetingId=" +
             meetingId +
             ", agendaId=" +

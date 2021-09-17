@@ -2,12 +2,10 @@ package uz.depos.app.domain;
 
 import javax.persistence.*;
 import lombok.*;
-import uz.depos.app.domain.enums.VotingOptionTypeEnum;
 
 /**
  * Варианты решения для голосования
  */
-
 @EqualsAndHashCode(callSuper = true)
 @Entity
 public class VotingOption extends AbstractAuditingEntity {
@@ -21,9 +19,6 @@ public class VotingOption extends AbstractAuditingEntity {
     @Column(nullable = false, name = "voting_text")
     private String votingText;
 
-    @Enumerated(EnumType.STRING)
-    private VotingOptionTypeEnum optionTypeEnum;
-
     // Привязка к заседанию "meetingID"
     @ManyToOne(optional = false)
     private Meeting meeting;
@@ -34,10 +29,9 @@ public class VotingOption extends AbstractAuditingEntity {
 
     public VotingOption() {}
 
-    public VotingOption(Long id, String votingText, VotingOptionTypeEnum optionTypeEnum, Meeting meeting, Agenda agenda) {
+    public VotingOption(Long id, String votingText, Meeting meeting, Agenda agenda) {
         this.id = id;
         this.votingText = votingText;
-        this.optionTypeEnum = optionTypeEnum;
         this.meeting = meeting;
         this.agenda = agenda;
     }
@@ -58,14 +52,6 @@ public class VotingOption extends AbstractAuditingEntity {
         this.votingText = votingText;
     }
 
-    public VotingOptionTypeEnum getOptionTypeEnum() {
-        return optionTypeEnum;
-    }
-
-    public void setOptionTypeEnum(VotingOptionTypeEnum optionTypeEnum) {
-        this.optionTypeEnum = optionTypeEnum;
-    }
-
     public Meeting getMeeting() {
         return meeting;
     }
@@ -84,20 +70,6 @@ public class VotingOption extends AbstractAuditingEntity {
 
     @Override
     public String toString() {
-        return (
-            "VotingOption{" +
-            "id=" +
-            id +
-            ", votingText='" +
-            votingText +
-            '\'' +
-            ", optionTypeEnum=" +
-            optionTypeEnum +
-            ", meeting=" +
-            meeting +
-            ", agenda=" +
-            agenda +
-            '}'
-        );
+        return "VotingOption{" + "id=" + id + ", votingText='" + votingText + '\'' + ", meeting=" + meeting + ", agenda=" + agenda + '}';
     }
 }

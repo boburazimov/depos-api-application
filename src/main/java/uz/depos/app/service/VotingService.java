@@ -12,7 +12,7 @@ import uz.depos.app.domain.VotingOption;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.VotingOptionRepository;
-import uz.depos.app.service.dto.VotingOptionDTO;
+import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 
 /**
@@ -20,16 +20,16 @@ import uz.depos.app.service.mapper.AgendaAndVotingMapper;
  */
 @Service
 @Transactional
-public class VotingOptionService {
+public class VotingService {
 
-    private final Logger log = LoggerFactory.getLogger(VotingOptionService.class);
+    private final Logger log = LoggerFactory.getLogger(VotingService.class);
 
     private final MeetingRepository meetingRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaAndVotingMapper agendaAndVotingMapper;
     private final VotingOptionRepository votingOptionRepository;
 
-    public VotingOptionService(
+    public VotingService(
         MeetingRepository meetingRepository,
         AgendaRepository agendaRepository,
         AgendaAndVotingMapper agendaAndVotingMapper,
@@ -44,19 +44,14 @@ public class VotingOptionService {
     /**
      * Create new votingOption, and return it.
      *
-     * @param votingOptionDTO votingOption to create.
+     * @param votingDTO votingOption to create.
      * @return created votingOption.
      */
-    public VotingOptionDTO createVotingOption(VotingOptionDTO votingOptionDTO) {
+    public VotingDTO createVotingOption(VotingDTO votingDTO) {
         VotingOption votingOption = new VotingOption();
-        if (StringUtils.isNoneBlank(votingOptionDTO.getVotingText())) votingOption.setVotingText(votingOptionDTO.getVotingText());
-        votingOption.setOptionTypeEnum(votingOptionDTO.getOptionTypeEnum());
-        if (votingOptionDTO.getMeetingId() != null) meetingRepository
-            .findById(votingOptionDTO.getMeetingId())
-            .ifPresent(votingOption::setMeeting);
-        if (votingOptionDTO.getAgendaId() != null) agendaRepository
-            .findById(votingOptionDTO.getAgendaId())
-            .ifPresent(votingOption::setAgenda);
+        if (StringUtils.isNoneBlank(votingDTO.getVotingText())) votingOption.setVotingText(votingDTO.getVotingText());
+        if (votingDTO.getMeetingId() != null) meetingRepository.findById(votingDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
+        if (votingDTO.getAgendaId() != null) agendaRepository.findById(votingDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
         VotingOption savedVotingOption = votingOptionRepository.saveAndFlush(votingOption);
         log.debug("Created Information for VotingOption: {}", savedVotingOption);
         return agendaAndVotingMapper.votingOptionToVotingOptionDTO(savedVotingOption);
@@ -80,33 +75,32 @@ public class VotingOptionService {
      * @return get votingOptions.
      */
     @Transactional(readOnly = true)
-    public Page<VotingOptionDTO> getAllVotingOptions(Pageable pageable) {
-        return votingOptionRepository.findAll(pageable).map(VotingOptionDTO::new);
+    public Page<VotingDTO> getAllVotingOptions(Pageable pageable) {
+        return votingOptionRepository.findAll(pageable).map(VotingDTO::new);
     }
 
     /**
      * Edit all information for a specific votingOption, and return the modified votingOption.
      *
-     * @param votingOptionDTO votingOption to edit.
+     * @param votingDTO votingOption to edit.
      * @return edited votingOption.
      */
-    public Optional<VotingOptionDTO> updateVotingOption(VotingOptionDTO votingOptionDTO) {
+    public Optional<VotingDTO> updateVotingOption(VotingDTO votingDTO) {
         return Optional
-            .of(votingOptionRepository.findById(votingOptionDTO.getId()))
+            .of(votingOptionRepository.findById(votingDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(
                 votingOption -> {
-                    votingOption.setVotingText(votingOptionDTO.getVotingText());
-                    votingOption.setOptionTypeEnum(votingOptionDTO.getOptionTypeEnum());
-                    meetingRepository.findById(votingOptionDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
-                    agendaRepository.findById(votingOptionDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
+                    votingOption.setVotingText(votingDTO.getVotingText());
+                    meetingRepository.findById(votingDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
+                    agendaRepository.findById(votingDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
                     VotingOption savedVotingOption = votingOptionRepository.saveAndFlush(votingOption);
                     log.debug("Changed Information for VotingOption: {}", savedVotingOption);
                     return savedVotingOption;
                 }
             )
-            .map(VotingOptionDTO::new);
+            .map(VotingDTO::new);
     }
 
     /**

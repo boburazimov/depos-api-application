@@ -27,7 +27,7 @@ public class BallotService {
     private final MemberService memberService;
     private final MeetingService meetingService;
     private final AgendaService agendaService;
-    private final VotingOptionService votingOptionService;
+    private final VotingService votingService;
 
     public BallotService(
         BallotRepository ballotRepository,
@@ -35,14 +35,14 @@ public class BallotService {
         MemberService memberService,
         MeetingService meetingService,
         AgendaService agendaService,
-        VotingOptionService votingOptionService
+        VotingService votingService
     ) {
         this.ballotRepository = ballotRepository;
         this.agendaAndVotingMapper = agendaAndVotingMapper;
         this.memberService = memberService;
         this.meetingService = meetingService;
         this.agendaService = agendaService;
-        this.votingOptionService = votingOptionService;
+        this.votingService = votingService;
     }
 
     /**
@@ -57,7 +57,7 @@ public class BallotService {
         memberService.getMember(ballotDTO.getMemberId()).ifPresent(ballot::setMember);
         meetingService.getMeeting(ballotDTO.getMeetingId()).ifPresent(ballot::setMeeting);
         agendaService.getAgenda(ballotDTO.getAgendaId()).ifPresent(ballot::setAgenda);
-        votingOptionService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
+        votingService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
         if (StringUtils.isNoneBlank(ballotDTO.getOptions().toString())) ballot.setOptions(ballotDTO.getOptions());
 
         Ballot savedBallot = ballotRepository.saveAndFlush(ballot);
@@ -103,7 +103,7 @@ public class BallotService {
                     memberService.getMember(ballotDTO.getMemberId()).ifPresent(ballot::setMember);
                     meetingService.getMeeting(ballotDTO.getMeetingId()).ifPresent(ballot::setMeeting);
                     agendaService.getAgenda(ballotDTO.getAgendaId()).ifPresent(ballot::setAgenda);
-                    votingOptionService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
+                    votingService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
                     if (StringUtils.isNoneBlank(ballotDTO.getOptions().toString())) ballot.setOptions(ballotDTO.getOptions());
                     Ballot savedBallot = ballotRepository.saveAndFlush(ballot);
                     log.debug("Changed Information for Ballot: {}", savedBallot);
