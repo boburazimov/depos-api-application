@@ -29,6 +29,8 @@ eureka:
       defaultZone: http://admin:${jhipster.registry.password}@localhost:8761/eureka/
 
 spring:
+  #  profiles:
+  #    active: dev
   devtools:
     restart:
       enabled: true
@@ -60,10 +62,16 @@ spring:
     # Remove 'faker' if you do not want the sample data to be loaded automatically
     contexts: dev, faker
   mail:
-    host: localhost
-    port: 25
-    username:
-    password:
+    host: smtp.gmail.com # localhost
+    port: 587 # 25
+    username: azimov.b2020@gmail.com
+    password: 7540809Bb
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
   messages:
     cache-duration: PT1S # 1 second, see the ISO 8601 standard
   thymeleaf:
