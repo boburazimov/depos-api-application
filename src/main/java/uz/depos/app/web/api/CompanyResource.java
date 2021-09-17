@@ -2,6 +2,7 @@ package uz.depos.app.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.undertow.util.BadRequestException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -175,7 +176,7 @@ public class CompanyResource {
 
     @DeleteMapping("/{id}")
     @ApiOperation(value = "Delete company", notes = "This method to delete one of company by ID")
-    public HttpEntity<ApiResponse> deleteCompany(@PathVariable Long id) {
+    public HttpEntity<ApiResponse> deleteCompany(@PathVariable Long id) throws BadRequestException {
         log.debug("REST request to delete Company : {}", id);
         ApiResponse response = companyService.deleteCompany(id);
         return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
