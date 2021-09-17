@@ -2,6 +2,7 @@ package uz.depos.app.service;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 
+import io.undertow.util.BadRequestException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.CompanyMapper;
+import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
  * Service class for managing company.
@@ -285,8 +287,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public ApiResponse deleteCompany(Long id) {
+    public ApiResponse deleteCompany(Long id) throws BadRequestException {
         Company company = companyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("getCompany"));
+        if (meetingRepository.findFirstByCompanyId(id).isPresent()) {
+            throw new BadRequestException("By this company already has created meeting!");
+        } else if (memberRepository.findFirstByCompanyId(id).isPresent()) {
+            throw new BadRequestException("By this company already has created member!");
+        }
         try {
             companyRepository.delete(company);
             log.debug("Deleted Information for Company by ID: {}", id);

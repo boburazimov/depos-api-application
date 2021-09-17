@@ -1,5 +1,6 @@
 package uz.depos.app.service;
 
+import io.undertow.util.BadRequestException;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -17,7 +18,7 @@ public interface CompanyService {
 
     Optional<CompanyDTO> updateCompany(CompanyDTO companyDTO);
 
-    ApiResponse deleteCompany(Long id);
+    ApiResponse deleteCompany(Long id) throws BadRequestException;
 
     @Transactional(readOnly = true)
     Optional<Company> getCompanyById(Long id);

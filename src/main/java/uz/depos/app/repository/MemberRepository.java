@@ -16,13 +16,15 @@ import uz.depos.app.domain.Member;
 public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findOneById(Long id);
 
-    Optional<Member> findByUserAuthoritiesContainsAndMeetingId(Authority authority, Long meeting_id);
+    Optional<Member> findByUserAuthoritiesContainsAndMeetingId(Authority authority, Long meetingId);
 
-    Optional<Member> findOneByUserId(Long user_id);
+    Optional<Member> findOneByUserId(Long userId);
 
     Page<Member> findAllByIdNotNullAndMeetingIdNotNull(Pageable pageable);
 
-    Optional<List<Member>> findAllByMeetingIdAndFromReestrTrue(Long meeting_id);
+    Optional<List<Member>> findAllByMeetingIdAndFromReestrTrue(Long meetingId);
 
-    void deleteAllByMeetingIdAndFromReestrTrue(Long meeting_id);
+    void deleteAllByMeetingIdAndFromReestrTrue(Long meetingId);
+
+    Optional<Member> findFirstByCompanyId(Long companyId);
 }

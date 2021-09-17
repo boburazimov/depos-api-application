@@ -23,4 +23,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
         nativeQuery = true
     )
     List<Meeting> findMeetingsByUser(@Param("user_id") Long userId, @Param("company_id") Long companyId);
+
+    Optional<Meeting> findFirstByCompanyId(Long companyId);
 }
