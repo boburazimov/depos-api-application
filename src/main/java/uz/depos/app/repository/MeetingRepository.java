@@ -3,6 +3,9 @@ package uz.depos.app.repository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.LongStream;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,4 +28,6 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     List<Meeting> findMeetingsByUser(@Param("user_id") Long userId, @Param("company_id") Long companyId);
 
     Optional<Meeting> findFirstByCompanyId(Long companyId);
+
+    Page<Meeting> findAllByCompanyId(Long companyId, Pageable pageable);
 }

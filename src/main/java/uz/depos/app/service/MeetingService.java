@@ -182,4 +182,9 @@ public class MeetingService {
             return meetingRepository.findAll(Example.of(meeting, matcher), pageable).map(MeetingDTO::new);
         }
     }
+
+    @Transactional(readOnly = true)
+    public Page<MeetingDTO> getMeetingsByCompany(Long companyId, Pageable pageable) {
+        return meetingRepository.findAllByCompanyId(companyId, pageable).map(MeetingDTO::new);
+    }
 }

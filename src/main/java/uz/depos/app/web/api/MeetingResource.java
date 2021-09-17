@@ -28,7 +28,9 @@ import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MeetingService;
+import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
+import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
 
@@ -184,6 +186,24 @@ public class MeetingResource {
         log.debug("REST request to filter Meetings field : {}", field);
 
         final Page<MeetingDTO> page = meetingService.filterMeeting(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /meetings} : get meetings by the company with all the details.
+     *
+     * @param companyId the company ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meetings by the company.
+     */
+    @GetMapping("/by-company")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get meetings by company", notes = "This method to get meetings by company ID")
+    public ResponseEntity<List<MeetingDTO>> getMeetingsByCompany(@RequestParam Long companyId, Pageable pageable) {
+        log.debug("REST request to get meetings by company ID: " + companyId);
+
+        final Page<MeetingDTO> page = meetingService.getMeetingsByCompany(companyId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

@@ -125,7 +125,7 @@ public class VotingResource {
     /**
      * {@code GET /votings} : get votings by the meeting with all the details.
      *
-     * @param meetingId the member ID for search by him.
+     * @param meetingId the meeting ID for search by him.
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all votings by the meeting.
      */
