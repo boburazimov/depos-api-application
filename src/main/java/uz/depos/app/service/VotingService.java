@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.VotingOption;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
-import uz.depos.app.repository.VotingOptionRepository;
+import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 
@@ -27,18 +27,18 @@ public class VotingService {
     private final MeetingRepository meetingRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaAndVotingMapper agendaAndVotingMapper;
-    private final VotingOptionRepository votingOptionRepository;
+    private final VotingRepository votingRepository;
 
     public VotingService(
         MeetingRepository meetingRepository,
         AgendaRepository agendaRepository,
         AgendaAndVotingMapper agendaAndVotingMapper,
-        VotingOptionRepository votingOptionRepository
+        VotingRepository votingRepository
     ) {
         this.meetingRepository = meetingRepository;
         this.agendaRepository = agendaRepository;
         this.agendaAndVotingMapper = agendaAndVotingMapper;
-        this.votingOptionRepository = votingOptionRepository;
+        this.votingRepository = votingRepository;
     }
 
     /**
@@ -52,7 +52,7 @@ public class VotingService {
         if (StringUtils.isNoneBlank(votingDTO.getVotingText())) votingOption.setVotingText(votingDTO.getVotingText());
         if (votingDTO.getMeetingId() != null) meetingRepository.findById(votingDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
         if (votingDTO.getAgendaId() != null) agendaRepository.findById(votingDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
-        VotingOption savedVotingOption = votingOptionRepository.saveAndFlush(votingOption);
+        VotingOption savedVotingOption = votingRepository.saveAndFlush(votingOption);
         log.debug("Created Information for VotingOption: {}", savedVotingOption);
         return agendaAndVotingMapper.votingOptionToVotingOptionDTO(savedVotingOption);
     }
@@ -65,7 +65,7 @@ public class VotingService {
      */
     @Transactional(readOnly = true)
     public Optional<VotingOption> getVotingOption(Long id) {
-        return votingOptionRepository.findById(id);
+        return votingRepository.findById(id);
     }
 
     /**
@@ -76,7 +76,7 @@ public class VotingService {
      */
     @Transactional(readOnly = true)
     public Page<VotingDTO> getAllVotingOptions(Pageable pageable) {
-        return votingOptionRepository.findAll(pageable).map(VotingDTO::new);
+        return votingRepository.findAll(pageable).map(VotingDTO::new);
     }
 
     /**
@@ -87,7 +87,7 @@ public class VotingService {
      */
     public Optional<VotingDTO> updateVotingOption(VotingDTO votingDTO) {
         return Optional
-            .of(votingOptionRepository.findById(votingDTO.getId()))
+            .of(votingRepository.findById(votingDTO.getId()))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .map(
@@ -95,7 +95,7 @@ public class VotingService {
                     votingOption.setVotingText(votingDTO.getVotingText());
                     meetingRepository.findById(votingDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
                     agendaRepository.findById(votingDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
-                    VotingOption savedVotingOption = votingOptionRepository.saveAndFlush(votingOption);
+                    VotingOption savedVotingOption = votingRepository.saveAndFlush(votingOption);
                     log.debug("Changed Information for VotingOption: {}", savedVotingOption);
                     return savedVotingOption;
                 }
@@ -109,11 +109,21 @@ public class VotingService {
      * @param id the id VotingOption
      */
     public void deleteVotingOption(Long id) {
-        votingOptionRepository.findById(id).ifPresent(this::accept);
+        votingRepository.findById(id).ifPresent(this::accept);
     }
 
     private void accept(VotingOption votingOption) {
-        votingOptionRepository.delete(votingOption);
+        votingRepository.delete(votingOption);
         log.debug("Deleted Agenda: {}", votingOption);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<VotingDTO> getVotingsByMeeting(Long meetingId, Pageable pageable) {
+        return votingRepository.findAllByMeetingId(meetingId, pageable).map(VotingDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<VotingDTO> getVotingsByAgenda(Long agendaId, Pageable pageable) {
+        return votingRepository.findAllByAgendaId(agendaId, pageable).map(VotingDTO::new);
     }
 }

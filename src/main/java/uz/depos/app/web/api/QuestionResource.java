@@ -130,7 +130,7 @@ public class QuestionResource {
      */
     @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get question", notes = "This method get one question")
+    @ApiOperation(value = "Get one question", notes = "This method get one question")
     public ResponseEntity<QuestionDTO> getQuestion(@PathVariable Long id) {
         log.debug("REST request to get Question : {}", id);
         return ResponseUtil.wrapOrNotFound(questionService.getQuestion(id).map(QuestionDTO::new));
@@ -144,7 +144,7 @@ public class QuestionResource {
      */
     @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get question", notes = "This method get all questions by Meeting")
+    @ApiOperation(value = "Get questions by meeting", notes = "This method get all questions by Meeting")
     public ResponseEntity<List<QuestionDTO>> getAllQuestionsByMeeting(@RequestParam Long meetingId, Pageable pageable) {
         log.debug("REST request to get all Questions by Meeting ID: " + meetingId);
 

@@ -49,7 +49,7 @@ public class BallotResource {
     final MeetingRepository meetingRepository;
     final MemberRepository memberRepository;
     final AgendaRepository agendaRepository;
-    final VotingOptionRepository votingOptionRepository;
+    final VotingRepository votingRepository;
     final BallotService ballotService;
 
     public BallotResource(
@@ -57,14 +57,14 @@ public class BallotResource {
         MeetingRepository meetingRepository,
         MemberRepository memberRepository,
         AgendaRepository agendaRepository,
-        VotingOptionRepository votingOptionRepository,
+        VotingRepository votingRepository,
         BallotService ballotService
     ) {
         this.ballotRepository = ballotRepository;
         this.meetingRepository = meetingRepository;
         this.memberRepository = memberRepository;
         this.agendaRepository = agendaRepository;
-        this.votingOptionRepository = votingOptionRepository;
+        this.votingRepository = votingRepository;
         this.ballotService = ballotService;
     }
 
@@ -101,7 +101,7 @@ public class BallotResource {
             throw new ResourceNotFoundException("Member not found by ID: " + ballotDTO.getMemberId());
         } else if (!agendaRepository.existsById(ballotDTO.getAgendaId())) {
             throw new ResourceNotFoundException("Agenda not found by ID: " + ballotDTO.getAgendaId());
-        } else if (!votingOptionRepository.existsById(ballotDTO.getVotingOptionId())) {
+        } else if (!votingRepository.existsById(ballotDTO.getVotingOptionId())) {
             throw new ResourceNotFoundException("Voting-option not found by ID: " + ballotDTO.getVotingOptionId());
         }
 

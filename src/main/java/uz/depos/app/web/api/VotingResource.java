@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
@@ -20,16 +21,18 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import uz.depos.app.repository.VotingOptionRepository;
+import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.VotingService;
+import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.VotinOptionTextAlreadyUsedException;
 
 @RestController
 @RequestMapping("/api/voting")
-@Api(tags = "Voting-option")
-public class VotingOptionResource {
+@Api(tags = "Voting")
+public class VotingResource {
 
     private static final List<String> ALLOWED_ORDERED_PROPERTIES = Collections.unmodifiableList(
         Arrays.asList("id", "votingText", "optionTypeEnum", "meetingId", "agendaId")
@@ -38,35 +41,36 @@ public class VotingOptionResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
-    private final Logger log = LoggerFactory.getLogger(VotingOptionResource.class);
+    private final Logger log = LoggerFactory.getLogger(VotingResource.class);
 
-    final VotingOptionRepository votingOptionRepository;
+    final VotingRepository votingRepository;
     final VotingService votingService;
 
-    public VotingOptionResource(VotingOptionRepository votingOptionRepository, VotingService votingService) {
-        this.votingOptionRepository = votingOptionRepository;
+    public VotingResource(VotingRepository votingRepository, VotingService votingService) {
+        this.votingRepository = votingRepository;
         this.votingService = votingService;
     }
 
     /**
-     * {@code POST  /voting_option} : register the VotingOption.
+     * {@code POST  /voting} : register the VotingOption.
      *
      * @param votingDTO the managed agenda View Model.
-     * @return VotingOptionDTO with status {@code 201 (Created)}
+     * @return VotingDTO with status {@code 201 (Created)}
      * @throws BadRequestAlertException {@code 400 (Bad Request)} if the id is already used.
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Create votingOption", notes = "This method creates a new votingOption")
-    public ResponseEntity<VotingDTO> createVotingOption(@Valid @RequestBody VotingDTO votingDTO) throws URISyntaxException {
+    @ApiOperation(value = "Create voting", notes = "This method creates a new votingOption")
+    public ResponseEntity<VotingDTO> createVoting(@Valid @RequestBody @JsonView(value = View.ModelView.Post.class) VotingDTO votingDTO)
+        throws URISyntaxException {
         log.debug("REST request to create VotingOption : {}", votingDTO);
 
         if (votingDTO.getId() != null && votingDTO.getId() > 0) {
             throw new BadRequestAlertException("A new votingOption cannot already have an ID", "votingOptionManagement", "idexists");
         }
 
-        votingOptionRepository
+        votingRepository
             .findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingDTO.getAgendaId())
             .ifPresent(
                 votingOption -> {
@@ -84,29 +88,29 @@ public class VotingOptionResource {
     }
 
     /**
-     * {@code GET /voting_option/:ID} : get the "id" votingOption.
+     * {@code GET /voting/:ID} : get the "id" votingOption.
      *
      * @param id the id of the votingOption to find.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the "ID" votingOption, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get votingOption", notes = "This method to get one votingOption by ID")
-    public ResponseEntity<VotingDTO> getVotingOption(@PathVariable Long id) {
+    @ApiOperation(value = "Get one voting", notes = "This method to get one votingOption by ID")
+    public ResponseEntity<VotingDTO> getVoting(@PathVariable Long id) {
         log.debug("REST request to get VotingOption : {}", id);
         return ResponseUtil.wrapOrNotFound(votingService.getVotingOption(id).map(VotingDTO::new));
     }
 
     /**
-     * {@code GET /voting_option} : get all votingOptions with all the details.
+     * {@code GET /voting} : get all votingOptions with all the details.
      *
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all votingOptions.
      */
     @GetMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
-    @ApiOperation(value = "Get votingOptions", notes = "This method to get all votingOptions in pageable")
-    public ResponseEntity<List<VotingDTO>> getAllVotingOptions(Pageable pageable) {
+    @ApiOperation(value = "Get all votings", notes = "This method to get all votingOptions in pageable")
+    public ResponseEntity<List<VotingDTO>> getAllVotings(Pageable pageable) {
         log.debug("REST request to get all VotingOptions");
 
         if (!onlyContainsAllowedProperties(pageable)) {
@@ -114,6 +118,50 @@ public class VotingOptionResource {
         }
 
         final Page<VotingDTO> page = votingService.getAllVotingOptions(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /votings} : get votings by the meeting with all the details.
+     *
+     * @param meetingId the member ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all votings by the meeting.
+     */
+    @GetMapping("/by-meeting")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get votings by meeting", notes = "This method to get votings by meeting ID")
+    public ResponseEntity<List<VotingDTO>> getVotingsByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+        log.debug("REST request to get Votings by Meeting ID: " + meetingId);
+
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        final Page<VotingDTO> page = votingService.getVotingsByMeeting(meetingId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code GET /votings} : get votings by the agenda with all the details.
+     *
+     * @param agendaId the member ID for search by him.
+     * @param pageable the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all votings by the agenda.
+     */
+    @GetMapping("/by-agenda")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get votings by agenda", notes = "This method to get votings by agenda ID")
+    public ResponseEntity<List<VotingDTO>> getVotingsByAgenda(@RequestParam Long agendaId, Pageable pageable) {
+        log.debug("REST request to get Votings by Agenda ID: " + agendaId);
+
+        if (!onlyContainsAllowedProperties(pageable)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        final Page<VotingDTO> page = votingService.getVotingsByAgenda(agendaId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -127,7 +175,7 @@ public class VotingOptionResource {
     }
 
     /**
-     * {@code PUT /voting_option} : Updates an existing votingOptions.
+     * {@code PUT /voting} : Updates an existing votingOptions.
      *
      * @param votingDTO the votingOptions to update.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated votingOptions.
@@ -135,11 +183,11 @@ public class VotingOptionResource {
      */
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Update votingOption", notes = "This method to update votingOption fields")
-    public ResponseEntity<VotingDTO> updateVotingOption(@Valid @RequestBody VotingDTO votingDTO) {
-        log.debug("REST request to update VotingOption : {}", votingDTO);
+    @ApiOperation(value = "Update voting", notes = "This method to update votingOption fields")
+    public ResponseEntity<VotingDTO> updateVoting(@Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) VotingDTO votingDTO) {
+        log.debug("REST request to update Voting : {}", votingDTO);
 
-        votingOptionRepository
+        votingRepository
             .findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingDTO.getMeetingId())
             .ifPresent(
                 votingOption -> {
@@ -160,7 +208,7 @@ public class VotingOptionResource {
     }
 
     /**
-     * {@code DELETE /voting_option/:id} : delete the "id" VotingOption.
+     * {@code DELETE /voting/:id} : delete the "id" VotingOption.
      *
      * @param id the id of the VotingOption to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
