@@ -172,7 +172,10 @@ public class FilesStorageService {
             );
     }
 
-    public Resource loadFile(String filename) {
+    public Resource loadFile(Long companyId) {
+        Attachment attachment = attachmentRepository.findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(companyId).orElse(null);
+        assert attachment != null;
+        String filename = attachment.getFileName();
         try {
             Path file = root.resolve(filename);
             Resource resource = new UrlResource(file.toUri());
