@@ -27,6 +27,8 @@ public class MeetingDTO {
     @NotNull(message = "Company have must be not empty")
     private Long companyId;
 
+    private String companyName;
+
     private Integer cityId;
 
     private String address;
@@ -44,6 +46,7 @@ public class MeetingDTO {
         this.startRegistration = meeting.getStartRegistration();
         this.endRegistration = meeting.getEndRegistration();
         this.companyId = meeting.getCompany().getId();
+        this.companyName = meeting.getCompany().getName();
         this.cityId = meeting.getCity() != null ? meeting.getCity().getId() : null;
         this.address = meeting.getAddress();
         this.description = meeting.getDescription();
@@ -105,6 +108,14 @@ public class MeetingDTO {
         this.companyId = companyId;
     }
 
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
     public Integer getCityId() {
         return cityId;
     }
@@ -147,6 +158,9 @@ public class MeetingDTO {
             endRegistration +
             ", companyId=" +
             companyId +
+            ", companyName='" +
+            companyName +
+            '\'' +
             ", cityId=" +
             cityId +
             ", address='" +
