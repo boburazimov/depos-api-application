@@ -172,7 +172,7 @@ public class FilesStorageService {
             );
     }
 
-    public Resource loadLogo(String filename) {
+    public Resource loadFile(String filename) {
         try {
             Path file = root.resolve(filename);
             Resource resource = new UrlResource(file.toUri());

@@ -90,11 +90,10 @@ public class AttachmentResource {
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
     }
 
-    @GetMapping(value = "/logo/{filename}")
-    @ApiOperation(value = "Get logo", notes = "This method is to get Company logo by filename")
-    //    @ResponseBody
-    public ResponseEntity<Resource> getCompanyLogo(@PathVariable String filename) {
-        Resource file = filesStorageService.loadLogo(filename);
+    @GetMapping(value = "/attach/{filename}")
+    @ApiOperation(value = "Get file", notes = "This method is to get any file by filename")
+    public ResponseEntity<Resource> getFileByName(@PathVariable String filename) {
+        Resource file = filesStorageService.loadFile(filename);
         return ResponseEntity
             .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
