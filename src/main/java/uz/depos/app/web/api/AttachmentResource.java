@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -86,6 +88,17 @@ public class AttachmentResource {
         log.debug("Get Information for Attachments by MeetingID: {}", meetingId);
         List<Attachment> fileInfos = filesStorageService.loadAllByMeetingId(meetingId);
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
+    }
+
+    @GetMapping(value = "/logo/{filename}")
+    @ApiOperation(value = "Get logo", notes = "This method is to get Company logo by filename")
+    //    @ResponseBody
+    public ResponseEntity<Resource> getCompanyLogo(@PathVariable String filename) {
+        Resource file = filesStorageService.loadLogo(filename);
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+            .body(file);
     }
 
     @PostMapping(value = "/upload/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
