@@ -2,6 +2,7 @@ package uz.depos.app.service;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 
+import io.undertow.util.BadRequestException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -23,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import tech.jhipster.security.RandomUtil;
 import uz.depos.app.config.Constants;
 import uz.depos.app.domain.Authority;
-import uz.depos.app.domain.Company;
 import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.UserGroupEnum;
 import uz.depos.app.domain.enums.UserSearchFieldEnum;
@@ -38,6 +38,7 @@ import uz.depos.app.web.rest.errors.InnAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PassportAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PhoneNumberAlreadyUsedException;
 import uz.depos.app.web.rest.errors.PinflAlreadyUsedException;
+import uz.depos.app.web.rest.vm.ManagedUserVM;
 
 /**
  * Service class for managing users.
@@ -138,53 +139,98 @@ public class UserService {
         return login.toString();
     }
 
-    public DeposUserDTO createDeposUser(DeposUserDTO userDTO) {
+    /**
+     * Check password while create new user, and return the TRUE if ok.
+     *
+     * @param password password to check.
+     * @return Boolean true/false.
+     */
+    private static boolean isPasswordLengthInvalid(String password) {
+        return (
+            StringUtils.isEmpty(password) ||
+            password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
+            password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
+        );
+    }
+
+    public DeposUserDTO createDeposUser(DeposUserDTO userDTO) throws BadRequestException {
         // Create new User object
         User newUser = new User();
 
-        // Checking field @Login, @Passport, @PhoneNumber and @INN to already used
-        userRepository
-            .findOneByLogin(userDTO.getLogin().toLowerCase())
-            .ifPresent(
-                user -> {
-                    throw new UsernameAlreadyUsedException();
-                }
-            );
-        //        userRepository
-        //            .findOneByInn(userDTO.getInn())
-        //            .ifPresent(
-        //                user -> {
-        //                    throw new InnAlreadyUsedException();
-        //                }
-        //            );
-        if (userDTO.getPassport() != null) userRepository
-            .findOneByPassport(userDTO.getPassword().toUpperCase())
-            .ifPresent(
-                user -> {
-                    throw new PassportAlreadyUsedException();
-                }
-            );
-        if (userDTO.getPhoneNumber() != null) userRepository
-            .findOneByPhoneNumber(userDTO.getPhoneNumber())
-            .ifPresent(
-                user -> {
-                    throw new PhoneNumberAlreadyUsedException();
-                }
-            );
-        if (userDTO.getPinfl() != null) userRepository
-            .findOneByPinfl(userDTO.getPinfl())
-            .ifPresent(
-                user -> {
-                    throw new PinflAlreadyUsedException();
-                }
-            );
-
-        if (StringUtils.isNoneBlank(userDTO.getLogin())) newUser.setLogin(userDTO.getLogin().toLowerCase());
-
+        // Check - ID.
+        if (userDTO.getId() != null && userDTO.getId() > 0) {
+            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
+        }
+        // Check and set - LOGIN.
+        if (StringUtils.isNotBlank(userDTO.getLogin())) {
+            userRepository
+                .findOneByLogin(userDTO.getLogin().toLowerCase())
+                .ifPresent(
+                    user -> {
+                        throw new UsernameAlreadyUsedException();
+                    }
+                );
+            newUser.setLogin(userDTO.getLogin().toLowerCase());
+        }
+        // Check and set - EMAIL.
+        if (StringUtils.isNotBlank(userDTO.getEmail())) {
+            userRepository
+                .findOneByEmailIgnoreCase(userDTO.getEmail())
+                .ifPresent(
+                    user -> {
+                        throw new uz.depos.app.web.rest.errors.EmailAlreadyUsedException();
+                    }
+                );
+            newUser.setEmail(userDTO.getEmail().toLowerCase());
+        }
+        // Check and set - INN.
+        if (StringUtils.isNotBlank(userDTO.getInn())) {
+            userRepository
+                .findOneByInn(userDTO.getInn())
+                .ifPresent(
+                    user -> {
+                        throw new InnAlreadyUsedException();
+                    }
+                );
+            newUser.setInn(userDTO.getInn());
+        }
+        // Check and set - PASSPORT.
+        if (StringUtils.isNotBlank(userDTO.getPassport())) {
+            userRepository
+                .findOneByPassport(userDTO.getPassport().toUpperCase())
+                .ifPresent(
+                    user -> {
+                        throw new PassportAlreadyUsedException();
+                    }
+                );
+            newUser.setPassport(userDTO.getPassport().toUpperCase());
+        }
+        // Check and set - PHONE NUMBER.
+        if (StringUtils.isNotBlank(userDTO.getPhoneNumber())) {
+            userRepository
+                .findOneByPhoneNumber(userDTO.getPhoneNumber())
+                .ifPresent(
+                    user -> {
+                        throw new PhoneNumberAlreadyUsedException();
+                    }
+                );
+            newUser.setPhoneNumber(userDTO.getPhoneNumber());
+        }
+        // Check and set - PINFL.
+        if (StringUtils.isNotBlank(userDTO.getPinfl())) {
+            userRepository
+                .findOneByPinfl(userDTO.getPinfl())
+                .ifPresent(
+                    user -> {
+                        throw new PinflAlreadyUsedException();
+                    }
+                );
+            newUser.setPinfl(userDTO.getPinfl());
+        }
+        // Check and set - PASSWORD.
+        if (isPasswordLengthInvalid(userDTO.getPassword())) throw new uz.depos.app.web.rest.errors.InvalidPasswordException();
         // Checks and get or generate password if none of the CharSequences are empty (""), null or whitespace only.
-        String password = StringUtils.isNoneBlank(userDTO.getPassword())
-            ? RandomStringUtils.randomAlphanumeric(6) // Generate new random password.
-            : userDTO.getPassword();
+        String password = StringUtils.isNotBlank(userDTO.getPassword()) ? userDTO.getPassword() : RandomStringUtils.randomAlphanumeric(6); // Generate new random password.
 
         // Encode password which to set User table in DB
         String encryptedPassword = passwordEncoder.encode(password);
@@ -196,7 +242,9 @@ public class UserService {
         String saltedPassword = Base64.getEncoder().encodeToString(password.concat(Constants.PASSWORD_KEY).getBytes());
         String decode = Arrays.toString(Base64.getDecoder().decode(saltedPassword));
 
-        newUser.setFullName(userDTO.getFullName());
+        // Check and set - FULL NAME.
+        if (StringUtils.isNotBlank(userDTO.getFullName())) newUser.setFullName(userDTO.getFullName());
+
         newUser.setActivated(userDTO.isActivated());
         // new user gets registration key
         newUser.setActivationKey(RandomUtil.generateActivationKey());
@@ -217,14 +265,9 @@ public class UserService {
             authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
         }
         newUser.setAuthorities(authorities);
-        if (StringUtils.isNoneBlank(userDTO.getEmail())) newUser.setEmail(userDTO.getEmail().toLowerCase());
-        if (StringUtils.isNoneBlank(userDTO.getPassport())) newUser.setPassport(userDTO.getPassport().toUpperCase());
-        if (StringUtils.isNoneBlank(userDTO.getPinfl())) newUser.setPinfl(userDTO.getPinfl());
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
         newUser.setResident(userDTO.isResident());
-        if (userDTO.getInn() != null) newUser.setInn(userDTO.getInn());
-        if (userDTO.getPhoneNumber() != null) newUser.setPhoneNumber(userDTO.getPhoneNumber());
         User savedUser = userRepository.save(newUser);
         DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
         deposUserDTO.setPassword(saltedPassword);

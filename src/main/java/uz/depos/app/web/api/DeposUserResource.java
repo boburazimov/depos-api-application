@@ -3,6 +3,7 @@ package uz.depos.app.web.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.undertow.util.BadRequestException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -10,9 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
-import javax.validation.constraints.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.Length;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,24 +21,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import uz.depos.app.config.Constants;
 import uz.depos.app.domain.User;
-import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.domain.enums.UserSearchFieldEnum;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.UsernameAlreadyUsedException;
-import uz.depos.app.service.dto.*;
+import uz.depos.app.service.dto.ApiResponse;
+import uz.depos.app.service.dto.DeposUserDTO;
+import uz.depos.app.service.dto.DeposUserNameDTO;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
-import uz.depos.app.web.rest.vm.ManagedUserVM;
 
 @RestController
 @RequestMapping("/api/moder/user")
@@ -94,50 +91,24 @@ public class DeposUserResource {
      * {@code POST  /moder/create} : register the Depositary user.
      *
      * @param deposUserDTO the managed user View Model.
+     * @return DeposUserDTO with status {@code 201 (Created)}
      * @throws InvalidPasswordException     {@code 400 (Bad Request)} if the password is incorrect.
      * @throws EmailAlreadyUsedException    {@code 400 (Bad Request)} if the email is already used.
      * @throws UsernameAlreadyUsedException {@code 400 (Bad Request)} if the login is already used.
-     * @return DeposUserDTO with status {@code 201 (Created)}
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Create user", notes = "This method creates a new user")
-    public ResponseEntity<DeposUserDTO> createUser(@Valid @RequestBody DeposUserDTO deposUserDTO) throws URISyntaxException {
+    public ResponseEntity<DeposUserDTO> createUser(@Valid @RequestBody DeposUserDTO deposUserDTO)
+        throws URISyntaxException, BadRequestException {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
-        if (deposUserDTO.getId() != null && deposUserDTO.getId() > 0) {
-            throw new BadRequestAlertException("A new user cannot already have an ID", "userManagement", "idexists");
-            // Lowercase the user login before comparing with database
-        } else if (userRepository.findOneByLogin(deposUserDTO.getLogin().toLowerCase()).isPresent()) {
-            throw new UsernameAlreadyUsedException();
-        } else if (
-            StringUtils.isNotEmpty(deposUserDTO.getEmail()) && userRepository.findOneByEmailIgnoreCase(deposUserDTO.getEmail()).isPresent()
-        ) {
-            throw new EmailAlreadyUsedException();
-        } else if (isPasswordLengthInvalid(deposUserDTO.getPassword())) {
-            throw new InvalidPasswordException();
-        } else {
-            DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
-            return ResponseEntity
-                .created(new URI("/api/moder/users/" + deposUser.getLogin()))
-                .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", deposUser.getLogin()))
-                .body(deposUser);
-        }
-    }
-
-    /**
-     * Check password while create new user, and return the TRUE if ok.
-     *
-     * @param password password to check.
-     * @return Boolean true/false.
-     */
-    private static boolean isPasswordLengthInvalid(String password) {
-        return (
-            StringUtils.isEmpty(password) ||
-            password.length() < ManagedUserVM.PASSWORD_MIN_LENGTH ||
-            password.length() > ManagedUserVM.PASSWORD_MAX_LENGTH
-        );
+        DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
+        return ResponseEntity
+            .created(new URI("/api/moder/users/" + deposUser.getLogin()))
+            .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", deposUser.getLogin()))
+            .body(deposUser);
     }
 
     /**
@@ -289,7 +260,7 @@ public class DeposUserResource {
      * Filters for header table User.
      *
      * @param field    - Column in the table (entity).
-     * @param value     - fragment of word to search by him.
+     * @param value    - fragment of word to search by him.
      * @param pageable - params for pageable.
      * @return - List of DeposUserDTO.
      */
