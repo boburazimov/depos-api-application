@@ -121,7 +121,7 @@ public class AccountResource {
         if (existingUser.isPresent() && (!existingUser.get().getLogin().equalsIgnoreCase(userLogin))) {
             throw new EmailAlreadyUsedException();
         }
-        Optional<User> user = userRepository.findOneByLogin(userLogin);
+        Optional<User> user = userRepository.findOneByLoginIgnoreCase(userLogin);
         if (!user.isPresent()) {
             throw new AccountResourceException("User could not be found");
         }

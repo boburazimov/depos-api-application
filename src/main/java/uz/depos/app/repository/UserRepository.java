@@ -31,11 +31,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findOneByEmailIgnoreCase(String email);
 
-    Optional<User> findOneByLogin(String login);
+    Optional<User> findOneByLoginIgnoreCase(String login);
 
     Optional<User> findOneByInn(String inn);
 
-    Optional<User> findOneByPassport(String passport);
+    Optional<User> findOneByPassportIgnoreCase(String passport);
 
     Optional<User> findOneByPinfl(String pinfl);
 

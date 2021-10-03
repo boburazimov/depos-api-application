@@ -129,7 +129,7 @@ public class UserService {
         login.insert(0, bitWord);
         login.insert(3, pinfl);
         userRepository
-            .findOneByLogin(login.toString().toLowerCase())
+            .findOneByLoginIgnoreCase(login.toString())
             .ifPresent(
                 user -> {
                     throw new UsernameAlreadyUsedException();
@@ -164,7 +164,7 @@ public class UserService {
         // Check and set - LOGIN.
         if (StringUtils.isNotBlank(userDTO.getLogin())) {
             userRepository
-                .findOneByLogin(userDTO.getLogin().toLowerCase())
+                .findOneByLoginIgnoreCase(userDTO.getLogin())
                 .ifPresent(
                     user -> {
                         throw new UsernameAlreadyUsedException();
@@ -197,7 +197,7 @@ public class UserService {
         // Check and set - PASSPORT.
         if (StringUtils.isNotBlank(userDTO.getPassport())) {
             userRepository
-                .findOneByPassport(userDTO.getPassport().toUpperCase())
+                .findOneByPassportIgnoreCase(userDTO.getPassport())
                 .ifPresent(
                     user -> {
                         throw new PassportAlreadyUsedException();
@@ -278,7 +278,7 @@ public class UserService {
 
     public User registerUser(AdminUserDTO userDTO, String password) {
         userRepository
-            .findOneByLogin(userDTO.getLogin().toLowerCase())
+            .findOneByLoginIgnoreCase(userDTO.getLogin())
             .ifPresent(
                 existingUser -> {
                     boolean removed = removeNonActivatedUser(existingUser);
@@ -434,24 +434,33 @@ public class UserService {
                     // Active
                     user.setActivated(userDTO.isActivated());
                     // Authorities
-                    Set<Authority> managedAuthorities = user.getAuthorities();
-                    managedAuthorities.clear();
-                    userDTO
-                        .getAuthorities()
-                        .stream()
-                        .map(authorityRepository::findById)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .forEach(managedAuthorities::add);
+                    if (!userDTO.getAuthorities().isEmpty()) {
+                        Set<Authority> managedAuthorities = user.getAuthorities();
+                        managedAuthorities.clear();
+                        userDTO
+                            .getAuthorities()
+                            .stream()
+                            .map(authorityRepository::findById)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .forEach(managedAuthorities::add);
+                    }
+
                     // FullName
                     if (StringUtils.isNoneBlank(userDTO.getFullName())) user.setFullName(userDTO.getFullName());
                     // Passport
                     if (StringUtils.isNoneBlank(userDTO.getPassport().toUpperCase())) user.setPassport(userDTO.getPassport().toUpperCase());
+                    // Pinfl
                     if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
-                    user.setGroupEnum(userDTO.getGroupEnum());
-                    user.setAuthTypeEnum(userDTO.getAuthTypeEnum());
+                    // GroupEnum
+                    if (userDTO.getGroupEnum() != null) user.setGroupEnum(userDTO.getGroupEnum());
+                    // AuthTypeEnum
+                    if (userDTO.getAuthTypeEnum() != null) user.setAuthTypeEnum(userDTO.getAuthTypeEnum());
+                    // Resident
                     user.setResident(userDTO.isResident());
-                    if (ObjectUtils.isNotEmpty(userDTO.getInn())) user.setInn(userDTO.getInn());
+                    // INN
+                    if (StringUtils.isNotBlank(userDTO.getInn())) user.setInn(userDTO.getInn());
+                    // Phone-number
                     if (StringUtils.isNoneBlank(userDTO.getPhoneNumber())) user.setPhoneNumber(userDTO.getPhoneNumber());
                     this.clearUserCaches(user);
                     log.debug("Changed Information for User: {}", user);
@@ -463,7 +472,7 @@ public class UserService {
 
     public void deleteUser(String login) {
         userRepository
-            .findOneByLogin(login)
+            .findOneByLoginIgnoreCase(login)
             .ifPresent(
                 user -> {
                     userRepository.delete(user);
@@ -502,7 +511,7 @@ public class UserService {
     public void updateUser(String firstName, String lastName, String email, String langKey, String imageUrl) {
         SecurityUtils
             .getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
+            .flatMap(userRepository::findOneByLoginIgnoreCase)
             .ifPresent(
                 user -> {
                     user.setFirstName(firstName);
@@ -522,7 +531,7 @@ public class UserService {
     public void changePassword(String currentClearTextPassword, String newPassword) {
         SecurityUtils
             .getCurrentUserLogin()
-            .flatMap(userRepository::findOneByLogin)
+            .flatMap(userRepository::findOneByLoginIgnoreCase)
             .ifPresent(
                 user -> {
                     String currentEncryptedPassword = user.getPassword();

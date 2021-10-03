@@ -182,46 +182,61 @@ public class DeposUserResource {
     public ResponseEntity<DeposUserDTO> editUser(@Valid @RequestBody DeposUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
 
-        Optional<User> existingByEmail = userRepository.findOneByEmailIgnoreCase(userDTO.getEmail());
-        if (
-            StringUtils.isNotEmpty(userDTO.getEmail()) &&
-            existingByEmail.isPresent() &&
-            (!existingByEmail.get().getId().equals(userDTO.getId()))
-        ) throw new EmailAlreadyUsedException();
-
-        Optional<User> existingByLogin = userRepository.findOneByLogin(userDTO.getLogin().toLowerCase());
-        if (
-            StringUtils.isNotEmpty(userDTO.getLogin()) &&
-            existingByLogin.isPresent() &&
-            (!existingByLogin.get().getId().equals(userDTO.getId()))
-        ) throw new LoginAlreadyUsedException();
-
-        Optional<User> existingByInn = userRepository.findOneByInn(userDTO.getInn());
-        if (
-            StringUtils.isNotEmpty(userDTO.getInn()) && existingByInn.isPresent() && (!existingByInn.get().getId().equals(userDTO.getId()))
-        ) throw new InnAlreadyUsedException();
-
-        Optional<User> existingByPassport = userRepository.findOneByPassport(userDTO.getPassport());
-        if (
-            StringUtils.isNotEmpty(userDTO.getPassport()) &&
-            existingByPassport.isPresent() &&
-            (!existingByPassport.get().getId().equals(userDTO.getId()))
-        ) throw new PassportAlreadyUsedException();
-
-        Optional<User> oneByPinfl = userRepository.findOneByPinfl(userDTO.getPinfl());
-        if (
-            StringUtils.isNotEmpty(userDTO.getPinfl()) && oneByPinfl.isPresent() && (!oneByPinfl.get().getId().equals(userDTO.getId()))
-        ) throw new PinflAlreadyUsedException();
-
-        Optional<User> oneByPhoneNumber = userRepository.findOneByPhoneNumber(userDTO.getPhoneNumber());
-        if (
-            StringUtils.isNotEmpty(userDTO.getPhoneNumber()) &&
-            oneByPhoneNumber.isPresent() &&
-            (!oneByPhoneNumber.get().getId().equals(userDTO.getId()))
-        ) throw new PhoneNumberAlreadyUsedException();
-
+        if (StringUtils.isNotBlank(userDTO.getEmail())) {
+            userRepository
+                .findOneByEmailIgnoreCase(userDTO.getEmail())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new EmailAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getLogin())) {
+            userRepository
+                .findOneByLoginIgnoreCase(userDTO.getLogin().toLowerCase())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new LoginAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getInn())) {
+            userRepository
+                .findOneByInn(userDTO.getInn())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new InnAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPassport())) {
+            userRepository
+                .findOneByPassportIgnoreCase(userDTO.getPassport())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PassportAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPinfl())) {
+            userRepository
+                .findOneByPinfl(userDTO.getPinfl())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PinflAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPhoneNumber())) {
+            userRepository
+                .findOneByPhoneNumber(userDTO.getPhoneNumber())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PhoneNumberAlreadyUsedException();
+                    }
+                );
+        }
         Optional<DeposUserDTO> updatedUser = userService.editUser(userDTO);
-
         return ResponseUtil.wrapOrNotFound(
             updatedUser,
             HeaderUtil.createAlert(applicationName, "userManagement.edited", userDTO.getLogin())
