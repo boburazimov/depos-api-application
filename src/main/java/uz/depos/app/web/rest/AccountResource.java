@@ -14,6 +14,7 @@ import uz.depos.app.security.SecurityUtils;
 import uz.depos.app.service.MailService;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.dto.AdminUserDTO;
+import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.PasswordChangeDTO;
 import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.vm.KeyAndPasswordVM;
@@ -98,10 +99,10 @@ public class AccountResource {
      * @throws RuntimeException {@code 500 (Internal Server Error)} if the user couldn't be returned.
      */
     @GetMapping("/account")
-    public AdminUserDTO getAccount() {
+    public DeposUserDTO getAccount() {
         return userService
             .getUserWithAuthorities()
-            .map(AdminUserDTO::new)
+            .map(DeposUserDTO::new)
             .orElseThrow(() -> new AccountResourceException("User could not be found"));
     }
 
