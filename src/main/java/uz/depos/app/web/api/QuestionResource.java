@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -45,19 +46,22 @@ public class QuestionResource {
     final UserRepository userRepository;
     final MemberRepository memberRepository;
     final QuestionService questionService;
+    final SimpMessageSendingOperations messagingTemplate;
 
     public QuestionResource(
         MeetingService meetingService,
         MeetingRepository meetingRepository,
         UserRepository userRepository,
         MemberRepository memberRepository,
-        QuestionService questionService
+        QuestionService questionService,
+        SimpMessageSendingOperations messagingTemplate
     ) {
         this.meetingService = meetingService;
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
         this.memberRepository = memberRepository;
         this.questionService = questionService;
+        this.messagingTemplate = messagingTemplate;
     }
 
     /**
@@ -76,6 +80,7 @@ public class QuestionResource {
     ) throws URISyntaxException {
         log.debug("REST request to add Question to Meeting ID : {}", questionDTO.getMeetingId());
         QuestionDTO savedQuestionDTO = questionService.addQuestionByMember(questionDTO);
+        messagingTemplate.convertAndSend("/topic/meetingId/question", "questionId:1,questionText:abcde");
         return ResponseEntity
             .created(new URI("/api/meeting/question"))
             .headers(HeaderUtil.createAlert(applicationName, "questionManagement.created", questionDTO.getQuestionText()))
@@ -97,6 +102,7 @@ public class QuestionResource {
         log.debug("REST request to update question answer : {}", questionDTO.getQuestionAnswer());
 
         Optional<QuestionDTO> savedQuestionDTO = questionService.updateQuestionAnswer(questionDTO);
+        messagingTemplate.convertAndSend("/topic/meetingId/question", "questionId:1,answerText:abcde");
         return ResponseUtil.wrapOrNotFound(
             savedQuestionDTO,
             HeaderUtil.createAlert(applicationName, "questionManagement.updated", questionDTO.getId().toString())

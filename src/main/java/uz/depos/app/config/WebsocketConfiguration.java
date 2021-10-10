@@ -39,7 +39,7 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
             .map(origins -> origins.toArray(new String[0]))
             .orElse(new String[0]);
         registry
-            .addEndpoint("/websocket/tracker")
+            .addEndpoint("/websocket/tracker", "/websocket/question")
             .setHandshakeHandler(defaultHandshakeHandler())
             .setAllowedOrigins(allowedOrigins)
             .withSockJS()
