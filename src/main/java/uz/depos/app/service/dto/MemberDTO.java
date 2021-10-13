@@ -20,6 +20,10 @@ public class MemberDTO {
     @NotNull(message = "UserID not must be null")
     private Long userId;
 
+    private String userName;
+
+    private String pinfl;
+
     private Boolean isRemotely;
 
     private Boolean isConfirmed;
@@ -41,6 +45,8 @@ public class MemberDTO {
         this.meetingId = member.getMeeting().getId();
         this.companyId = member.getCompany().getId();
         this.userId = member.getUser().getId();
+        this.userName = member.getUser().getFullName();
+        this.pinfl = member.getUser().getPinfl();
         this.isRemotely = member.getRemotely();
         this.isConfirmed = member.getConfirmed();
         this.isInvolved = member.getInvolved();
@@ -80,6 +86,22 @@ public class MemberDTO {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPinfl() {
+        return pinfl;
+    }
+
+    public void setPinfl(String pinfl) {
+        this.pinfl = pinfl;
     }
 
     public Boolean getRemotely() {
@@ -150,6 +172,12 @@ public class MemberDTO {
             companyId +
             ", userId=" +
             userId +
+            ", userName='" +
+            userName +
+            '\'' +
+            ", pinfl='" +
+            pinfl +
+            '\'' +
             ", isRemotely=" +
             isRemotely +
             ", isConfirmed=" +
