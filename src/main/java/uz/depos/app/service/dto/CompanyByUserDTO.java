@@ -16,6 +16,8 @@ public class CompanyByUserDTO {
     private String imageUrl;
     private List<MeetingByUserDTO> meetings;
     private long meetingCount;
+    private Long chairmanId;
+    private Long secretaryId;
 
     public CompanyByUserDTO() {}
 
@@ -26,6 +28,8 @@ public class CompanyByUserDTO {
         this.description = company.getDescription();
         this.webPage = company.getWebPage();
         this.imageUrl = company.getImageUrl();
+        this.chairmanId = company.getChairman() != null ? company.getChairman().getId() : null;
+        this.secretaryId = company.getSecretary() != null ? company.getSecretary().getId() : null;
     }
 
     public Long getId() {
@@ -92,6 +96,22 @@ public class CompanyByUserDTO {
         this.meetingCount = meetingCount;
     }
 
+    public Long getChairmanId() {
+        return chairmanId;
+    }
+
+    public void setChairmanId(Long chairmanId) {
+        this.chairmanId = chairmanId;
+    }
+
+    public Long getSecretaryId() {
+        return secretaryId;
+    }
+
+    public void setSecretaryId(Long secretaryId) {
+        this.secretaryId = secretaryId;
+    }
+
     @Override
     public String toString() {
         return (
@@ -116,6 +136,10 @@ public class CompanyByUserDTO {
             meetings +
             ", meetingCount=" +
             meetingCount +
+            ", chairmanId=" +
+            chairmanId +
+            ", secretaryId=" +
+            secretaryId +
             '}'
         );
     }
