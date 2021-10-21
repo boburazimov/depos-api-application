@@ -1,6 +1,5 @@
 package uz.depos.app.service.dto;
 
-import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Attachment;
 
 /**
@@ -11,11 +10,9 @@ public class AttachLogoDTO {
 
     private Long id;
 
-    @NotNull(message = "Company ID must not be null!")
     private Long companyId;
 
-    @NotNull(message = "Path must not be null!")
-    private String path;
+    private String url;
 
     private String originalFileName;
 
@@ -30,7 +27,7 @@ public class AttachLogoDTO {
     public AttachLogoDTO(Attachment attachment) {
         this.id = attachment.getId();
         this.companyId = attachment.getCompanyId();
-        this.path = attachment.getPath();
+        this.url = attachment.getPath();
         this.originalFileName = attachment.getOriginalFileName();
         this.fileName = attachment.getFileName();
         this.contentType = attachment.getContentType();
@@ -53,12 +50,12 @@ public class AttachLogoDTO {
         this.companyId = companyId;
     }
 
-    public String getPath() {
-        return path;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getOriginalFileName() {
@@ -101,8 +98,8 @@ public class AttachLogoDTO {
             id +
             ", companyId=" +
             companyId +
-            ", path='" +
-            path +
+            ", url='" +
+            url +
             '\'' +
             ", originalFileName='" +
             originalFileName +

@@ -2,6 +2,7 @@ package uz.depos.app.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.undertow.util.BadRequestException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,17 +13,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import uz.depos.app.domain.Attachment;
+import uz.depos.app.repository.AttachmentRepository;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.service.CompanyService;
 import uz.depos.app.service.FilesStorageService;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.AttachLogoDTO;
 import uz.depos.app.service.dto.AttachMeetingDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -30,6 +31,7 @@ import uz.depos.app.web.rest.errors.BadRequestAlertException;
 @Controller
 @RequestMapping("/api/file")
 @Api(tags = "File")
+@CrossOrigin("*")
 public class AttachmentResource {
 
     private final Logger log = LoggerFactory.getLogger(AttachmentResource.class);
@@ -37,12 +39,19 @@ public class AttachmentResource {
     private final FilesStorageService filesStorageService;
     private final CompanyService companyService;
     private final CompanyRepository companyRepository;
+    private final AttachmentRepository attachmentRepository;
 
     @Autowired
-    public AttachmentResource(FilesStorageService filesStorageService, CompanyService companyService, CompanyRepository companyRepository) {
+    public AttachmentResource(
+        FilesStorageService filesStorageService,
+        CompanyService companyService,
+        CompanyRepository companyRepository,
+        AttachmentRepository attachmentRepository
+    ) {
         this.filesStorageService = filesStorageService;
         this.companyService = companyService;
         this.companyRepository = companyRepository;
+        this.attachmentRepository = attachmentRepository;
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -63,23 +72,17 @@ public class AttachmentResource {
         }
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    @ApiOperation(value = "Get file", notes = "This method is to get one file by ID")
-    public void getFile(@PathVariable("id") Long id, HttpServletResponse response) {
+    @RequestMapping(value = "/one/{id}", method = RequestMethod.GET)
+    @ApiOperation(value = "Get file", notes = "This method is to get any one file by ID")
+    public ResponseEntity<Resource> getFile(@PathVariable Long id) {
         log.debug("REST request to get File by ID : {}", id);
-
-        try {
-            // get your file as InputStream
-            Attachment loadedAttachment = filesStorageService.load(id);
-            // copy it to response's OutputStream
-            Files.copy(Paths.get(loadedAttachment.getPath()), response.getOutputStream());
-            response.setContentType(loadedAttachment.getContentType());
-            response.setHeader("Content-Disposition", "attachment; filename=" + loadedAttachment.getFileName());
-            response.flushBuffer();
-        } catch (IOException ex) {
-            log.info("Error writing file to output stream. FileID was '{}'", id, ex);
-            throw new RuntimeException("IOError writing file to output stream");
-        }
+        Attachment attachment = filesStorageService.load(id);
+        Resource file = filesStorageService.loadFile(attachment);
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+            .header(HttpHeaders.CONTENT_TYPE, attachment.getContentType())
+            .body(file);
     }
 
     @GetMapping("/meeting/{meetingId}")
@@ -93,10 +96,14 @@ public class AttachmentResource {
     @GetMapping(value = "/logo/{companyId}")
     @ApiOperation(value = "Get logo", notes = "This method is to get logo file by company ID")
     public ResponseEntity<Resource> getFileByCompany(@PathVariable Long companyId) {
-        Resource file = filesStorageService.loadFile(companyId);
+        log.debug("REST request to get Logo by CompanyID : {}", companyId);
+        Attachment attachment = attachmentRepository.findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(companyId).orElse(null);
+        assert attachment != null;
+        Resource file = filesStorageService.loadFile(attachment);
         return ResponseEntity
             .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+            .header(HttpHeaders.CONTENT_TYPE, attachment.getContentType())
             .body(file);
     }
 
@@ -115,11 +122,32 @@ public class AttachmentResource {
         try {
             // Clear previous company logo from current Company before upload.
             companyService.deleteCompanyLogo(companyId);
-
             AttachLogoDTO attachLogoDTO = filesStorageService.uploadCompanyLogo(file, companyId);
+            String url = MvcUriComponentsBuilder
+                .fromMethodName(AttachmentResource.class, "getFileUrl", attachLogoDTO.getUrl())
+                .build()
+                .toString();
+            attachLogoDTO.setUrl(url);
             return ResponseEntity.status(HttpStatus.OK).body(attachLogoDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(e.getMessage());
         }
+    }
+
+    @GetMapping("/{filename:.+}")
+    public ResponseEntity<Resource> getFileUrl(@PathVariable String filename) {
+        Resource file = filesStorageService.load1(filename);
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
+            .body(file);
+    }
+
+    @DeleteMapping("/{id}")
+    @ApiOperation(value = "Delete file", notes = "This method to delete one of files by ID")
+    public HttpEntity<ApiResponse> deleteFile(@PathVariable Long id) throws IOException {
+        log.debug("REST request to delete File : {}", id);
+        ApiResponse response = filesStorageService.delete(id);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
     }
 }

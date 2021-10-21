@@ -118,6 +118,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     private UserAuthTypeEnum authTypeEnum;
 
     // Резидент или Нерезидент
+    @Column(name = "is_resident")
     private boolean isResident = true;
 
     // Номер ИНН

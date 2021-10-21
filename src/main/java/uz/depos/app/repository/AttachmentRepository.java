@@ -8,13 +8,14 @@ import uz.depos.app.domain.Attachment;
 
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
-    Optional<List<Attachment>> findAllByMeetingIdAndIsReestrTrue(Long meeting_id);
+    // Get List of filesInfos by MeetingID
+    Optional<List<Attachment>> findAllByMeetingIdAndIsReestrFalse(Long meetingId);
 
     // Get Reestr excel file
-    Optional<Attachment> findOneByMeetingIdAndIsReestrTrue(Long meeting_id);
+    Optional<Attachment> findOneByMeetingIdAndIsReestrTrue(Long meetingId);
 
-    void deleteByMeetingIdAndIsReestrTrue(Long meeting_id);
+    void deleteByMeetingIdAndIsReestrTrue(Long meetingId);
 
     // Get Company logo file
-    Optional<Attachment> findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(Long company_id);
+    Optional<Attachment> findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(Long companyId);
 }

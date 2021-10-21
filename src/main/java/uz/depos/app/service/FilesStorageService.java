@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import uz.depos.app.domain.Attachment;
 import uz.depos.app.repository.AttachmentRepository;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.AttachLogoDTO;
 import uz.depos.app.service.dto.AttachMeetingDTO;
 import uz.depos.app.service.dto.AttachReestrDTO;
@@ -80,20 +81,31 @@ public class FilesStorageService {
     public Attachment uploadGeneral(MultipartFile file) {
         Attachment attachment = new Attachment();
         try {
-            UUID uuid = UUID.randomUUID();
+            String fileName = file.getOriginalFilename();
+            assert fileName != null;
+            String suffixName = fileName.substring(fileName.lastIndexOf("."));
+
+            // Path after file upload
+            fileName = UUID.randomUUID() + suffixName;
             // Generate path for saving to static folder
-            Path savedPath = this.root.resolve(uuid.toString());
+            Path savedPath = this.root.resolve(fileName);
             // Check for exist the static folder.
             if (!Files.exists(root)) {
                 this.init();
             }
             // Save to static folder
-            Files.copy(file.getInputStream(), savedPath);
+            try {
+                Files.copy(file.getInputStream(), savedPath);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+            }
+
+            Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
             // Start to fill attachment model for write to Database
             attachment.setPath(savedPath.toString());
             attachment.setFileSize(file.getSize());
             attachment.setContentType(file.getContentType());
-            attachment.setFileName(uuid.toString());
+            attachment.setFileName(fileName);
             attachment.setOriginalFileName(file.getOriginalFilename());
             return attachment;
         } catch (Exception e) {
@@ -114,7 +126,7 @@ public class FilesStorageService {
 
     @Transactional(readOnly = true)
     public List<Attachment> loadAllByMeetingId(Long meetingId) {
-        return attachmentRepository.findAllByMeetingIdAndIsReestrTrue(meetingId).orElse(null);
+        return attachmentRepository.findAllByMeetingIdAndIsReestrFalse(meetingId).orElse(null);
     }
 
     @Transactional(readOnly = true)
@@ -172,10 +184,26 @@ public class FilesStorageService {
             );
     }
 
-    public Resource loadFile(Long companyId) {
-        Attachment attachment = attachmentRepository.findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(companyId).orElse(null);
+    public Resource loadFile(Attachment attachment) {
         assert attachment != null;
+        //        String filename = attachment.getOriginalFileName();
         String filename = attachment.getFileName();
+
+        try {
+            Path file = root.resolve(filename);
+            Resource resource = new UrlResource(file.toUri());
+
+            if (resource.exists() || resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Could not read the file!");
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+    }
+
+    public Resource load1(String filename) {
         try {
             Path file = root.resolve(filename);
             Resource resource = new UrlResource(file.toUri());
@@ -196,6 +224,22 @@ public class FilesStorageService {
             return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
         } catch (IOException e) {
             throw new RuntimeException("Could not load the files!");
+        }
+    }
+
+    public ApiResponse delete(Long id) throws IOException {
+        Attachment byId = attachmentRepository.findById(id).orElse(null);
+        if (byId != null) {
+            String fileName = byId.getPath();
+            boolean result = Files.deleteIfExists(Paths.get(fileName));
+            if (result) {
+                log.debug("Deleted Information for File by ID: {}", id);
+                return new ApiResponse(byId.getOriginalFileName() + " Deleted!", true);
+            } else {
+                return new ApiResponse(byId.getOriginalFileName() + " Error in deleting!", false);
+            }
+        } else {
+            return new ApiResponse("Resource not found by ID: " + id, false);
         }
     }
 }
