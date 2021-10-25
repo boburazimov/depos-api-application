@@ -1,6 +1,7 @@
 package uz.depos.app.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import uz.depos.app.domain.Agenda;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
@@ -37,6 +38,9 @@ public class AgendaDTO {
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Boolean active;
+
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
+    private Set<String> variants;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
     private String extraInfo;
@@ -127,6 +131,14 @@ public class AgendaDTO {
         this.extraInfo = extraInfo;
     }
 
+    public Set<String> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(Set<String> variants) {
+        this.variants = variants;
+    }
+
     @Override
     public String toString() {
         return (
@@ -148,6 +160,8 @@ public class AgendaDTO {
             debateEnum +
             ", active=" +
             active +
+            ", variants=" +
+            variants +
             ", extraInfo='" +
             extraInfo +
             '\'' +

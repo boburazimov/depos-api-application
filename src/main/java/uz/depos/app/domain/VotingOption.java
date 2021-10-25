@@ -36,6 +36,12 @@ public class VotingOption extends AbstractAuditingEntity {
         this.agenda = agenda;
     }
 
+    public VotingOption(String votingText, Meeting meeting, Agenda agenda) {
+        this.votingText = votingText;
+        this.meeting = meeting;
+        this.agenda = agenda;
+    }
+
     public Long getId() {
         return id;
     }

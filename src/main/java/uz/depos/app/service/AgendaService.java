@@ -1,7 +1,6 @@
 package uz.depos.app.service;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -12,11 +11,13 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Agenda;
+import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.VotingOption;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
+import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.dto.AgendaDTO;
-import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -34,17 +35,20 @@ public class AgendaService {
     private final MeetingRepository meetingRepository;
     private final AgendaRepository agendaRepository;
     private final AgendaAndVotingMapper agendaAndVotingMapper;
+    private final VotingRepository votingRepository;
 
     public AgendaService(
         MemberRepository memberRepository,
         MeetingRepository meetingRepository,
         AgendaRepository agendaRepository,
-        AgendaAndVotingMapper agendaAndVotingMapper
+        AgendaAndVotingMapper agendaAndVotingMapper,
+        VotingRepository votingRepository
     ) {
         this.memberRepository = memberRepository;
         this.meetingRepository = meetingRepository;
         this.agendaRepository = agendaRepository;
         this.agendaAndVotingMapper = agendaAndVotingMapper;
+        this.votingRepository = votingRepository;
     }
 
     /**
@@ -79,7 +83,12 @@ public class AgendaService {
             );
 
         Agenda agenda = new Agenda();
-        if (agendaDTO.getMeetingId() != null) meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
+        Meeting meeting = new Meeting();
+        if (agendaDTO.getMeetingId() != null) {
+            meeting = meetingRepository.findOneById(agendaDTO.getMeetingId()).orElse(null);
+            agenda.setMeeting(meeting);
+        }
+        //        if (agendaDTO.getMeetingId() != null) meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
         if (StringUtils.isNoneBlank(agendaDTO.getSubject())) agenda.setSubject(agendaDTO.getSubject());
         memberRepository.findOneById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
         agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
@@ -87,8 +96,27 @@ public class AgendaService {
         agenda.setDebateEnum(agendaDTO.getDebateEnum());
         agenda.setActive(agendaDTO.getActive());
         Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
+        Set options = new HashSet<>();
+        //        List<String> options = new ArrayList<>();
+        if (agendaDTO.getVariants() != null) {
+            Set<String> variants = agendaDTO.getVariants();
+            Meeting finalMeeting = meeting;
+            variants.forEach(
+                variant -> {
+                    VotingOption option = new VotingOption();
+                    option.setAgenda(savedAgenda);
+                    option.setMeeting(finalMeeting);
+                    option.setVotingText(variant);
+                    VotingOption savedOption = votingRepository.saveAndFlush(option);
+                    options.add(savedOption.getVotingText());
+                    //                options.add(savedOption.getVotingText());
+                }
+            );
+        }
         log.debug("Created Information for Agenda: {}", savedAgenda);
-        return agendaAndVotingMapper.agendaToAgendaDTO(savedAgenda);
+        AgendaDTO newAgendaDTO = agendaAndVotingMapper.agendaToAgendaDTO(savedAgenda);
+        newAgendaDTO.setVariants(options);
+        return newAgendaDTO;
     }
 
     /**
