@@ -33,7 +33,6 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
-import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
@@ -87,7 +86,8 @@ public class MemberResource {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @ApiOperation(value = "Create member", notes = "This method creates a new member")
-    public ResponseEntity<MemberDTO> createMember(@Valid @RequestBody MemberDTO memberDTO) throws URISyntaxException {
+    public ResponseEntity<MemberDTO> createMember(@Valid @RequestBody @JsonView(value = View.ModelView.Post.class) MemberDTO memberDTO)
+        throws URISyntaxException {
         log.debug("REST request to create Member : {}", memberDTO);
 
         if (memberDTO.getId() != null && memberDTO.getId() > 0) {
@@ -168,7 +168,7 @@ public class MemberResource {
      * {@code GET /members} : get all members by the meeting with all the details - calling this are only allowed for the administrators.
      *
      * @param meetingId the member ID for search by him.
-     * @param pageable the pagination information.
+     * @param pageable  the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all members by the meeting.
      */
     @GetMapping("/by-meeting")
