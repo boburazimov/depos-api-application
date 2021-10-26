@@ -89,6 +89,17 @@ public class ReestrService {
         List<Member> memberList = new ArrayList<Member>();
         DataFormatter formatter = new DataFormatter();
 
+        String chairmanPinfl = Objects
+            .requireNonNull(
+                meetingRepository
+                    .findById(meetingId)
+                    .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
+                    .orElse(null)
+            )
+            .getChairman()
+            .getPinfl();
+        boolean hasChairmen = false;
+
         int rowNumber = 0;
         while (rows.hasNext()) {
             Row currentRow = rows.next();
@@ -98,6 +109,8 @@ public class ReestrService {
                 continue;
             }
             String currentRowPinfl = formatter.formatCellValue(currentRow.getCell(2)); // Get pinfl.
+            boolean equals = chairmanPinfl.equals(currentRowPinfl);
+            if (equals) hasChairmen = true;
 
             // Try to get User by PINFL orElse create new User.
             User user = userRepository.findOneByPinfl(currentRowPinfl).isPresent()
@@ -170,6 +183,12 @@ public class ReestrService {
             memberList.add(savedMember);
         }
         workbook.close();
+
+        if (!hasChairmen) throw new BadRequestAlertException(
+            "From this Reestr don't have Chairmen by Company",
+            "reestrManagement",
+            "chairmenError"
+        );
 
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
         savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());

@@ -4,7 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -16,8 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import tech.jhipster.config.JHipsterProperties;
-import uz.depos.app.domain.Member;
+import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
@@ -44,6 +42,7 @@ public class ReestrResource {
     final ExcelHelpers excelHelpers;
     final FilesStorageService filesStorageService;
     final MemberService memberService;
+    final CompanyRepository companyRepository;
 
     public ReestrResource(
         ReestrService reestrService,
@@ -53,7 +52,8 @@ public class ReestrResource {
         MemberMapper memberMapper,
         ExcelHelpers excelHelpers,
         FilesStorageService filesStorageService,
-        MemberService memberService
+        MemberService memberService,
+        CompanyRepository companyRepository
     ) {
         this.reestrService = reestrService;
         this.meetingRepository = meetingRepository;
@@ -63,6 +63,7 @@ public class ReestrResource {
         this.excelHelpers = excelHelpers;
         this.filesStorageService = filesStorageService;
         this.memberService = memberService;
+        this.companyRepository = companyRepository;
     }
 
     /**
@@ -81,6 +82,17 @@ public class ReestrResource {
     public ResponseEntity<?> parseReestr(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId)
         throws URISyntaxException, IOException {
         log.debug("REST request to create Reestr : {}", file);
+
+        meetingRepository
+            .findById(meetingId)
+            .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
+            .ifPresent(
+                company -> {
+                    if (company.getChairman() == null) {
+                        throw new BadRequestAlertException("Company did't have a Chairmen", "reestrManagement", "companyError");
+                    }
+                }
+            );
 
         try {
             // Clear previous members from current Meeting before parse.

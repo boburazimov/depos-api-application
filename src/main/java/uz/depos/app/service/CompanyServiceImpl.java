@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.Member;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.CompanyRepository;
@@ -115,7 +116,7 @@ public class CompanyServiceImpl implements CompanyService {
             .map(
                 company -> {
                     // Name
-                    if (StringUtils.isNoneBlank(companyDTO.getName())) company.setName(companyDTO.getName().toLowerCase());
+                    if (StringUtils.isNoneBlank(companyDTO.getName())) company.setName(companyDTO.getName().toUpperCase());
                     // Email
                     if (StringUtils.isNoneBlank(companyDTO.getEmail())) company.setEmail(companyDTO.getEmail().toLowerCase());
                     // Active
@@ -136,27 +137,21 @@ public class CompanyServiceImpl implements CompanyService {
                     company.setImageUrl(companyDTO.getImageUrl());
                     // Chairman
                     if (ObjectUtils.isNotEmpty(companyDTO.getChairmanId())) {
-                        userRepository
-                            .findById(companyDTO.getChairmanId())
-                            .ifPresent(
-                                user -> {
-                                    company.setChairman(user);
-                                    memberRepository
-                                        .findOneByUserId(user.getId())
-                                        .ifPresent(
-                                            member -> {
-                                                if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
-                                                    MemberTypeEnum.CHAIRMAN
-                                                );
-                                            }
-                                        );
-                                }
-                            );
+                        //                                    memberRepository
+                        //                                        .findOneByUserId(user.getId())
+                        //                                        .ifPresent(
+                        //                                            member -> {
+                        //                                                if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
+                        //                                                    MemberTypeEnum.CHAIRMAN
+                        //                                                );
+                        //                                            }
+                        //                                        );
+                        userRepository.findById(companyDTO.getChairmanId()).ifPresent(company::setChairman);
                     }
                     // Secretary
-                    if (ObjectUtils.isNotEmpty(companyDTO.getSecretaryId())) company.setSecretary(
-                        userRepository.findById(companyDTO.getSecretaryId()).orElse(null)
-                    );
+                    if (ObjectUtils.isNotEmpty(companyDTO.getSecretaryId())) {
+                        userRepository.findById(companyDTO.getSecretaryId()).ifPresent(company::setSecretary);
+                    }
                     log.debug("Changed Information for Company: {}", company);
                     return company;
                 }
