@@ -45,6 +45,8 @@ public class AgendaDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
     private String extraInfo;
 
+    private String userName;
+
     public AgendaDTO() {}
 
     public AgendaDTO(Agenda agenda) {
@@ -57,6 +59,7 @@ public class AgendaDTO {
         this.debateEnum = agenda.getDebateEnum();
         this.active = agenda.getActive();
         this.extraInfo = agenda.getExtraInfo();
+        this.userName = agenda.getSpeaker() != null ? agenda.getSpeaker().getUser().getFullName() : null;
     }
 
     public Long getId() {
@@ -139,6 +142,14 @@ public class AgendaDTO {
         this.variants = variants;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     @Override
     public String toString() {
         return (
@@ -164,6 +175,9 @@ public class AgendaDTO {
             variants +
             ", extraInfo='" +
             extraInfo +
+            '\'' +
+            ", userName='" +
+            userName +
             '\'' +
             '}'
         );
