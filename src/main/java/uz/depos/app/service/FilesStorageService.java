@@ -6,8 +6,11 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +19,10 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import uz.depos.app.domain.Agenda;
 import uz.depos.app.domain.Attachment;
+import uz.depos.app.domain.Company;
+import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.AttachmentRepository;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.AttachLogoDTO;
@@ -33,10 +39,16 @@ public class FilesStorageService {
 
     final AttachmentRepository attachmentRepository;
     final AttachmentMapper attachmentMapper;
+    final AgendaRepository agendaRepository;
 
-    public FilesStorageService(AttachmentRepository attachmentRepository, AttachmentMapper attachmentMapper) {
+    public FilesStorageService(
+        AttachmentRepository attachmentRepository,
+        AttachmentMapper attachmentMapper,
+        AgendaRepository agendaRepository
+    ) {
         this.attachmentRepository = attachmentRepository;
         this.attachmentMapper = attachmentMapper;
+        this.agendaRepository = agendaRepository;
     }
 
     // If the static folder not create yet, this method is create it by the firs init.
@@ -125,8 +137,21 @@ public class FilesStorageService {
     }
 
     @Transactional(readOnly = true)
-    public List<Attachment> loadAllByMeetingId(Long meetingId) {
-        return attachmentRepository.findAllByMeetingIdAndIsReestrFalse(meetingId).orElse(null);
+    public List<AttachMeetingDTO> loadAllByMeetingId(Long meetingId) {
+        List<Attachment> attachments = new ArrayList<>();
+        attachmentRepository.findAllByMeetingIdAndIsReestrFalse(meetingId).ifPresent(attachments::addAll);
+        return attachments
+            .stream()
+            .map(
+                attachment -> {
+                    Agenda agenda = agendaRepository.findById(attachment.getAgendaId()).orElse(null);
+                    assert agenda != null;
+                    AttachMeetingDTO attachMeetingDTO = attachmentMapper.attachmentToAttachmentMeetingDTO(attachment);
+                    attachMeetingDTO.setAgendaSubject(agenda.getSubject());
+                    return attachMeetingDTO;
+                }
+            )
+            .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

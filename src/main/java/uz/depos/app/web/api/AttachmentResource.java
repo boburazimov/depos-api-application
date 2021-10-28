@@ -87,9 +87,9 @@ public class AttachmentResource {
 
     @GetMapping("/meeting/{meetingId}")
     @ApiOperation(value = "Get files", notes = "This method is to get all files by MeetingID")
-    public ResponseEntity<List<Attachment>> getListFiles(@PathVariable("meetingId") Long meetingId) { //get all attachments by meeting id and return dtos
+    public ResponseEntity<List<AttachMeetingDTO>> getListFiles(@PathVariable("meetingId") Long meetingId) { //get all attachments by meeting id and return dtos
         log.debug("Get Information for Attachments by MeetingID: {}", meetingId);
-        List<Attachment> fileInfos = filesStorageService.loadAllByMeetingId(meetingId);
+        List<AttachMeetingDTO> fileInfos = filesStorageService.loadAllByMeetingId(meetingId);
         return ResponseEntity.status(HttpStatus.OK).body(fileInfos);
     }
 

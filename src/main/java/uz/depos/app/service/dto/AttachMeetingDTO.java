@@ -12,6 +12,8 @@ public class AttachMeetingDTO {
 
     private Long agendaId;
 
+    private String agendaSubject;
+
     @NotNull(message = "Path must not be null!")
     private String path;
 
@@ -25,8 +27,8 @@ public class AttachMeetingDTO {
 
     public AttachMeetingDTO(Attachment attachment) {
         this.id = attachment.getId();
-        this.meetingId = attachment.getMeetingId() != null ? attachment.getMeetingId() : null;
-        this.agendaId = attachment.getAgendaId() != null ? attachment.getAgendaId() : null;
+        this.meetingId = attachment.getMeetingId();
+        this.agendaId = attachment.getAgendaId();
         this.path = attachment.getPath();
         this.originalFileName = attachment.getOriginalFileName();
         this.contentType = attachment.getContentType();
@@ -55,6 +57,14 @@ public class AttachMeetingDTO {
 
     public void setAgendaId(Long agendaId) {
         this.agendaId = agendaId;
+    }
+
+    public String getAgendaSubject() {
+        return agendaSubject;
+    }
+
+    public void setAgendaSubject(String agendaSubject) {
+        this.agendaSubject = agendaSubject;
     }
 
     public String getPath() {
@@ -99,6 +109,9 @@ public class AttachMeetingDTO {
             meetingId +
             ", agendaId=" +
             agendaId +
+            ", agendaSubject='" +
+            agendaSubject +
+            '\'' +
             ", path='" +
             path +
             '\'' +
