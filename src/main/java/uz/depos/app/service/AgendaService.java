@@ -159,7 +159,11 @@ public class AgendaService {
                 agenda -> {
                     meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
                     agenda.setSubject(agendaDTO.getSubject());
-                    memberRepository.findById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
+                    if (agendaDTO.getSpeakerId() != null) {
+                        memberRepository.findById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
+                    } else {
+                        agenda.setSpeaker(null);
+                    }
                     agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
                     agenda.setTypeEnum(agendaDTO.getTypeEnum());
                     agenda.setDebateEnum(agendaDTO.getDebateEnum());

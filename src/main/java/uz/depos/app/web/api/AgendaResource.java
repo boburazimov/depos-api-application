@@ -173,7 +173,7 @@ public class AgendaResource {
         Optional<AgendaDTO> updatedAgendaDTO = agendaService.switchAgendaStatus(agendaDTO);
         return ResponseUtil.wrapOrNotFound(
             updatedAgendaDTO,
-            HeaderUtil.createAlert(applicationName, "agendaManagement.edited", agendaDTO.getSubject())
+            HeaderUtil.createAlert(applicationName, "agendaManagement.edited", agendaDTO.getId().toString())
         );
     }
 

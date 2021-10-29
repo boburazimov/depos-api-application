@@ -5,7 +5,7 @@ import javax.persistence.*;
 import lombok.EqualsAndHashCode;
 
 /**
- * Вопросы от участников
+ * Вопросы от участников для организаторов (Секретарь или Председатель).
  */
 
 @EqualsAndHashCode(callSuper = true)
@@ -37,7 +37,7 @@ public class Question extends AbstractAuditingEntity implements Serializable {
     @ManyToOne
     private Member member;
 
-    // Статус повестки дня
+    // Статус
     @Column(name = "is_active")
     private Boolean isActive;
 

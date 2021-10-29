@@ -24,7 +24,7 @@ public class MeetingLogging extends AbstractAuditingEntity implements Serializab
     @Column(nullable = false, name = "user_id")
     private Long userId;
 
-    // Вопрос
+    // Текст объявления
     @Column(nullable = false, name = "logging_text")
     private String loggingText;
 

@@ -17,8 +17,7 @@ public class AgendaDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long id;
 
-    @NotNull
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PATCH.class, View.ModelView.PUT.class })
     private Long meetingId;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
@@ -42,7 +41,7 @@ public class AgendaDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Set<String> variants;
 
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
+    //    @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
     private String extraInfo;
 
     private String userName;
@@ -51,7 +50,7 @@ public class AgendaDTO {
 
     public AgendaDTO(Agenda agenda) {
         this.id = agenda.getId();
-        this.meetingId = agenda.getMeeting().getId();
+        this.meetingId = agenda.getMeeting() != null ? agenda.getMeeting().getId() : null;
         this.subject = agenda.getSubject();
         this.speakerId = agenda.getSpeaker() != null ? agenda.getSpeaker().getId() : null;
         this.speakTimeEnum = agenda.getSpeakTimeEnum();
