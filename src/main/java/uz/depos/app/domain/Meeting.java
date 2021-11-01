@@ -89,8 +89,8 @@ public class Meeting extends AbstractAuditingEntity {
         City city,
         String address,
         String description,
-        List<Member> members,
-        List<Agenda> agendas,
+        //        List<Member> members,
+        //        List<Agenda> agendas,
         String extraInfo
     ) {
         this.id = id;

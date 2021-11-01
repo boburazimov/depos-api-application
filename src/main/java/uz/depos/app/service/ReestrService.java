@@ -19,6 +19,7 @@ import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
+import uz.depos.app.domain.enums.UserGroupEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.dto.AttachReestrDTO;
@@ -98,7 +99,7 @@ public class ReestrService {
             )
             .getChairman()
             .getPinfl();
-        boolean hasChairmen = false;
+        //        boolean hasChairmen = false;
 
         int rowNumber = 0;
         while (rows.hasNext()) {
@@ -109,8 +110,12 @@ public class ReestrService {
                 continue;
             }
             String currentRowPinfl = formatter.formatCellValue(currentRow.getCell(2)); // Get pinfl.
-            boolean equals = chairmanPinfl.equals(currentRowPinfl);
-            if (equals) hasChairmen = true;
+            //            boolean equals = chairmanPinfl.equals(currentRowPinfl);
+            //            if (equals) {
+            //                hasChairmen = true;
+            //            } else {
+            //                hasChairmen = false;
+            //            }
 
             // Try to get User by PINFL orElse create new User.
             User user = userRepository.findOneByPinfl(currentRowPinfl).isPresent()
@@ -125,6 +130,7 @@ public class ReestrService {
             user.setActivationKey(RandomUtil.generateActivationKey());
             user.setResetKey(RandomUtil.generateResetKey());
             user.setResetDate(Instant.now());
+            user.setGroupEnum(UserGroupEnum.INDIVIDUAL);
             Set<Authority> authorities = new HashSet<>();
             authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
             user.setAuthorities(authorities);
@@ -165,17 +171,21 @@ public class ReestrService {
             member.setRemotely(true);
             member.setConfirmed(false);
             member.setInvolved(false);
-            meetingRepository
-                .findOneById(meetingId)
-                .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
-                .ifPresent(
-                    company -> {
-                        if (company.getChairman() != null) {
-                            if (company.getChairman().getPinfl().equals(currentRowPinfl)) member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
-                        }
-                    }
-                );
-            member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
+            //            meetingRepository
+            //                .findOneById(meetingId)
+            //                .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
+            //                .ifPresent(
+            //                    company -> {
+            //                        if (company.getChairman() != null) {
+            //                            if (company.getChairman().getPinfl().equals(currentRowPinfl)) member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
+            //                        }
+            //                    }
+            //                );
+            if (chairmanPinfl.equals(currentRowPinfl)) {
+                member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
+            } else {
+                member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
+            }
             member.setHldIt(currentRow.getCell(3).getStringCellValue());
             member.setPosition(currentRow.getCell(7).getStringCellValue());
             member.setFromReestr(true);
@@ -184,11 +194,11 @@ public class ReestrService {
         }
         workbook.close();
 
-        if (!hasChairmen) throw new BadRequestAlertException(
-            "From this Reestr don't have Chairmen by Company",
-            "reestrManagement",
-            "chairmenError"
-        );
+        //        if (!hasChairmen) throw new BadRequestAlertException(
+        //            "From this Reestr don't have Chairmen by Company",
+        //            "reestrManagement",
+        //            "chairmenError"
+        //        );
 
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
         savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
