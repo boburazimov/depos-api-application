@@ -253,11 +253,16 @@ public class FilesStorageService {
     }
 
     public ApiResponse delete(Long id) throws IOException {
-        Attachment byId = attachmentRepository.findById(id).orElse(null);
+        Attachment byId = attachmentRepository.findById(id).orElseThrow(IOException::new);
         if (byId != null) {
             String fileName = byId.getPath();
             boolean result = Files.deleteIfExists(Paths.get(fileName));
             if (result) {
+                try {
+                    attachmentRepository.deleteById(id);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 log.debug("Deleted Information for File by ID: {}", id);
                 return new ApiResponse(byId.getOriginalFileName() + " Deleted!", true);
             } else {
