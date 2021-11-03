@@ -54,9 +54,10 @@ public class MeetingLoggingService {
             throw new ResourceNotFoundException("User not found by ID: " + loggingDTO.getUserId());
         } else if (StringUtils.isBlank(loggingDTO.getLoggingText())) {
             throw new ResourceNotFoundException("Logging text must not be Empty!");
-        } else if (
-            meetingLoggingRepository.findByMeetingIdAndLoggingText(loggingDTO.getMeetingId(), loggingDTO.getLoggingText()).isPresent()
-        ) throw new BadRequestAlertException("Logging text already in use by this meeting", "loggingManagement", "textExist");
+        }
+        //        else if (
+        //            meetingLoggingRepository.findByMeetingIdAndLoggingText(loggingDTO.getMeetingId(), loggingDTO.getLoggingText()).isPresent()
+        //        ) throw new BadRequestAlertException("Logging text already in use by this meeting", "loggingManagement", "textExist");
 
         MeetingLogging logging = new MeetingLogging();
         meetingRepository.findById(loggingDTO.getMeetingId()).ifPresent(meeting -> logging.setMeetingId(meeting.getId()));
