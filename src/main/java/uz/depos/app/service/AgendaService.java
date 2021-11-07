@@ -17,7 +17,9 @@ import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.VotingRepository;
+import uz.depos.app.service.dto.AgendaAndOptionsDTO;
 import uz.depos.app.service.dto.AgendaDTO;
+import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -57,7 +59,7 @@ public class AgendaService {
      * @param agendaDTO agenda to create.
      * @return created agenda.
      */
-    public AgendaDTO createAgenda(AgendaDTO agendaDTO) {
+    public AgendaAndOptionsDTO createAgenda(AgendaDTO agendaDTO) {
         if (
             agendaDTO.getMeetingId() == null || agendaDTO.getMeetingId() == 0 || (!meetingRepository.existsById(agendaDTO.getMeetingId()))
         ) {
@@ -81,14 +83,8 @@ public class AgendaService {
                     }
                 }
             );
-
         Agenda agenda = new Agenda();
-        Meeting meeting = new Meeting();
-        if (agendaDTO.getMeetingId() != null) {
-            meeting = meetingRepository.findOneById(agendaDTO.getMeetingId()).orElse(null);
-            agenda.setMeeting(meeting);
-        }
-        //        if (agendaDTO.getMeetingId() != null) meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
+        meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
         if (StringUtils.isNoneBlank(agendaDTO.getSubject())) agenda.setSubject(agendaDTO.getSubject());
         memberRepository.findOneById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
         agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
@@ -96,27 +92,14 @@ public class AgendaService {
         agenda.setDebateEnum(agendaDTO.getDebateEnum());
         agenda.setActive(agendaDTO.getActive());
         Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
-        Set options = new HashSet<>();
-        //        List<String> options = new ArrayList<>();
         if (agendaDTO.getVariants() != null) {
             Set<String> variants = agendaDTO.getVariants();
-            Meeting finalMeeting = meeting;
-            variants.forEach(
-                variant -> {
-                    VotingOption option = new VotingOption();
-                    option.setAgenda(savedAgenda);
-                    option.setMeeting(finalMeeting);
-                    option.setVotingText(variant);
-                    VotingOption savedOption = votingRepository.saveAndFlush(option);
-                    options.add(savedOption.getVotingText());
-                    //                options.add(savedOption.getVotingText());
-                }
-            );
+            variants.forEach(variant -> votingRepository.save(new VotingOption(variant, savedAgenda.getMeeting(), savedAgenda)));
         }
         log.debug("Created Information for Agenda: {}", savedAgenda);
-        AgendaDTO newAgendaDTO = agendaAndVotingMapper.agendaToAgendaDTO(savedAgenda);
-        newAgendaDTO.setVariants(options);
-        return newAgendaDTO;
+        List<VotingOption> allByAgendaId = votingRepository.findAllByAgendaId(savedAgenda.getId());
+        List<VotingDTO> votingDTOS = agendaAndVotingMapper.votingsToVotingDTOs(allByAgendaId);
+        return agendaAndVotingMapper.agendaToAgendaAndVotingDTO(savedAgenda, votingDTOS);
     }
 
     /**

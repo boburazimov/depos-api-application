@@ -23,6 +23,7 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.service.AgendaService;
+import uz.depos.app.service.dto.AgendaAndOptionsDTO;
 import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.QuestionDTO;
@@ -63,15 +64,16 @@ public class AgendaResource {
     @ResponseStatus(HttpStatus.CREATED)
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Create agenda", notes = "This method creates a new agenda")
-    public ResponseEntity<AgendaDTO> createAgenda(@Valid @RequestBody @JsonView(value = View.ModelView.Post.class) AgendaDTO agendaDTO)
-        throws URISyntaxException {
+    public ResponseEntity<AgendaAndOptionsDTO> createAgenda(
+        @Valid @RequestBody @JsonView(value = View.ModelView.Post.class) AgendaDTO agendaDTO
+    ) throws URISyntaxException {
         log.debug("REST request to create Agenda : {}", agendaDTO);
 
-        AgendaDTO savedAgendaDTO = agendaService.createAgenda(agendaDTO);
+        AgendaAndOptionsDTO agendaAndOptionsDTO = agendaService.createAgenda(agendaDTO);
         return ResponseEntity
-            .created(new URI("/api/agenda/" + savedAgendaDTO.getId()))
-            .headers(HeaderUtil.createAlert(applicationName, "agendaManagement.created", savedAgendaDTO.getSubject()))
-            .body(savedAgendaDTO);
+            .created(new URI("/api/agenda/" + agendaAndOptionsDTO.getId()))
+            .headers(HeaderUtil.createAlert(applicationName, "agendaManagement.created", agendaAndOptionsDTO.getSubject()))
+            .body(agendaAndOptionsDTO);
     }
 
     /**
