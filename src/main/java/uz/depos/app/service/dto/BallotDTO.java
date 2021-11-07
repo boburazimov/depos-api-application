@@ -31,7 +31,7 @@ public class BallotDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private Long votingOptionId;
 
-    @NotBlank(message = "Ballot-option must NOT be blank!")
+    @NotNull(message = "Ballot-option must NOT be null!")
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private BallotOptionEnum options;
 
