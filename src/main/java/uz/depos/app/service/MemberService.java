@@ -223,4 +223,15 @@ public class MemberService {
     public Page<MemberDTO> getMembersByMeeting(Long meetingId, Pageable pageable) {
         return memberRepository.findAllByMeetingId(meetingId, pageable).map(MemberDTO::new);
     }
+
+    public MemberDTO turnOnConfirmed(Long memberId) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.orElse(null);
+            member.setConfirmed(true);
+            return memberMapper.memberToMemberDTO(member);
+        } else {
+            throw new ResourceNotFoundException("Member not found my ID: " + memberId);
+        }
+    }
 }

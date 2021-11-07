@@ -31,9 +31,11 @@ import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
+import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
 import uz.depos.app.service.view.View;
+import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
@@ -254,5 +256,22 @@ public class MemberResource {
             .created(new URI("/api/meeting/managers"))
             .headers(HeaderUtil.createAlert(applicationName, "managerManagement.created", memberManagersDTO.getId().toString()))
             .body(memberManagersDTO);
+    }
+
+    /**
+     * {@code PATCH /member} : Switch to isConfirmed for CVORUM an existing member.
+     *
+     * @param id the member to switch.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated member.
+     * @throws ResourceNotFoundException {@code 400 (Bad Request)} if the subject not found.
+     */
+    @PutMapping("/{id}")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Switch isConfirmed", notes = "This method to switch member field isConfirmed which calculate for Kvorum")
+    public ResponseEntity<MemberDTO> switchMemberConfirmed(@PathVariable Long id) {
+        log.debug("REST request to switch member field isConfirmed by ID: {}", id);
+        MemberDTO memberDTO = memberService.turnOnConfirmed(id);
+        Boolean confirmed = memberDTO.getConfirmed();
+        return ResponseEntity.status(confirmed ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(memberDTO);
     }
 }
