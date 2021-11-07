@@ -119,12 +119,12 @@ public class AgendaResource {
     @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Get agendas by meeting", notes = "This method to get agendas by meeting ID")
-    public ResponseEntity<List<AgendaDTO>> getAgendasByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+    public ResponseEntity<List<AgendaAndOptionsDTO>> getAgendasByMeeting(@RequestParam Long meetingId, Pageable pageable) {
         log.debug("REST request to get Agendas by Meeting ID: " + meetingId);
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
-        final Page<AgendaDTO> page = agendaService.getAgendasByMeeting(meetingId, pageable);
+        final Page<AgendaAndOptionsDTO> page = agendaService.getAgendasByMeeting(meetingId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

@@ -191,7 +191,14 @@ public class AgendaService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AgendaDTO> getAgendasByMeeting(Long meetingId, Pageable pageable) {
-        return agendaRepository.findAllByMeetingId(meetingId, pageable).map(AgendaDTO::new);
+    public Page<AgendaAndOptionsDTO> getAgendasByMeeting(Long meetingId, Pageable pageable) {
+        Page<Agenda> allByMeetingId = agendaRepository.findAllByMeetingId(meetingId, pageable);
+        return allByMeetingId.map(
+            agenda -> {
+                List<VotingOption> allByAgendaId = votingRepository.findAllByAgendaId(agenda.getId());
+                List<VotingDTO> votingDTOS = agendaAndVotingMapper.votingsToVotingDTOs(allByAgendaId);
+                return agendaAndVotingMapper.agendaToAgendaAndVotingDTO(agenda, votingDTOS);
+            }
+        );
     }
 }

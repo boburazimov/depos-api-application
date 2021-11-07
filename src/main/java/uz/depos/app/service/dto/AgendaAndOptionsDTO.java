@@ -20,6 +20,7 @@ public class AgendaAndOptionsDTO {
     private AgendaDebateEnum debateEnum;
     private Boolean isActive;
     private List<VotingDTO> votingOptions;
+    private String userName;
 
     public AgendaAndOptionsDTO() {}
 
@@ -33,6 +34,7 @@ public class AgendaAndOptionsDTO {
         this.debateEnum = agenda.getDebateEnum();
         this.isActive = agenda.getActive();
         this.votingOptions = votingOptions;
+        this.userName = agenda.getSpeaker() != null ? agenda.getSpeaker().getUser().getFullName() : null;
     }
 
     public Long getId() {
@@ -105,5 +107,13 @@ public class AgendaAndOptionsDTO {
 
     public void setVotingOptions(List<VotingDTO> votingOptions) {
         this.votingOptions = votingOptions;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 }
