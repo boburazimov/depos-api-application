@@ -1,6 +1,8 @@
 package uz.depos.app.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +77,8 @@ public class MeetingLoggingService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MeetingLoggingDTO> getAllLoggingsByMeeting(Long meetingId, Pageable pageable) {
-        return meetingLoggingRepository.findAllByMeetingId(meetingId, pageable).map(MeetingLoggingDTO::new);
+    public List<MeetingLoggingDTO> getAllLoggingsByMeeting(Long meetingId) {
+        return meetingLoggingRepository.findAllByMeetingId(meetingId).stream().map(MeetingLoggingDTO::new).collect(Collectors.toList());
     }
 
     public void deleteMeetingLogging(Long id) {

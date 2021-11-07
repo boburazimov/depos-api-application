@@ -1,5 +1,6 @@
 package uz.depos.app.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,5 +17,6 @@ public interface MeetingLoggingRepository extends JpaRepository<MeetingLogging, 
 
     Optional<MeetingLogging> findByMeetingIdAndLoggingText(Long meetingId, String loggingText);
 
-    Page<MeetingLogging> findAllByMeetingId(Long meetingId, Pageable pageable);
+    //    List<MeetingLogging> findAllByMeetingId(Long meetingId);
+    List<MeetingLogging> findAllByMeetingId(Long meetingId);
 }

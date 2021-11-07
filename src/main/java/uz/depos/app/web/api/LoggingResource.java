@@ -121,18 +121,17 @@ public class LoggingResource {
     /**
      * {@code GET /logging} : get all meeting-loggings with all the details - calling this are only allowed for the moderator.
      *
-     * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meeting-loggings.
      */
     @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get loggings", notes = "This method get all loggings by Meeting")
-    public ResponseEntity<List<MeetingLoggingDTO>> getAllLoggingsByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+    public ResponseEntity<List<MeetingLoggingDTO>> getAllLoggingsByMeeting(@RequestParam Long meetingId) {
         log.debug("REST request to get all Meeting-loggings.");
-
-        final Page<MeetingLoggingDTO> page = meetingLoggingService.getAllLoggingsByMeeting(meetingId, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+        List<MeetingLoggingDTO> loggingDTOS = meetingLoggingService.getAllLoggingsByMeeting(meetingId);
+        return ResponseEntity.status(HttpStatus.OK).body(loggingDTOS);
+        //        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        //        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
     /**
