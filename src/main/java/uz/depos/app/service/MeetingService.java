@@ -14,15 +14,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uz.depos.app.domain.City;
-import uz.depos.app.domain.Company;
-import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.*;
 import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
+import uz.depos.app.service.mapper.UserMapper;
 
 /**
  * Service class for managing meeting.
@@ -40,6 +40,7 @@ public class MeetingService {
     final MemberRepository memberRepository;
     final AgendaRepository agendaRepository;
     final MeetingMapper meetingMapper;
+    final UserMapper userMapper;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -48,7 +49,8 @@ public class MeetingService {
         CityRepository cityRepository,
         MemberRepository memberRepository,
         AgendaRepository agendaRepository,
-        MeetingMapper meetingMapper
+        MeetingMapper meetingMapper,
+        UserMapper userMapper
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -57,6 +59,7 @@ public class MeetingService {
         this.memberRepository = memberRepository;
         this.agendaRepository = agendaRepository;
         this.meetingMapper = meetingMapper;
+        this.userMapper = userMapper;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
@@ -81,6 +84,40 @@ public class MeetingService {
             meeting.setDescription(request.getDescription());
             Meeting savedMeeting = meetingRepository.save(meeting);
             MeetingDTO meetingDTO = meetingMapper.meetingToMeetingDTO(savedMeeting);
+
+            // create new Member for Chairmen and Secretary
+            companyRepository
+                .findById(meetingDTO.getCompanyId())
+                .ifPresent(
+                    company -> {
+                        // CHAIRMAN
+                        if (company.getChairman() != null && userRepository.findById(company.getChairman().getId()).isPresent()) {
+                            Member member = new Member();
+                            member.setMeeting(savedMeeting);
+                            member.setCompany(company);
+                            member.setUser(company.getChairman());
+                            member.setRemotely(true);
+                            member.setConfirmed(false);
+                            member.setInvolved(false);
+                            member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
+                            member.setFromReestr(false);
+                            memberRepository.save(member);
+                        }
+                        // SECRETARY
+                        if (company.getSecretary() != null && userRepository.findById(company.getSecretary().getId()).isPresent()) {
+                            Member member = new Member();
+                            member.setMeeting(savedMeeting);
+                            member.setCompany(company);
+                            member.setUser(company.getSecretary());
+                            member.setRemotely(true);
+                            member.setConfirmed(false);
+                            member.setInvolved(false);
+                            member.setMemberTypeEnum(MemberTypeEnum.SECRETARY);
+                            member.setFromReestr(false);
+                            memberRepository.save(member);
+                        }
+                    }
+                );
             log.debug("Created Information for Meeting: {}", meetingDTO);
             return meetingDTO;
         } catch (Exception e) {

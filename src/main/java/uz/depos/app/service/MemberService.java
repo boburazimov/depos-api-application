@@ -107,7 +107,7 @@ public class MemberService {
                         userRepository.findById(memberDTO.getUserId()).ifPresent(member::setUser);
                     }
                     member.setRemotely(memberDTO.getRemotely());
-                    member.setConfirmed(memberDTO.getConfirmed());
+                    member.setConfirmed(false);
                     member.setInvolved(memberDTO.getInvolved());
                     member.setMemberTypeEnum(memberDTO.getMemberTypeEnum());
                     member.setHldIt(memberDTO.getHldIt());
@@ -207,7 +207,7 @@ public class MemberService {
                 );
             userRepository.findById(managersDTO.getUserId()).ifPresent(member::setUser);
             member.setRemotely(true);
-            member.setConfirmed(true);
+            member.setConfirmed(false);
             member.setInvolved(false);
             member.setMemberTypeEnum(managersDTO.getMemberTypeEnum());
             member.setFromReestr(false);

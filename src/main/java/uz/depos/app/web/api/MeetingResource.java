@@ -82,6 +82,15 @@ public class MeetingResource {
         if (!companyRepository.existsById(meetingDTO.getCompanyId())) throw new ResourceNotFoundException(
             "Company not found by ID: " + meetingDTO.getCompanyId()
         );
+        companyRepository
+            .findById(meetingDTO.getCompanyId())
+            .ifPresent(
+                company -> {
+                    if (company.getChairman() == null && company.getSecretary() == null) {
+                        throw new ResourceNotFoundException("Company must have Chairmen or Secretary");
+                    }
+                }
+            );
 
         MeetingDTO meeting = meetingService.createMeeting(meetingDTO);
         return ResponseEntity
