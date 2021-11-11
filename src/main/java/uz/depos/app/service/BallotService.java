@@ -1,6 +1,8 @@
 package uz.depos.app.service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import uz.depos.app.domain.Ballot;
 import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.BallotDTO;
+import uz.depos.app.service.dto.MeetingLoggingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
@@ -184,5 +187,14 @@ public class BallotService {
     @Transactional(readOnly = true)
     public Page<BallotDTO> getBallotsByOption(BallotOptionEnum option, Pageable pageable) {
         return ballotRepository.findAllByOptions(option, pageable).map(BallotDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BallotDTO> getBallotsByMeetingAndMember(Long meetingId, Long memberId) {
+        return ballotRepository
+            .findAllByMeetingIdAndMemberId(meetingId, memberId)
+            .stream()
+            .map(BallotDTO::new)
+            .collect(Collectors.toList());
     }
 }

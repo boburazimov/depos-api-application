@@ -29,6 +29,7 @@ import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.BallotRepository;
 import uz.depos.app.service.BallotService;
 import uz.depos.app.service.dto.BallotDTO;
+import uz.depos.app.service.dto.MeetingLoggingDTO;
 import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
@@ -160,6 +161,22 @@ public class BallotResource {
             .noContent()
             .headers(HeaderUtil.createAlert(applicationName, "ballotManagement.deleted", id.toString()))
             .build();
+    }
+
+    /**
+     * {@code GET /ballots} : get ballots by the meeting and member with all the details.
+     *
+     * @param meetingId the meeting ID for search by him.
+     * @param memberId the member ID.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all ballots by the meeting and member.
+     */
+    @GetMapping("/by-meet-and-mem")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by meeting and member", notes = "This method to get ballots by meeting ID and member ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByMeetingAndMember(@RequestParam Long meetingId, Long memberId) {
+        log.debug("REST request to get Ballots by Meeting ID and Member ID: " + meetingId + " / " + memberId);
+        final List<BallotDTO> ballotDTOList = ballotService.getBallotsByMeetingAndMember(meetingId, memberId);
+        return ResponseEntity.status(HttpStatus.OK).body(ballotDTOList);
     }
 
     /**

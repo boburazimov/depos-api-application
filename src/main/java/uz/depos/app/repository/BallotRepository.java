@@ -1,5 +1,6 @@
 package uz.depos.app.repository;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,5 @@ public interface BallotRepository extends JpaRepository<Ballot, Long> {
     Page<Ballot> findAllByAgendaId(Long agendaId, Pageable pageable);
     Page<Ballot> findAllByVotingOptionId(Long votingId, Pageable pageable);
     Page<Ballot> findAllByOptions(BallotOptionEnum options, Pageable pageable);
+    List<Ballot> findAllByMeetingIdAndMemberId(Long meetingId, Long memberId);
 }
