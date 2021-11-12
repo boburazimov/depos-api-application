@@ -1,9 +1,11 @@
 package uz.depos.app.service;
 
+import io.undertow.util.BadRequestException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,6 +25,7 @@ import uz.depos.app.domain.enums.UserGroupEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.dto.AttachReestrDTO;
+import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.mapper.ExcelHelpers;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
@@ -79,7 +82,7 @@ public class ReestrService {
         log.debug("Checked Information for Reestr Sheet: {}", sheet);
     }
 
-    public AttachReestrDTO parse(MultipartFile file, Long meetingId) throws IOException {
+    public AttachReestrDTO parse(MultipartFile file, Long meetingId) throws IOException, BadRequestException {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0); // Get first sheet from book.
 
@@ -110,49 +113,89 @@ public class ReestrService {
                 continue;
             }
             String currentRowPinfl = formatter.formatCellValue(currentRow.getCell(2)); // Get pinfl.
-            //            boolean equals = chairmanPinfl.equals(currentRowPinfl);
-            //            if (equals) {
-            //                hasChairmen = true;
-            //            } else {
-            //                hasChairmen = false;
-            //            }
 
             // Try to get User by PINFL orElse create new User.
-            User user = userRepository.findOneByPinfl(currentRowPinfl).isPresent()
-                ? userRepository.findOneByPinfl(currentRowPinfl).get()
-                : new User();
+            boolean isNew = !userRepository.findOneByPinfl(currentRowPinfl).isPresent();
+            User oldUser = !isNew ? userRepository.findOneByPinfl(currentRowPinfl).get() : new User();
 
-            if (user.getLogin() == null) user.setLogin(userService.generateLogin(currentRowPinfl)); // Set login
-            user.setPassword(passwordEncoder.encode(RandomStringUtils.randomAlphanumeric(6))); // Set password
-            user.setFullName(currentRow.getCell(1).getStringCellValue());
-            user.setResident(true);
-            user.setActivated(true);
-            user.setActivationKey(RandomUtil.generateActivationKey());
-            user.setResetKey(RandomUtil.generateResetKey());
-            user.setResetDate(Instant.now());
-            user.setGroupEnum(UserGroupEnum.INDIVIDUAL);
-            Set<Authority> authorities = new HashSet<>();
-            authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
-            user.setAuthorities(authorities);
-            if (user.getId() == null) user.setPinfl(currentRowPinfl);
-            user.setAuthTypeEnum(UserAuthTypeEnum.ANY);
-            user.setPassport(currentRow.getCell(4).getStringCellValue());
-            user.setPhoneNumber(currentRow.getCell(5).getStringCellValue());
+            DeposUserDTO user = new DeposUserDTO();
 
-            Optional<User> existingByEmail = userRepository.findOneByEmailIgnoreCase(currentRow.getCell(6).getStringCellValue());
-            existingByEmail.ifPresent(
-                user1 -> {
-                    if (
-                        user.getId() == null || !(user.getId() != null && user1.getId().equals(user.getId()))
-                    ) throw new BadRequestAlertException(
-                        "Email: " + user1.getEmail() + " already in use by User (PINFL): " + user1.getPinfl(),
-                        "reestrManagement",
-                        "emailExist"
-                    );
-                }
-            );
+            String password = RandomStringUtils.randomAlphanumeric(6);
+
+            // set ID
+            if (!isNew) userRepository.findOneByPinfl(currentRowPinfl).ifPresent(user1 -> user.setId(user1.getId()));
+            // set Login
+            if (isNew) {
+                user.setLogin(userService.generateLogin(currentRowPinfl));
+            } else {
+                user.setLogin(oldUser.getLogin());
+            }
+            // set Password
+            if (isNew) {
+                user.setPassword(passwordEncoder.encode(password));
+            } else {
+                user.setPassword(oldUser.getPassword());
+            }
+            // set Email
             user.setEmail(currentRow.getCell(6).getStringCellValue());
-            User savedUser = userRepository.save(user);
+            // set Activated
+            if (isNew) {
+                user.setActivated(true);
+            } else {
+                user.setActivated(oldUser.isActivated());
+            }
+            // set FullName
+            user.setFullName(currentRow.getCell(1).getStringCellValue());
+            // set Passport
+            user.setPassport(currentRow.getCell(4).getStringCellValue());
+            // set PINFL
+            user.setPinfl(currentRowPinfl);
+            // set GroupEnum
+            if (isNew) {
+                user.setGroupEnum(UserGroupEnum.INDIVIDUAL);
+            } else {
+                user.setGroupEnum(oldUser.getGroupEnum());
+            }
+            // set AuthTypeEnum
+            if (isNew) {
+                user.setAuthTypeEnum(UserAuthTypeEnum.ANY);
+            } else {
+                user.setAuthTypeEnum(oldUser.getAuthTypeEnum());
+            }
+            // set Resident
+            if (isNew) {
+                user.setResident(true);
+            } else {
+                user.setResident(oldUser.isResident());
+            }
+            // set INN
+            if (!isNew) user.setInn(oldUser.getInn());
+            // set Phone-number
+            if (isNew) {
+                user.setPhoneNumber(currentRow.getCell(5).getStringCellValue());
+            } else {
+                user.setPhoneNumber(oldUser.getPhoneNumber());
+            }
+
+            //            Optional<User> existingByEmail = userRepository.findOneByEmailIgnoreCase(currentRow.getCell(6).getStringCellValue());
+            //            existingByEmail.ifPresent(
+            //                user1 -> {
+            //                    if (
+            //                        user.getId() == null || !(user.getId() != null && user1.getId().equals(user.getId()))
+            //                    ) throw new BadRequestAlertException(
+            //                        "Email: " + user1.getEmail() + " already in use by User (PINFL): " + user1.getPinfl(),
+            //                        "reestrManagement",
+            //                        "emailExist"
+            //                    );
+            //                }
+            //            );
+            User savedUser = isNew ? userService.createDeposUser(user) : userService.editUser(user).get();
+            //            if (isNew) {
+            //                User savedUser = userService.createDeposUser(user);
+            //            } else {
+            //                User user1 = userService.editUser(user).get();
+            //            }
+            //            User savedUser = userRepository.save(user);
 
             Member member = new Member(); // Create member for fill from current row.
             meetingRepository

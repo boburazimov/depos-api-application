@@ -83,6 +83,38 @@ public class DeposUserDTO {
         this.phoneNumber = user.getPhoneNumber();
     }
 
+    public DeposUserDTO(
+        Long id,
+        String login,
+        String password,
+        String email,
+        boolean activated,
+        Set<String> authorities,
+        String fullName,
+        String passport,
+        String pinfl,
+        UserGroupEnum groupEnum,
+        UserAuthTypeEnum authTypeEnum,
+        boolean isResident,
+        String inn,
+        String phoneNumber
+    ) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+        this.email = email;
+        this.activated = activated;
+        this.authorities = authorities;
+        this.fullName = fullName;
+        this.passport = passport;
+        this.pinfl = pinfl;
+        this.groupEnum = groupEnum;
+        this.authTypeEnum = authTypeEnum;
+        this.isResident = isResident;
+        this.inn = inn;
+        this.phoneNumber = phoneNumber;
+    }
+
     public Long getId() {
         return id;
     }

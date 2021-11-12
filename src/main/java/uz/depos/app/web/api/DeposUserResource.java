@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +33,7 @@ import uz.depos.app.service.UsernameAlreadyUsedException;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.dto.DeposUserNameDTO;
+import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
@@ -55,11 +55,18 @@ public class DeposUserResource {
     final UserService userService;
     final AccountResource accountResource;
     final UserRepository userRepository;
+    final UserMapper userMapper;
 
-    public DeposUserResource(UserService userService, AccountResource accountResource, UserRepository userRepository) {
+    public DeposUserResource(
+        UserService userService,
+        AccountResource accountResource,
+        UserRepository userRepository,
+        UserMapper userMapper
+    ) {
         this.userService = userService;
         this.accountResource = accountResource;
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -104,11 +111,12 @@ public class DeposUserResource {
         throws URISyntaxException, BadRequestException {
         log.debug("REST request to save Depos-User : {}", deposUserDTO);
 
-        DeposUserDTO deposUser = userService.createDeposUser(deposUserDTO);
+        User savedUser = userService.createDeposUser(deposUserDTO);
+        DeposUserDTO deposUserDTO1 = userMapper.userToDeposUserDTO(savedUser);
         return ResponseEntity
-            .created(new URI("/api/moder/users/" + deposUser.getLogin()))
-            .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", deposUser.getLogin()))
-            .body(deposUser);
+            .created(new URI("/api/moder/users/" + savedUser.getLogin()))
+            .headers(HeaderUtil.createAlert(applicationName, "userManagement.created", savedUser.getLogin()))
+            .body(deposUserDTO1);
     }
 
     /**
@@ -182,63 +190,9 @@ public class DeposUserResource {
     public ResponseEntity<DeposUserDTO> editUser(@Valid @RequestBody DeposUserDTO userDTO) {
         log.debug("REST request to update User : {}", userDTO);
 
-        if (StringUtils.isNotBlank(userDTO.getEmail())) {
-            userRepository
-                .findOneByEmailIgnoreCase(userDTO.getEmail())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new EmailAlreadyUsedException();
-                    }
-                );
-        }
-        if (StringUtils.isNotBlank(userDTO.getLogin())) {
-            userRepository
-                .findOneByLoginIgnoreCase(userDTO.getLogin().toLowerCase())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new LoginAlreadyUsedException();
-                    }
-                );
-        }
-        if (StringUtils.isNotBlank(userDTO.getInn())) {
-            userRepository
-                .findOneByInn(userDTO.getInn())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new InnAlreadyUsedException();
-                    }
-                );
-        }
-        if (StringUtils.isNotBlank(userDTO.getPassport())) {
-            userRepository
-                .findOneByPassportIgnoreCase(userDTO.getPassport())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new PassportAlreadyUsedException();
-                    }
-                );
-        }
-        if (StringUtils.isNotBlank(userDTO.getPinfl())) {
-            userRepository
-                .findOneByPinfl(userDTO.getPinfl())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new PinflAlreadyUsedException();
-                    }
-                );
-        }
-        if (StringUtils.isNotBlank(userDTO.getPhoneNumber())) {
-            userRepository
-                .findOneByPhoneNumber(userDTO.getPhoneNumber())
-                .ifPresent(
-                    user -> {
-                        if (!user.getId().equals(userDTO.getId())) throw new PhoneNumberAlreadyUsedException();
-                    }
-                );
-        }
-        Optional<DeposUserDTO> updatedUser = userService.editUser(userDTO);
+        Optional<DeposUserDTO> deposUserDTO = userService.editUser(userDTO).map(DeposUserDTO::new);
         return ResponseUtil.wrapOrNotFound(
-            updatedUser,
+            deposUserDTO,
             HeaderUtil.createAlert(applicationName, "userManagement.edited", userDTO.getLogin())
         );
     }

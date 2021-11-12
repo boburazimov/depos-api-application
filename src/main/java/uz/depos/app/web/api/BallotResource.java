@@ -164,18 +164,18 @@ public class BallotResource {
     }
 
     /**
-     * {@code GET /ballots} : get ballots by the meeting and member with all the details.
+     * {@code GET /ballots} : get ballots by the agenda and member with all the details.
      *
-     * @param meetingId the meeting ID for search by him.
+     * @param agendaId the agenda ID for search by him.
      * @param memberId the member ID.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all ballots by the meeting and member.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all ballots by the agenda and member.
      */
-    @GetMapping("/by-meet-and-mem")
+    @GetMapping("/ballots-by-agen-mem")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Get ballots by meeting and member", notes = "This method to get ballots by meeting ID and member ID")
-    public ResponseEntity<List<BallotDTO>> getBallotsByMeetingAndMember(@RequestParam Long meetingId, Long memberId) {
-        log.debug("REST request to get Ballots by Meeting ID and Member ID: " + meetingId + " / " + memberId);
-        final List<BallotDTO> ballotDTOList = ballotService.getBallotsByMeetingAndMember(meetingId, memberId);
+    @ApiOperation(value = "Get ballots by agenda and member", notes = "This method to get ballots by agenda ID and member ID")
+    public ResponseEntity<List<BallotDTO>> getBallotsByAgendaAndMember(@RequestParam Long agendaId, Long memberId) {
+        log.debug("REST request to get Ballots by Meeting ID and Member ID: " + agendaId + " / " + memberId);
+        final List<BallotDTO> ballotDTOList = ballotService.getBallotsByAgendaAndMember(agendaId, memberId);
         return ResponseEntity.status(HttpStatus.OK).body(ballotDTOList);
     }
 

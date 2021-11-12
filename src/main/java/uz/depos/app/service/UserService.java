@@ -153,7 +153,7 @@ public class UserService {
         );
     }
 
-    public DeposUserDTO createDeposUser(DeposUserDTO userDTO) throws BadRequestException {
+    public User createDeposUser(DeposUserDTO userDTO) throws BadRequestException {
         // Create new User object
         User newUser = new User();
 
@@ -269,11 +269,11 @@ public class UserService {
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
         newUser.setResident(userDTO.isResident());
         User savedUser = userRepository.save(newUser);
-        DeposUserDTO deposUserDTO = userMapper.userToDeposUserDTO(savedUser);
-        deposUserDTO.setPassword(saltedPassword);
+
+        //        deposUserDTO.setPassword(saltedPassword);
         this.clearUserCaches(savedUser);
-        log.debug("Created Information for User: {}", deposUserDTO);
-        return deposUserDTO;
+        log.debug("Created Information for User: {}", savedUser);
+        return savedUser;
     }
 
     public User registerUser(AdminUserDTO userDTO, String password) {
@@ -413,7 +413,61 @@ public class UserService {
      * @param userDTO user to edit.
      * @return edited user.
      */
-    public Optional<DeposUserDTO> editUser(DeposUserDTO userDTO) {
+    public Optional<User> editUser(DeposUserDTO userDTO) {
+        if (StringUtils.isNotBlank(userDTO.getEmail())) {
+            userRepository
+                .findOneByEmailIgnoreCase(userDTO.getEmail())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new uz.depos.app.web.rest.errors.EmailAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getLogin())) {
+            userRepository
+                .findOneByLoginIgnoreCase(userDTO.getLogin().toLowerCase())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new LoginAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getInn())) {
+            userRepository
+                .findOneByInn(userDTO.getInn())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new InnAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPassport())) {
+            userRepository
+                .findOneByPassportIgnoreCase(userDTO.getPassport())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PassportAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPinfl())) {
+            userRepository
+                .findOneByPinfl(userDTO.getPinfl())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PinflAlreadyUsedException();
+                    }
+                );
+        }
+        if (StringUtils.isNotBlank(userDTO.getPhoneNumber())) {
+            userRepository
+                .findOneByPhoneNumber(userDTO.getPhoneNumber())
+                .ifPresent(
+                    user -> {
+                        if (!user.getId().equals(userDTO.getId())) throw new PhoneNumberAlreadyUsedException();
+                    }
+                );
+        }
         return Optional
             .of(userRepository.findById(userDTO.getId()))
             .filter(Optional::isPresent)
@@ -466,8 +520,7 @@ public class UserService {
                     log.debug("Changed Information for User: {}", user);
                     return user;
                 }
-            )
-            .map(DeposUserDTO::new);
+            );
     }
 
     public void deleteUser(String login) {

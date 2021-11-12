@@ -190,11 +190,7 @@ public class BallotService {
     }
 
     @Transactional(readOnly = true)
-    public List<BallotDTO> getBallotsByMeetingAndMember(Long meetingId, Long memberId) {
-        return ballotRepository
-            .findAllByMeetingIdAndMemberId(meetingId, memberId)
-            .stream()
-            .map(BallotDTO::new)
-            .collect(Collectors.toList());
+    public List<BallotDTO> getBallotsByAgendaAndMember(Long agendaId, Long memberId) {
+        return ballotRepository.findAllByAgendaIdAndMemberId(agendaId, memberId).stream().map(BallotDTO::new).collect(Collectors.toList());
     }
 }

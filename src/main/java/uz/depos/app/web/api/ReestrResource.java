@@ -2,6 +2,7 @@ package uz.depos.app.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.undertow.util.BadRequestException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class ReestrResource {
     @PostMapping(value = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiOperation(value = "Parse reestr", notes = "This method parsed rows from reestr to member")
     public ResponseEntity<?> parseReestr(@RequestPart MultipartFile file, @RequestParam("meetingId") Long meetingId)
-        throws URISyntaxException, IOException {
+        throws URISyntaxException, IOException, BadRequestException {
         log.debug("REST request to create Reestr : {}", file);
 
         meetingRepository
