@@ -144,7 +144,25 @@ public class MeetingService {
                     meeting.setStartDate(meetingDTO.getStartDate());
                     meeting.setStartRegistration(meetingDTO.getStartRegistration());
                     meeting.setEndRegistration(meetingDTO.getEndRegistration());
-                    companyRepository.findById(meetingDTO.getCompanyId()).ifPresent(meeting::setCompany);
+                    companyRepository
+                        .findById(meetingDTO.getCompanyId())
+                        .ifPresent(
+                            company -> {
+                                meeting.setCompany(company);
+                                memberRepository
+                                    .findAllByMeetingId(meetingDTO.getId())
+                                    .ifPresent(
+                                        members -> {
+                                            members.forEach(
+                                                member -> {
+                                                    member.setCompany(company);
+                                                    memberRepository.save(member);
+                                                }
+                                            );
+                                        }
+                                    );
+                            }
+                        );
                     if (meetingDTO.getCityId() != null && meetingDTO.getCityId() > 0) cityRepository
                         .findById(meetingDTO.getCityId())
                         .ifPresent(meeting::setCity);

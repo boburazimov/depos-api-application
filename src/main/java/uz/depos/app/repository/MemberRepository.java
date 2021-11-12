@@ -29,4 +29,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findFirstByCompanyId(Long companyId);
 
     Page<Member> findAllByMeetingId(Long meetingId, Pageable pageable);
+
+    Optional<List<Member>> findAllByMeetingId(Long meetingId);
 }
