@@ -178,7 +178,7 @@ public class UserService {
                 .findOneByEmailIgnoreCase(userDTO.getEmail())
                 .ifPresent(
                     user -> {
-                        throw new uz.depos.app.web.rest.errors.EmailAlreadyUsedException();
+                        throw new EmailAlreadyUsedException();
                     }
                 );
             newUser.setEmail(userDTO.getEmail().toLowerCase());
@@ -228,10 +228,16 @@ public class UserService {
             newUser.setPinfl(userDTO.getPinfl());
         }
         // Check and set - PASSWORD.
-        if (isPasswordLengthInvalid(userDTO.getPassword())) throw new uz.depos.app.web.rest.errors.InvalidPasswordException();
-        // Checks and get or generate password if none of the CharSequences are empty (""), null or whitespace only.
-        String password = StringUtils.isNotBlank(userDTO.getPassword()) ? userDTO.getPassword() : RandomStringUtils.randomAlphanumeric(6); // Generate new random password.
-
+        String password = "";
+        if (StringUtils.isNotBlank(userDTO.getPassword())) {
+            if (isPasswordLengthInvalid(userDTO.getPassword())) {
+                throw new InvalidPasswordException();
+            } else {
+                password = userDTO.getPassword();
+            }
+        } else {
+            password = RandomStringUtils.randomAlphanumeric(6); // Generate new random password.
+        }
         // Encode password which to set User table in DB
         String encryptedPassword = passwordEncoder.encode(password);
 
@@ -268,9 +274,10 @@ public class UserService {
         newUser.setGroupEnum(userDTO.getGroupEnum());
         newUser.setAuthTypeEnum(userDTO.getAuthTypeEnum());
         newUser.setResident(userDTO.isResident());
+        newUser.setLangKey("ru");
         User savedUser = userRepository.save(newUser);
 
-        //        deposUserDTO.setPassword(saltedPassword);
+        // deposUserDTO.setPassword(saltedPassword);
         this.clearUserCaches(savedUser);
         log.debug("Created Information for User: {}", savedUser);
         return savedUser;
@@ -488,7 +495,7 @@ public class UserService {
                     // Active
                     user.setActivated(userDTO.isActivated());
                     // Authorities
-                    if (!userDTO.getAuthorities().isEmpty()) {
+                    if (userDTO.getAuthorities() != null && !userDTO.getAuthorities().isEmpty()) {
                         Set<Authority> managedAuthorities = user.getAuthorities();
                         managedAuthorities.clear();
                         userDTO
@@ -498,8 +505,13 @@ public class UserService {
                             .filter(Optional::isPresent)
                             .map(Optional::get)
                             .forEach(managedAuthorities::add);
+                    } else {
+                        Set<Authority> authorities;
+                        // by default new user's authority @USER
+                        authorities = new HashSet<>();
+                        authorityRepository.findById(AuthoritiesConstants.USER).ifPresent(authorities::add);
+                        user.setAuthorities(authorities);
                     }
-
                     // FullName
                     if (StringUtils.isNoneBlank(userDTO.getFullName())) user.setFullName(userDTO.getFullName());
                     // Passport

@@ -3,10 +3,9 @@ package uz.depos.app.service;
 import io.undertow.util.BadRequestException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -15,15 +14,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import tech.jhipster.security.RandomUtil;
-import uz.depos.app.domain.Authority;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
 import uz.depos.app.repository.*;
-import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.service.dto.AttachReestrDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.mapper.ExcelHelpers;
@@ -43,10 +40,9 @@ public class ReestrService {
     private final MemberRepository memberRepository;
     private final ExcelHelpers excelHelpers;
     private final UserService userService;
-    private final AuthorityRepository authorityRepository;
-    private final PasswordEncoder passwordEncoder;
     private final CompanyRepository companyRepository;
     private final FilesStorageService filesStorageService;
+    private final MailService mailService;
 
     public ReestrService(
         MeetingRepository meetingRepository,
@@ -54,20 +50,18 @@ public class ReestrService {
         MemberRepository memberRepository,
         ExcelHelpers excelHelpers,
         UserService userService,
-        AuthorityRepository authorityRepository,
-        PasswordEncoder passwordEncoder,
         CompanyRepository companyRepository,
-        FilesStorageService filesStorageService
+        FilesStorageService filesStorageService,
+        MailService mailService
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
         this.memberRepository = memberRepository;
         this.excelHelpers = excelHelpers;
         this.userService = userService;
-        this.authorityRepository = authorityRepository;
-        this.passwordEncoder = passwordEncoder;
         this.companyRepository = companyRepository;
         this.filesStorageService = filesStorageService;
+        this.mailService = mailService;
     }
 
     public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell) {
@@ -102,9 +96,9 @@ public class ReestrService {
             )
             .getChairman()
             .getPinfl();
-        //        boolean hasChairmen = false;
 
         int rowNumber = 0;
+
         while (rows.hasNext()) {
             Row currentRow = rows.next();
             // skip header
@@ -132,7 +126,7 @@ public class ReestrService {
             }
             // set Password
             if (isNew) {
-                user.setPassword(passwordEncoder.encode(password));
+                user.setPassword(password);
             } else {
                 user.setPassword(oldUser.getPassword());
             }
@@ -177,26 +171,12 @@ public class ReestrService {
                 user.setPhoneNumber(oldUser.getPhoneNumber());
             }
 
-            //            Optional<User> existingByEmail = userRepository.findOneByEmailIgnoreCase(currentRow.getCell(6).getStringCellValue());
-            //            existingByEmail.ifPresent(
-            //                user1 -> {
-            //                    if (
-            //                        user.getId() == null || !(user.getId() != null && user1.getId().equals(user.getId()))
-            //                    ) throw new BadRequestAlertException(
-            //                        "Email: " + user1.getEmail() + " already in use by User (PINFL): " + user1.getPinfl(),
-            //                        "reestrManagement",
-            //                        "emailExist"
-            //                    );
-            //                }
-            //            );
-            User savedUser = isNew ? userService.createDeposUser(user) : userService.editUser(user).get();
-            //            if (isNew) {
-            //                User savedUser = userService.createDeposUser(user);
-            //            } else {
-            //                User user1 = userService.editUser(user).get();
-            //            }
-            //            User savedUser = userRepository.save(user);
-
+            User savedUser;
+            if (isNew) {
+                savedUser = userService.createDeposUser(user);
+            } else {
+                savedUser = userService.editUser(user).get();
+            }
             Member member = new Member(); // Create member for fill from current row.
             meetingRepository
                 .findOneById(meetingId)
@@ -214,16 +194,6 @@ public class ReestrService {
             member.setRemotely(true);
             member.setConfirmed(false);
             member.setInvolved(false);
-            //            meetingRepository
-            //                .findOneById(meetingId)
-            //                .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
-            //                .ifPresent(
-            //                    company -> {
-            //                        if (company.getChairman() != null) {
-            //                            if (company.getChairman().getPinfl().equals(currentRowPinfl)) member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
-            //                        }
-            //                    }
-            //                );
             if (chairmanPinfl.equals(currentRowPinfl)) {
                 member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
             } else {
@@ -233,16 +203,20 @@ public class ReestrService {
             member.setPosition(currentRow.getCell(7).getStringCellValue());
             member.setFromReestr(true);
             Member savedMember = memberRepository.saveAndFlush(member);
+
+            if (meetingRepository.findById(meetingId).isPresent() && StringUtils.isNotBlank(password) && savedUser != null) {
+                Meeting meeting = meetingRepository.findById(meetingId).get();
+                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, password);
+                runnable.run();
+            }
             memberList.add(savedMember);
         }
         workbook.close();
-
         //        if (!hasChairmen) throw new BadRequestAlertException(
         //            "From this Reestr don't have Chairmen by Company",
         //            "reestrManagement",
         //            "chairmenError"
         //        );
-
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
         savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
         log.debug("Parsed Information for Reestr: {}", workbook);

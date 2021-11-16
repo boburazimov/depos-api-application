@@ -5,6 +5,10 @@ import io.swagger.annotations.ApiOperation;
 import io.undertow.util.BadRequestException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -16,6 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.Member;
+import uz.depos.app.domain.User;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
@@ -118,6 +125,16 @@ public class ReestrResource {
 
         AttachReestrDTO attachReestrDTO = reestrService.parse(file, meetingId);
         if (attachReestrDTO != null) {
+            //            memberRepository.findAllByMeetingIdAndFromReestrTrue(meetingId).ifPresent(
+            //                members -> {
+            //                    members.forEach(member -> {
+            //                        if (meetingRepository.findById(meetingId).isPresent() && userRepository.findById(member.getUser().getId()).isPresent()) {
+            //                            Meeting meeting = meetingRepository.findById(meetingId).get();
+            //                            User user = userRepository.findById(member.getUser().getId()).get();
+            //                            mailService.sendInvitationEmail(user, meeting, password);
+            //                        }
+            //                    });
+            //            });
             log.debug("Changed Information for Reestr: {}", attachReestrDTO);
             return ResponseEntity.status(HttpStatus.OK).body(attachReestrDTO);
         } else {

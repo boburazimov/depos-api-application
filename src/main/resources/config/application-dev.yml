@@ -64,8 +64,8 @@ spring:
   mail:
     host: smtp.gmail.com # localhost
     port: 587 # 25
-    username: azimov.b2020@gmail.com
-    password: 7540809Bb
+    username: central.depos@gmail.com
+    password: 123456789Dd
     protocol: smtp
     tls: true
     properties.mail.smtp:

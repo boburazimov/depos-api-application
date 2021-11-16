@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import tech.jhipster.config.JHipsterProperties;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.User;
 
 /**
@@ -30,6 +31,12 @@ public class MailService {
     private static final String USER = "user";
 
     private static final String BASE_URL = "baseUrl";
+
+    private static final String MEETING = "meeting";
+    private static final String START_DATE = "start";
+    private static final String COMPANY_NAME = "company";
+    private static final String PASSWORD = "password";
+    private static final String DEPONET = "deponet";
 
     private final JHipsterProperties jHipsterProperties;
 
@@ -102,6 +109,31 @@ public class MailService {
     public void sendCreationEmail(User user) {
         log.debug("Sending creation email to '{}'", user.getEmail());
         sendEmailFromTemplate(user, "mail/creationEmail", "email.activation.title");
+    }
+
+    public void sendInvitationEmail(User user, Meeting meeting, String password) {
+        log.debug("Sending invitation email to '{}'", user.getEmail());
+        //        user.setPassword(password);
+        sendEmailFromInviteTemplate(user, "mail/invitationEmail", "email.invite.title", meeting, password);
+    }
+
+    public void sendEmailFromInviteTemplate(User user, String templateName, String titleKey, Meeting meeting, String password) {
+        if (user.getEmail() == null || meeting == null) {
+            log.debug("Email or meetingID doesn't exist for user '{}'", user.getLogin());
+            return;
+        }
+        Locale locale = Locale.forLanguageTag(user.getLangKey());
+        Context context = new Context(locale);
+        context.setVariable(USER, user);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        context.setVariable(MEETING, meeting);
+        context.setVariable(PASSWORD, password);
+        context.setVariable(START_DATE, meeting.getStartDate());
+        context.setVariable(COMPANY_NAME, meeting.getCompany().getName());
+        context.setVariable(DEPONET, "http://deponet.uz");
+        String content = templateEngine.process(templateName, context);
+        String subject = messageSource.getMessage(titleKey, null, locale);
+        sendEmail(user.getEmail(), subject, content, false, true);
     }
 
     @Async

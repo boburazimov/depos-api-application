@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+  <head>
+    <title th:text="#{email.invite.title}">Depository invitation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="icon" th:href="@{|${baseUrl}/favicon.ico|}" />
+  </head>
+  <body>
+    <p th:text="#{email.invite.greeting(${user.fullName})}">Dear <span>!</span></p>
+    <p th:text="#{email.invite.text1}">The Central Securities Depository of the Republic of Uzbekistan, notifies you that the</p>
+    <span th:text="#{email.invite.company(${company})}">Company</span>
+    <span th:text="#{email.invite.text1-1(${#temporals.format(start, 'dd-MMMM-yyyy')})}">in </span>
+    <span th:text="#{email.invite.text1-2}"
+      >is holding an electronic meeting of the Meetings of the supervisory board on the platform
+    </span>
+    <a th:with="url=(@{|${baseUrl}|})" th:href="${url}" th:text="${url}">evote.uz</a>
+    <span th:text="#{email.invite.text1-3}"
+      >To view the agenda and materials of the General Meeting of Shareholders, click on the following link:</span
+    >
+    <p>
+      <a th:with="url=(@{|${baseUrl}/issuerLegal/meetingSetting/${meeting.id}|})" th:href="${url}" th:text="#{email.invite.link-meeting}"
+        >Link meeting</a
+      >
+    </p>
+    <p th:text="#{email.invite.info}">
+      You can get detailed information about the Evote service by calling +998 90 006 77 44, as well as on the official resources of the
+      Central Securities Depository:
+    </p>
+    <p>deponet.uz</p>
+
+    <p th:text="#{email.invite.text3(${user.login})}">Your login:</p>
+    <p th:text="#{email.invite.text4(${password})}">Your password:</p>
+    <p>
+      <span th:text="#{email.invite.text2}">Best regards, </span>
+    </p>
+  </body>
+</html>
