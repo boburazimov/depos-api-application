@@ -17,6 +17,8 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     Page<Question> findAllByMeetingId(Long meetingId, Pageable pageable);
 
+    List<Question> findAllByMeetingId(Long meetingId);
+
     List<Question> findAllByMemberId(Long memberId);
 
     Optional<Question> findOneById(Long id);

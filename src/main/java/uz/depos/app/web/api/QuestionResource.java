@@ -102,7 +102,7 @@ public class QuestionResource {
         log.debug("REST request to update question answer : {}", questionDTO.getQuestionAnswer());
 
         Optional<QuestionDTO> savedQuestionDTO = questionService.updateQuestionAnswer(questionDTO);
-        messagingTemplate.convertAndSend("/topic/meetingId/question", "questionId:1,answerText:abcde");
+        //        messagingTemplate.convertAndSend("/topic/meetingId/question", "questionId:1,answerText:abcde");
         return ResponseUtil.wrapOrNotFound(
             savedQuestionDTO,
             HeaderUtil.createAlert(applicationName, "questionManagement.updated", questionDTO.getId().toString())

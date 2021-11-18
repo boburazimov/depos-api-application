@@ -2,6 +2,7 @@ package uz.depos.app.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +78,11 @@ public class QuestionService {
     @Transactional(readOnly = true)
     public Page<QuestionDTO> getAllQuestionsByMeeting(Long meetingId, Pageable pageable) {
         return questionRepository.findAllByMeetingId(meetingId, pageable).map(QuestionDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<QuestionDTO> getQuestionsByMeetingId(Long meetingId) {
+        return questionRepository.findAllByMeetingId(meetingId).stream().map(QuestionDTO::new).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
