@@ -2,6 +2,7 @@ package uz.depos.app.web.websocket;
 
 import static uz.depos.app.config.WebsocketConfiguration.IP_ADDRESS;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import java.security.Principal;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -38,9 +39,17 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
 
     @Override
     public void onApplicationEvent(SessionDisconnectEvent event) {
+        System.out.println(event);
+        System.out.println("DISCONNECT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         ActivityDTO activityDTO = new ActivityDTO();
         activityDTO.setSessionId(event.getSessionId());
         activityDTO.setPage("logout");
         messagingTemplate.convertAndSend("/topic/tracker", activityDTO);
+    }
+
+    @MessageMapping("topic/user-all")
+    @SendTo("/topic/user")
+    public String sendToAll(@Payload String message, StompHeaderAccessor stompHeaderAccessor, Principal principal) {
+        return message;
     }
 }

@@ -32,7 +32,7 @@ public class TestWebSocketController implements ApplicationListener<SessionDisco
         this.messagingTemplate = messagingTemplate;
     }
 
-    @MessageMapping("/topic/meeting-status") //keladi
+    @MessageMapping("/topic/user") //keladi
     @SendTo("/topic/tracker/userId") //jo'natadi
     public QuestionDTO sendActivity(@Payload QuestionDTO questionDTO, StompHeaderAccessor stompHeaderAccessor, Principal principal) {
         QuestionDTO savedQuestion = questionService.addQuestionByMember(questionDTO);
