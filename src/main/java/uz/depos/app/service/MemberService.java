@@ -3,7 +3,9 @@ package uz.depos.app.service;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
@@ -14,6 +16,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.MemberSession;
 import uz.depos.app.domain.User;
@@ -239,21 +242,21 @@ public class MemberService {
         }
     }
 
-    public MemberDTO setStatusForMember(Long memberId, Boolean isOnline, String sessionId) {
+    public void setStatusForMember(Long memberId, Boolean isOnline, String sessionId) {
         if (memberId != null && isOnline && sessionId != null) {
             Optional<Member> byId = memberRepository.findById(memberId);
             if (byId.isPresent()) {
                 Member member = byId.get();
                 member.setInvolved(true);
                 Member savedMember = memberRepository.saveAndFlush(member);
-                meetingRepository
-                    .findById(savedMember.getMeeting().getId())
-                    .ifPresent(
-                        meeting -> {
-                            memberSessionRepository.save(new MemberSession(meeting.getId(), sessionId, savedMember.getId()));
-                        }
-                    );
-                return memberMapper.memberToMemberDTO(savedMember);
+                Optional<Meeting> meetingOptional = meetingRepository.findById(savedMember.getMeeting().getId());
+                if (meetingOptional.isPresent()) {
+                    Meeting meeting = meetingOptional.get();
+                    memberSessionRepository.save(new MemberSession(meeting.getId(), sessionId, savedMember.getId()));
+                    getMembersForOnlineList(meeting);
+                } else {
+                    throw new ResourceNotFoundException("Meeting not found by this ID: " + savedMember.getMeeting().getId());
+                }
             } else {
                 throw new ResourceNotFoundException("Member not found by this ID: " + memberId);
             }
@@ -266,10 +269,14 @@ public class MemberService {
                     Member member = byId.get();
                     member.setInvolved(false);
                     Member savedMember = memberRepository.save(member);
-                    MemberDTO memberDTO = memberMapper.memberToMemberDTO(savedMember);
                     memberSessionRepository.delete(memberSession);
-                    messagingTemplate.convertAndSend("/topic/getMember", memberDTO);
-                    return memberDTO;
+                    Optional<Meeting> meetingOptional = meetingRepository.findById(savedMember.getMeeting().getId());
+                    if (meetingOptional.isPresent()) {
+                        Meeting meeting = meetingOptional.get();
+                        getMembersForOnlineList(meeting);
+                    } else {
+                        throw new ResourceNotFoundException("Meeting not found by this ID: " + savedMember.getMeeting().getId());
+                    }
                 } else {
                     throw new ResourceNotFoundException("Member not found for set Offline by ID: " + memberSession.getMemberId());
                 }
@@ -278,6 +285,17 @@ public class MemberService {
             }
         } else {
             throw new ResourceNotFoundException("SessionId must not be null");
+        }
+    }
+
+    private void getMembersForOnlineList(Meeting meeting) {
+        Optional<List<Member>> allByMeetingId = memberRepository.findAllByMeetingId(meeting.getId());
+        if (allByMeetingId.isPresent()) {
+            List<Member> members = allByMeetingId.get();
+            List<MemberDTO> memberDTOList = members.stream().map(MemberDTO::new).collect(Collectors.toList());
+            messagingTemplate.convertAndSend("/topic/getMember", memberDTOList);
+        } else {
+            throw new ResourceNotFoundException("Member not found by Meeting ID: " + meeting.getId());
         }
     }
 }

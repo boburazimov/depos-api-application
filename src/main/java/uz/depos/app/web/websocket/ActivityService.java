@@ -20,7 +20,6 @@ import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.QuestionService;
 import uz.depos.app.service.dto.MeetingLoggingDTO;
-import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberSessionDTO;
 import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -111,16 +110,12 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     }
 
     @MessageMapping("/topic/setStatus")
-    @SendTo("/topic/getMember")
-    public MemberDTO setMemberStatus(@Payload MemberSessionDTO memberSessionDTO, StompHeaderAccessor headerAccessor) {
+    //    @SendTo("/topic/getMember")
+    public void setMemberStatus(@Payload MemberSessionDTO memberSessionDTO, StompHeaderAccessor headerAccessor) {
         log.debug("Set member status by ID: {}", memberSessionDTO.getMemberId());
 
         if (memberSessionDTO.getMemberId() != null && headerAccessor.getSessionId() != null && memberSessionDTO.getOnline() != null) {
-            return memberService.setStatusForMember(
-                memberSessionDTO.getMemberId(),
-                memberSessionDTO.getOnline(),
-                headerAccessor.getSessionId()
-            );
+            memberService.setStatusForMember(memberSessionDTO.getMemberId(), memberSessionDTO.getOnline(), headerAccessor.getSessionId());
         } else {
             throw new BadRequestAlertException("Error in set member status", "MemberDTO", "setStatusError");
         }
