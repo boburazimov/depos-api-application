@@ -87,12 +87,7 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public List<QuestionDTO> getAllQuestionsByMember(Long memberId) {
-        List<Question> allByMemberId = questionRepository.findAllByMemberId(memberId);
-        if (allByMemberId.size() > 0) {
-            return meetingMapper.questionsToQuestionDTOs(allByMemberId);
-        } else {
-            throw new ResourceNotFoundException("Questions not found by Member ID: " + memberId);
-        }
+        return questionRepository.findAllByMemberId(memberId).stream().map(QuestionDTO::new).collect(Collectors.toList());
     }
 
     public Optional<QuestionDTO> updateQuestionAnswer(QuestionDTO questionDTO) {
