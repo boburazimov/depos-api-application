@@ -11,18 +11,16 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Member;
+import uz.depos.app.domain.MemberSession;
 import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberSearchFieldEnum;
-import uz.depos.app.repository.CompanyRepository;
-import uz.depos.app.repository.MeetingRepository;
-import uz.depos.app.repository.MemberRepository;
-import uz.depos.app.repository.UserRepository;
+import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
-import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.service.mapper.MemberMapper;
 
 /**
@@ -39,19 +37,25 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final MemberMapper memberMapper;
     private final CompanyRepository companyRepository;
+    private final MemberSessionRepository memberSessionRepository;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     public MemberService(
         MeetingRepository meetingRepository,
         UserRepository userRepository,
         MemberRepository memberRepository,
         MemberMapper memberMapper,
-        CompanyRepository companyRepository
+        CompanyRepository companyRepository,
+        MemberSessionRepository memberSessionRepository,
+        SimpMessageSendingOperations messagingTemplate
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
         this.memberRepository = memberRepository;
         this.memberMapper = memberMapper;
         this.companyRepository = companyRepository;
+        this.memberSessionRepository = memberSessionRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public MemberDTO createMember(MemberDTO memberDTO) {
@@ -232,6 +236,48 @@ public class MemberService {
             return memberMapper.memberToMemberDTO(member);
         } else {
             throw new ResourceNotFoundException("Member not found my ID: " + memberId);
+        }
+    }
+
+    public MemberDTO setStatusForMember(Long memberId, Boolean isOnline, String sessionId) {
+        if (memberId != null && isOnline && sessionId != null) {
+            Optional<Member> byId = memberRepository.findById(memberId);
+            if (byId.isPresent()) {
+                Member member = byId.get();
+                member.setInvolved(true);
+                Member savedMember = memberRepository.saveAndFlush(member);
+                meetingRepository
+                    .findById(savedMember.getMeeting().getId())
+                    .ifPresent(
+                        meeting -> {
+                            memberSessionRepository.save(new MemberSession(meeting.getId(), sessionId, savedMember.getId()));
+                        }
+                    );
+                return memberMapper.memberToMemberDTO(savedMember);
+            } else {
+                throw new ResourceNotFoundException("Member not found by this ID: " + memberId);
+            }
+        } else if (memberId == null && !isOnline && sessionId != null) {
+            Optional<MemberSession> oneBySessionId = memberSessionRepository.findOneBySessionId(sessionId);
+            if (oneBySessionId.isPresent()) {
+                MemberSession memberSession = oneBySessionId.get();
+                Optional<Member> byId = memberRepository.findById(memberSession.getMemberId());
+                if (byId.isPresent()) {
+                    Member member = byId.get();
+                    member.setInvolved(false);
+                    Member savedMember = memberRepository.save(member);
+                    MemberDTO memberDTO = memberMapper.memberToMemberDTO(savedMember);
+                    memberSessionRepository.delete(memberSession);
+                    messagingTemplate.convertAndSend("/topic/getMember", memberDTO);
+                    return memberDTO;
+                } else {
+                    throw new ResourceNotFoundException("Member not found for set Offline by ID: " + memberSession.getMemberId());
+                }
+            } else {
+                throw new ResourceNotFoundException("Session not found by ID: " + sessionId);
+            }
+        } else {
+            throw new ResourceNotFoundException("SessionId must not be null");
         }
     }
 }

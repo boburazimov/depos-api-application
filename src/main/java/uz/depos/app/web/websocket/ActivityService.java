@@ -5,29 +5,23 @@ import static uz.depos.app.config.WebsocketConfiguration.IP_ADDRESS;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-import tech.jhipster.web.util.PaginationUtil;
+import uz.depos.app.repository.MemberSessionRepository;
 import uz.depos.app.service.MeetingLoggingService;
+import uz.depos.app.service.MemberService;
 import uz.depos.app.service.QuestionService;
 import uz.depos.app.service.dto.MeetingLoggingDTO;
+import uz.depos.app.service.dto.MemberDTO;
+import uz.depos.app.service.dto.MemberSessionDTO;
 import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.websocket.dto.ActivityDTO;
@@ -40,15 +34,21 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     private final SimpMessageSendingOperations messagingTemplate;
     private final MeetingLoggingService meetingLoggingService;
     private final QuestionService questionService;
+    private final MemberService memberService;
+    private final MemberSessionRepository memberSessionRepository;
 
     public ActivityService(
         SimpMessageSendingOperations messagingTemplate,
         MeetingLoggingService meetingLoggingService,
-        QuestionService questionService
+        QuestionService questionService,
+        MemberService memberService,
+        MemberSessionRepository memberSessionRepository
     ) {
         this.messagingTemplate = messagingTemplate;
         this.meetingLoggingService = meetingLoggingService;
         this.questionService = questionService;
+        this.memberService = memberService;
+        this.memberSessionRepository = memberSessionRepository;
     }
 
     @MessageMapping("/topic/activity")
@@ -64,25 +64,27 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
 
     @Override
     public void onApplicationEvent(SessionDisconnectEvent event) {
-        System.out.println(event);
-        System.out.println("DISCONNECT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        memberSessionRepository
+            .findOneBySessionId(event.getSessionId())
+            .ifPresent(
+                memberSession -> {
+                    memberService.setStatusForMember(null, false, memberSession.getSessionId());
+                }
+            );
+        System.out.println(">>>>>>>>>>>>> DISCONNECT !!!!");
         ActivityDTO activityDTO = new ActivityDTO();
         activityDTO.setSessionId(event.getSessionId());
         activityDTO.setPage("logout");
         messagingTemplate.convertAndSend("/topic/tracker", activityDTO);
     }
 
-    @MessageMapping("topic/user-all")
+    @MessageMapping("/topic/user-all")
     @SendTo("/topic/user")
     public List<MeetingLoggingDTO> sendToAll(
         @Payload MeetingLoggingDTO loggingDTO,
         StompHeaderAccessor stompHeaderAccessor,
         Principal principal
     ) {
-        log.debug("Sending user logging data {}", loggingDTO);
-        log.debug("Sending user stompHeaderAccessor data {}", stompHeaderAccessor);
-        log.debug("Sending user principal data {}", principal);
-
         MeetingLoggingDTO meetingLoggingDTO = meetingLoggingService.addMeetingLogging(loggingDTO);
         if (meetingLoggingDTO != null) {
             return meetingLoggingService.getAllLoggingsByMeeting(meetingLoggingDTO.getMeetingId());
@@ -91,7 +93,7 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
         }
     }
 
-    @MessageMapping("topic/question")
+    @MessageMapping("/topic/question")
     @SendTo("/topic/answer")
     public List<QuestionDTO> WsQuestion(@Payload QuestionDTO questionDTO, StompHeaderAccessor stompHeaderAccessor, Principal principal) {
         log.debug("Save user question data {}", questionDTO);
@@ -105,6 +107,22 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
             return questionService.getQuestionsByMeetingId(questionDTO1.getMeetingId());
         } else {
             throw new BadRequestAlertException("Error in save question", "QuestionDTO", "QuestionSaveError");
+        }
+    }
+
+    @MessageMapping("/topic/setStatus")
+    @SendTo("/topic/getMember")
+    public MemberDTO setMemberStatus(@Payload MemberSessionDTO memberSessionDTO, StompHeaderAccessor headerAccessor) {
+        log.debug("Set member status by ID: {}", memberSessionDTO.getMemberId());
+
+        if (memberSessionDTO.getMemberId() != null && headerAccessor.getSessionId() != null && memberSessionDTO.getOnline() != null) {
+            return memberService.setStatusForMember(
+                memberSessionDTO.getMemberId(),
+                memberSessionDTO.getOnline(),
+                headerAccessor.getSessionId()
+            );
+        } else {
+            throw new BadRequestAlertException("Error in set member status", "MemberDTO", "setStatusError");
         }
     }
 }
