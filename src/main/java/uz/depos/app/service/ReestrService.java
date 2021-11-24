@@ -204,9 +204,9 @@ public class ReestrService {
             member.setFromReestr(true);
             Member savedMember = memberRepository.saveAndFlush(member);
 
-            if (meetingRepository.findById(meetingId).isPresent() && StringUtils.isNotBlank(password) && savedUser != null) {
+            if (meetingRepository.findById(meetingId).isPresent() && savedUser != null) {
                 Meeting meeting = meetingRepository.findById(meetingId).get();
-                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, password);
+                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, isNew ? password : "");
                 runnable.run();
             }
             memberList.add(savedMember);

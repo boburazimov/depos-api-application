@@ -42,7 +42,8 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
         registry
             .addEndpoint("/websocket/tracker", "/websocket/question", "/websocket/logger", "/websocket/online")
             .setHandshakeHandler(defaultHandshakeHandler())
-            .setAllowedOrigins("http://localhost:3000")
+            .setAllowedOrigins(allowedOrigins)
+            //            .setAllowedOrigins("http://localhost:3000", "https://evoteuz.netlify.app", "https://evote-uz.vercel.app")
             .withSockJS()
             .setInterceptors(httpSessionHandshakeInterceptor());
     }
