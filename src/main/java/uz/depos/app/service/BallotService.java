@@ -89,7 +89,20 @@ public class BallotService {
             throw new ResourceNotFoundException("Agenda not found by ID: " + ballotDTO.getAgendaId());
         } else if (!votingRepository.existsById(ballotDTO.getVotingOptionId())) {
             throw new ResourceNotFoundException("Voting-option not found by ID: " + ballotDTO.getVotingOptionId());
-        }
+        } else if (
+            ballotRepository
+                .findByMeetingIdAndMemberIdAndAgendaIdAndVotingOptionId(
+                    ballotDTO.getMeetingId(),
+                    ballotDTO.getMemberId(),
+                    ballotDTO.getAgendaId(),
+                    ballotDTO.getVotingOptionId()
+                )
+                .isPresent()
+        ) throw new BadRequestAlertException(
+            "Ballot from MeetingID, MemberID, AgendaID and VariantID has already in database",
+            "ballotManagement",
+            "existBallot"
+        );
 
         Ballot ballot = new Ballot();
         Ballot savedBallot = ballotConstructor(ballotDTO, ballot);
