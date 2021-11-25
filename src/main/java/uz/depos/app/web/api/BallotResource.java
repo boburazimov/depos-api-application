@@ -28,6 +28,7 @@ import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.BallotRepository;
 import uz.depos.app.service.BallotService;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.BallotDTO;
 import uz.depos.app.service.dto.MeetingLoggingDTO;
 import uz.depos.app.service.dto.VotingDTO;
@@ -154,13 +155,10 @@ public class BallotResource {
      */
     @DeleteMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteUser(@PathVariable Long id) {
         log.debug("REST request to delete Ballot: {}", id);
-        ballotService.deleteBallot(id);
-        return ResponseEntity
-            .noContent()
-            .headers(HeaderUtil.createAlert(applicationName, "ballotManagement.deleted", id.toString()))
-            .build();
+        ApiResponse response = ballotService.deleteBallot(id);
+        return ResponseEntity.status(response.isSuccess() ? HttpStatus.ACCEPTED : HttpStatus.CONFLICT).body(response);
     }
 
     /**

@@ -103,7 +103,7 @@ public class CityService {
     }
 
     /**
-     * Delete city from data base.
+     * Delete city from database.
      *
      * @param id city to delete.
      * @return ApiResponse.

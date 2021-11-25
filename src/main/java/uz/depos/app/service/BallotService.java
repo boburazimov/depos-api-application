@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Ballot;
 import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.*;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.BallotDTO;
 import uz.depos.app.service.dto.MeetingLoggingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
@@ -153,9 +154,14 @@ public class BallotService {
      *
      * @param id the id Ballot
      */
-    public void deleteBallot(Long id) {
-        ballotRepository.findById(id).ifPresent(ballotRepository::delete);
-        log.debug("Deleted Agenda by ID: {}", id);
+    public ApiResponse deleteBallot(Long id) {
+        try {
+            ballotRepository.findById(id).ifPresent(ballotRepository::delete);
+            log.debug("Deleted Ballot by ID: {}", id);
+            return new ApiResponse("Ballot deleted!", true);
+        } catch (Exception e) {
+            return new ApiResponse(e.getMessage(), false);
+        }
     }
 
     @Transactional(readOnly = true)
