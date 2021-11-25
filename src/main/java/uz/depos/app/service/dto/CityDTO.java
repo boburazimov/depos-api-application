@@ -19,8 +19,6 @@ public class CityDTO {
     @Column(length = 64, unique = true, nullable = false)
     private String nameEn;
 
-    private String extraInfo;
-
     public CityDTO() {}
 
     public CityDTO(City city) {
@@ -28,7 +26,6 @@ public class CityDTO {
         this.nameUz = city.getNameUz();
         this.nameRu = city.getNameRu();
         this.nameEn = city.getNameEn();
-        this.extraInfo = city.getExtraInfo();
     }
 
     public Integer getId() {
@@ -61,35 +58,5 @@ public class CityDTO {
 
     public void setNameEn(String nameEn) {
         this.nameEn = nameEn;
-    }
-
-    public String getExtraInfo() {
-        return extraInfo;
-    }
-
-    public void setExtraInfo(String extraInfo) {
-        this.extraInfo = extraInfo;
-    }
-
-    @Override
-    public String toString() {
-        return (
-            "City{" +
-            "id=" +
-            id +
-            ", nameUz='" +
-            nameUz +
-            '\'' +
-            ", nameRu='" +
-            nameRu +
-            '\'' +
-            ", nameEn='" +
-            nameEn +
-            '\'' +
-            ", extraInfo='" +
-            extraInfo +
-            '\'' +
-            '}'
-        );
     }
 }

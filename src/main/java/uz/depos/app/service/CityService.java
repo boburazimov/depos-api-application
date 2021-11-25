@@ -46,7 +46,6 @@ public class CityService {
         if (StringUtils.isNoneBlank(cityDTO.getNameUz())) city.setNameUz(cityDTO.getNameUz());
         if (StringUtils.isNoneBlank(cityDTO.getNameRu())) city.setNameRu(cityDTO.getNameRu());
         if (StringUtils.isNoneBlank(cityDTO.getNameEn())) city.setNameEn(cityDTO.getNameEn());
-        city.setExtraInfo(cityDTO.getExtraInfo());
 
         City savedCity = cityRepository.save(city);
         CityDTO toCityDTO = companyMapper.cityToCityDTO(savedCity);
@@ -73,7 +72,6 @@ public class CityService {
                     if (StringUtils.isNoneBlank(cityDTO.getNameRu())) city.setNameRu(cityDTO.getNameRu().toLowerCase());
                     // NameEn
                     if (StringUtils.isNoneBlank(cityDTO.getNameEn())) city.setNameEn(cityDTO.getNameEn().toLowerCase());
-                    city.setExtraInfo(cityDTO.getExtraInfo());
 
                     log.debug("Changed Information for City: {}", city);
                     return city;
