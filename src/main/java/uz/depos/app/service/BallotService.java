@@ -91,13 +91,7 @@ public class BallotService {
         }
 
         Ballot ballot = new Ballot();
-        memberService.getMember(ballotDTO.getMemberId()).ifPresent(ballot::setMember);
-        meetingService.getMeeting(ballotDTO.getMeetingId()).ifPresent(ballot::setMeeting);
-        agendaService.getAgenda(ballotDTO.getAgendaId()).ifPresent(ballot::setAgenda);
-        votingService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
-        if (StringUtils.isNoneBlank(ballotDTO.getOptions().toString())) ballot.setOptions(ballotDTO.getOptions());
-
-        Ballot savedBallot = ballotRepository.saveAndFlush(ballot);
+        Ballot savedBallot = ballotConstructor(ballotDTO, ballot);
         log.debug("Created Information for Ballot: {}", savedBallot);
         return agendaAndVotingMapper.ballotToBallotDTO(savedBallot);
     }
@@ -137,17 +131,21 @@ public class BallotService {
             .map(Optional::get)
             .map(
                 ballot -> {
-                    memberService.getMember(ballotDTO.getMemberId()).ifPresent(ballot::setMember);
-                    meetingService.getMeeting(ballotDTO.getMeetingId()).ifPresent(ballot::setMeeting);
-                    agendaService.getAgenda(ballotDTO.getAgendaId()).ifPresent(ballot::setAgenda);
-                    votingService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
-                    if (StringUtils.isNoneBlank(ballotDTO.getOptions().toString())) ballot.setOptions(ballotDTO.getOptions());
-                    Ballot savedBallot = ballotRepository.saveAndFlush(ballot);
+                    Ballot savedBallot = ballotConstructor(ballotDTO, ballot);
                     log.debug("Changed Information for Ballot: {}", savedBallot);
                     return savedBallot;
                 }
             )
             .map(BallotDTO::new);
+    }
+
+    private Ballot ballotConstructor(BallotDTO ballotDTO, Ballot ballot) {
+        memberService.getMember(ballotDTO.getMemberId()).ifPresent(ballot::setMember);
+        meetingService.getMeeting(ballotDTO.getMeetingId()).ifPresent(ballot::setMeeting);
+        agendaService.getAgenda(ballotDTO.getAgendaId()).ifPresent(ballot::setAgenda);
+        votingService.getVotingOption(ballotDTO.getVotingOptionId()).ifPresent(ballot::setVotingOption);
+        if (StringUtils.isNoneBlank(ballotDTO.getOptions().toString())) ballot.setOptions(ballotDTO.getOptions());
+        return ballotRepository.saveAndFlush(ballot);
     }
 
     /**
@@ -156,12 +154,8 @@ public class BallotService {
      * @param id the id Ballot
      */
     public void deleteBallot(Long id) {
-        ballotRepository.findById(id).ifPresent(this::accept);
-    }
-
-    private void accept(Ballot ballot) {
-        ballotRepository.delete(ballot);
-        log.debug("Deleted Agenda: {}", ballot);
+        ballotRepository.findById(id).ifPresent(ballotRepository::delete);
+        log.debug("Deleted Agenda by ID: {}", id);
     }
 
     @Transactional(readOnly = true)
