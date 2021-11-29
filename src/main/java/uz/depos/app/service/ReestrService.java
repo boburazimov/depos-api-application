@@ -96,6 +96,7 @@ public class ReestrService {
             )
             .getChairman()
             .getPinfl();
+        boolean hasChairmen = false;
 
         int rowNumber = 0;
 
@@ -196,6 +197,7 @@ public class ReestrService {
             member.setInvolved(false);
             if (chairmanPinfl.equals(currentRowPinfl)) {
                 member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
+                hasChairmen = true;
             } else {
                 member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
             }
@@ -212,11 +214,11 @@ public class ReestrService {
             memberList.add(savedMember);
         }
         workbook.close();
-        //        if (!hasChairmen) throw new BadRequestAlertException(
-        //            "From this Reestr don't have Chairmen by Company",
-        //            "reestrManagement",
-        //            "chairmenError"
-        //        );
+        if (!hasChairmen) throw new BadRequestAlertException(
+            "From this Reestr don't have Chairmen by Company",
+            "reestrManagement",
+            "chairmenError"
+        );
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
         savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
         log.debug("Parsed Information for Reestr: {}", workbook);
