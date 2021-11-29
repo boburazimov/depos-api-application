@@ -79,7 +79,7 @@ public class CompanyServiceImpl implements CompanyService {
             ? new Company()
             : companyRepository.findById(companyDTO.getId()).orElseThrow(() -> new ResourceNotFoundException("getCompany"));
         company.setActive(companyDTO.getActive());
-        if (StringUtils.isNoneBlank(companyDTO.getName())) company.setName(companyDTO.getName());
+        if (StringUtils.isNoneBlank(companyDTO.getName())) company.setName(companyDTO.getName().toUpperCase());
         if (StringUtils.isNoneBlank(companyDTO.getInn())) company.setInn(companyDTO.getInn());
         if (StringUtils.isNoneBlank(companyDTO.getLegalAddress())) company.setLegalAddress(companyDTO.getLegalAddress());
         if (StringUtils.isNoneBlank(companyDTO.getEmail())) company.setEmail(companyDTO.getEmail().toLowerCase());
