@@ -3,6 +3,7 @@ package uz.depos.app.service;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
+import io.undertow.util.BadRequestException;
 import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 import uz.depos.app.service.mapper.UserMapper;
+import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
  * Service class for managing meeting.
@@ -190,8 +192,14 @@ public class MeetingService {
             .findOneById(id)
             .ifPresent(
                 meeting -> {
-                    meetingRepository.delete(meeting);
-                    log.debug("Deleted Meeting: {}", meeting);
+                    boolean present = memberRepository.findAllByMeetingIdAndFromReestrTrue(meeting.getId()).isPresent();
+                    if (present) {
+                        throw new BadRequestAlertException("By this Meeting already has Reestr!", "MeetingManagement", "ReestrExist");
+                    }
+                    {
+                        meetingRepository.delete(meeting);
+                        log.debug("Deleted Meeting: {}", meeting);
+                    }
                 }
             );
     }
