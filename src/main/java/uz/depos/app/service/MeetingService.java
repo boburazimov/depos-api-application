@@ -3,14 +3,7 @@ package uz.depos.app.service;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
-import io.undertow.util.BadRequestException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -28,6 +21,7 @@ import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.*;
+import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.MeetingDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 import uz.depos.app.service.mapper.UserMapper;
@@ -265,5 +259,26 @@ public class MeetingService {
     @Transactional(readOnly = true)
     public Page<MeetingDTO> getMeetingsByCompany(Long companyId, Pageable pageable) {
         return meetingRepository.findAllByCompanyId(companyId, pageable).map(MeetingDTO::new);
+    }
+
+    public MeetingDTO changeMeetingStatus(Long meetingId, MeetingStatusEnum statusEnum) {
+        Optional<Meeting> meetingOptional = meetingRepository.findById(meetingId);
+        if (meetingOptional.isPresent()) {
+            Meeting meeting = meetingOptional.get();
+            Boolean active = meeting.getCompany().getActive();
+            if (statusEnum.equals(MeetingStatusEnum.ACTIVE) && !active) {
+                throw new BadRequestAlertException(
+                    "Company must be in ACTIVE for change Meeting status!",
+                    "MeetingManagement",
+                    "CompanyNotActive"
+                );
+            } else {
+                meeting.setStatus(statusEnum);
+                Meeting savedMeeting = meetingRepository.saveAndFlush(meeting);
+                return meetingMapper.meetingToMeetingDTO(savedMeeting);
+            }
+        } else {
+            throw new BadRequestAlertException("Meeting not found by this ID " + meetingId, "MeetingManagement", "NotFoundMeeting");
+        }
     }
 }

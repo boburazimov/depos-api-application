@@ -4,9 +4,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -27,6 +24,7 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.MeetingSearchFieldEnum;
+import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingLoggingService;
@@ -205,5 +203,13 @@ public class MeetingResource {
         final Page<MeetingDTO> page = meetingService.getMeetingsByCompany(companyId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @PatchMapping("/meeting-status")
+    @ApiOperation(value = "Change status of meeting", notes = "This method to set status by Meeting ID and statusEnum")
+    public ResponseEntity<MeetingDTO> changeMeetingStatus(@RequestParam Long meetingId, @RequestParam MeetingStatusEnum statusEnum) {
+        log.debug("REST request to set active status for meeting by ID: " + meetingId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(meetingService.changeMeetingStatus(meetingId, statusEnum));
     }
 }
