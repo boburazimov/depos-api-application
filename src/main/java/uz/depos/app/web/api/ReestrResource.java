@@ -91,17 +91,6 @@ public class ReestrResource {
         throws URISyntaxException, IOException, BadRequestException {
         log.debug("REST request to create Reestr : {}", file);
 
-        meetingRepository
-            .findById(meetingId)
-            .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
-            .ifPresent(
-                company -> {
-                    if (company.getChairman() == null) {
-                        throw new BadRequestAlertException("Company did't have a Chairmen", "reestrManagement", "companyError");
-                    }
-                }
-            );
-
         try {
             // Clear previous members from current Meeting before parse.
             memberService.deleteAllByMeetingId(meetingId);

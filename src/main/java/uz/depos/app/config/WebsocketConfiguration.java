@@ -40,7 +40,7 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
             .map(origins -> origins.toArray(new String[0]))
             .orElse(new String[0]);
         registry
-            .addEndpoint("/websocket/tracker", "/websocket/question", "/websocket/logger", "/websocket/online")
+            .addEndpoint("/websocket/tracker", "/websocket/logger")
             .setHandshakeHandler(defaultHandshakeHandler())
             .setAllowedOrigins(allowedOrigins)
             //            .setAllowedOrigins("http://localhost:3000", "https://evoteuz.netlify.app", "https://evote-uz.vercel.app")

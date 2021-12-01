@@ -4,8 +4,15 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import io.undertow.util.BadRequestException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Example;
@@ -65,6 +72,15 @@ public class MeetingService {
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
+        if (ObjectUtils.isEmpty(request.getCompanyId())) {
+            throw new NullPointerException("Meeting have must a company");
+        } else if (!companyRepository.existsById(request.getCompanyId())) {
+            throw new ResourceNotFoundException("Company not found by ID: " + request.getCompanyId());
+        }
+        boolean present = meetingRepository.findOneByStartDateAndCompanyId(request.getStartDate(), request.getCompanyId()).isPresent();
+        if (present) {
+            throw new MeetingWithStartDateAlreadyCreatedException();
+        }
         try {
             Meeting meeting = request.getId() == null || request.getId() == 0
                 ? new Meeting()

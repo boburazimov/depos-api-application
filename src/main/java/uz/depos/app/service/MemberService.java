@@ -3,6 +3,7 @@ package uz.depos.app.service;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.contains;
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -234,8 +235,10 @@ public class MemberService {
     public MemberDTO turnOnConfirmed(Long memberId) {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
         if (optionalMember.isPresent()) {
-            Member member = optionalMember.orElse(null);
-            member.setConfirmed(true);
+            Member member = optionalMember.get();
+            Instant startRegistration = member.getMeeting().getStartRegistration();
+            Instant now = Instant.now();
+            if (now.isBefore(startRegistration)) member.setConfirmed(true);
             return memberMapper.memberToMemberDTO(member);
         } else {
             throw new ResourceNotFoundException("Member not found my ID: " + memberId);

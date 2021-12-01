@@ -79,22 +79,19 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
 
     @MessageMapping("/topic/user-all")
     @SendTo("/topic/user")
-    public List<MeetingLoggingDTO> sendToAll(
-        @Payload MeetingLoggingDTO loggingDTO,
-        StompHeaderAccessor stompHeaderAccessor,
-        Principal principal
-    ) {
+    public List<MeetingLoggingDTO> sendToAll(@Payload MeetingLoggingDTO loggingDTO) {
+        log.debug("Save Meeting logging data {}", loggingDTO);
         MeetingLoggingDTO meetingLoggingDTO = meetingLoggingService.addMeetingLogging(loggingDTO);
         if (meetingLoggingDTO != null) {
             return meetingLoggingService.getAllLoggingsByMeeting(meetingLoggingDTO.getMeetingId());
         } else {
-            throw new BadRequestAlertException("Error in save logging", "LoggingDTO", "LoggingUnsave");
+            throw new BadRequestAlertException("Error in save logging", "LoggingDTO", "LoggingUnsaved");
         }
     }
 
     @MessageMapping("/topic/question")
     @SendTo("/topic/answer")
-    public List<QuestionDTO> WsQuestion(@Payload QuestionDTO questionDTO, StompHeaderAccessor stompHeaderAccessor, Principal principal) {
+    public List<QuestionDTO> WsQuestion(@Payload QuestionDTO questionDTO) {
         log.debug("Save user question data {}", questionDTO);
 
         if (questionDTO != null && questionDTO.getUserId() == null && questionDTO.getMemberId() != null) {

@@ -214,11 +214,11 @@ public class ReestrService {
             memberList.add(savedMember);
         }
         workbook.close();
-        if (!hasChairmen) throw new BadRequestAlertException(
-            "From this Reestr don't have Chairmen by Company",
-            "reestrManagement",
-            "chairmenError"
-        );
+        //        if (!hasChairmen) throw new BadRequestAlertException(
+        //            "From this Reestr don't have Chairmen by Company",
+        //            "reestrManagement",
+        //            "chairmenError"
+        //        );
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
         savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
         log.debug("Parsed Information for Reestr: {}", workbook);

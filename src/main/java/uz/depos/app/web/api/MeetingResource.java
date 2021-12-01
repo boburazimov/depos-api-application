@@ -4,6 +4,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -28,9 +31,7 @@ import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MeetingService;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.MeetingDTO;
-import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
 
@@ -77,20 +78,6 @@ public class MeetingResource {
     @ApiOperation(value = "Create meeting", notes = "This method creates a new meeting")
     public ResponseEntity<MeetingDTO> createMeeting(@Valid @RequestBody MeetingDTO meetingDTO) throws URISyntaxException {
         log.debug("REST request to create Meeting : {}", meetingDTO);
-
-        if (ObjectUtils.isEmpty(meetingDTO.getCompanyId())) throw new NullPointerException("Meeting have must a company");
-        if (!companyRepository.existsById(meetingDTO.getCompanyId())) throw new ResourceNotFoundException(
-            "Company not found by ID: " + meetingDTO.getCompanyId()
-        );
-        companyRepository
-            .findById(meetingDTO.getCompanyId())
-            .ifPresent(
-                company -> {
-                    if (company.getChairman() == null && company.getSecretary() == null) {
-                        throw new ResourceNotFoundException("Company must have Chairmen or Secretary");
-                    }
-                }
-            );
 
         MeetingDTO meeting = meetingService.createMeeting(meetingDTO);
         return ResponseEntity
@@ -203,7 +190,7 @@ public class MeetingResource {
      * {@code GET /meetings} : get meetings by the company with all the details.
      *
      * @param companyId the company ID for search by him.
-     * @param pageable the pagination information.
+     * @param pageable  the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meetings by the company.
      */
     @GetMapping("/by-company")

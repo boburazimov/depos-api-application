@@ -19,7 +19,7 @@ import uz.depos.app.domain.Meeting;
 public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     Optional<Meeting> findOneById(Long id);
 
-    Optional<Meeting> findOneByStartDate(Instant date);
+    Optional<Meeting> findOneByStartDateAndCompanyId(Instant date, Long companyId);
 
     @Query(
         value = "select distinct met.* from meeting as met inner join member as mem on met.id=mem.meeting_id left join company c on c.id = met.company_id where (mem.user_id=:user_id  or c.secretary_id = :user_id or c.chairman_id = :user_id) and mem.company_id=:company_id",
