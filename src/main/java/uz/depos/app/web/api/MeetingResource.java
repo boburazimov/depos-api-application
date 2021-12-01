@@ -99,7 +99,10 @@ public class MeetingResource {
     public ResponseEntity<MeetingDTO> updateMeeting(@Valid @RequestBody MeetingDTO meetingDTO) {
         log.debug("REST request to update Meeting : {}", meetingDTO);
 
-        Optional<Meeting> existingMeeting = meetingRepository.findOneByStartDate(meetingDTO.getStartDate());
+        Optional<Meeting> existingMeeting = meetingRepository.findOneByStartDateAndCompanyId(
+            meetingDTO.getStartDate(),
+            meetingDTO.getCompanyId()
+        );
         if (existingMeeting.isPresent() && (!existingMeeting.get().getId().equals(meetingDTO.getId()))) {
             throw new MeetingWithStartDateAlreadyCreatedException();
         } else if (ObjectUtils.isEmpty(meetingDTO.getCompanyId())) {
