@@ -207,8 +207,7 @@ public class MeetingService {
                     boolean present = memberRepository.findAllByMeetingIdAndFromReestrTrue(meeting.getId()).isPresent();
                     if (present) {
                         throw new BadRequestAlertException("By this Meeting already has Reestr!", "MeetingManagement", "ReestrExist");
-                    }
-                    {
+                    } else {
                         meetingRepository.delete(meeting);
                         log.debug("Deleted Meeting: {}", meeting);
                     }
