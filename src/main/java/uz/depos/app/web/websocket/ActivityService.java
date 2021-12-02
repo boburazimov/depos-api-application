@@ -24,6 +24,7 @@ import uz.depos.app.service.dto.MemberSessionDTO;
 import uz.depos.app.service.dto.QuestionDTO;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.websocket.dto.ActivityDTO;
+import uz.depos.app.web.websocket.dto.ZoomDTO;
 
 @Controller
 public class ActivityService implements ApplicationListener<SessionDisconnectEvent> {
@@ -87,6 +88,13 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
         } else {
             throw new BadRequestAlertException("Error in save logging", "LoggingDTO", "LoggingUnsaved");
         }
+    }
+
+    @MessageMapping("/topic/start-zoom")
+    @SendTo("/topic/get-zoom")
+    public ZoomDTO sendToAll(@Payload ZoomDTO zoomDTO) {
+        log.debug("Start and Stop Zoom-Meeting logging data {}", zoomDTO);
+        return zoomDTO;
     }
 
     @MessageMapping("/topic/question")
