@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import uz.depos.app.domain.Authority;
 import uz.depos.app.domain.Member;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 
 /**
  * Spring Data JPA repository for the {@link Member} entity.
@@ -27,6 +28,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     void deleteAllByMeetingIdAndFromReestrTrue(Long meetingId);
 
     Optional<Member> findFirstByCompanyId(Long companyId);
+
+    Optional<Member> findFirstByMeetingIdAndMemberTypeEnumAndFromReestrTrue(Long companyId, MemberTypeEnum typeEnum);
 
     Page<Member> findAllByMeetingId(Long meetingId, Pageable pageable);
 

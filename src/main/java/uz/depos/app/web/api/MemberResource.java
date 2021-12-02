@@ -26,6 +26,7 @@ import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.enums.MemberSearchFieldEnum;
+import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
@@ -259,7 +260,7 @@ public class MemberResource {
     }
 
     /**
-     * {@code PATCH /member} : Switch to isConfirmed for CVORUM an existing member.
+     * {@code PUT /member} : Switch to isConfirmed for CVORUM an existing member.
      *
      * @param id the member to switch.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated member.
@@ -273,5 +274,23 @@ public class MemberResource {
         MemberDTO memberDTO = memberService.turnOnConfirmed(id);
         Boolean confirmed = memberDTO.getConfirmed();
         return ResponseEntity.status(confirmed ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(memberDTO);
+    }
+
+    /**
+     * {@code POST /member} : Elect a chairman from members which is true fromReestr.
+     *
+     * @param id the member to elect.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated member.
+     * @throws ResourceNotFoundException {@code 400 (Bad Request)} if the subject not found.
+     */
+    @PostMapping("/elect-chairmen/{id}")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Switch isConfirmed", notes = "This method to switch member field isConfirmed which calculate for Kvorum")
+    public ResponseEntity<MemberDTO> electChairmen(@PathVariable Long id) {
+        log.debug("REST request to elect Chairmen by ID: {}", id);
+        MemberDTO memberDTO = memberService.electChairmen(id);
+        return ResponseEntity
+            .status(memberDTO.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN) ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
+            .body(memberDTO);
     }
 }
