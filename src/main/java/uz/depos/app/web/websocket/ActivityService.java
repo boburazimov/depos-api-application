@@ -5,6 +5,8 @@ import static uz.depos.app.config.WebsocketConfiguration.IP_ADDRESS;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
@@ -15,6 +17,9 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+import uz.depos.app.domain.MemberSession;
+import uz.depos.app.domain.enums.MemberTypeEnum;
+import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.MemberSessionRepository;
 import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MemberService;
@@ -36,19 +41,22 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     private final QuestionService questionService;
     private final MemberService memberService;
     private final MemberSessionRepository memberSessionRepository;
+    private final MemberRepository memberRepository;
 
     public ActivityService(
         SimpMessageSendingOperations messagingTemplate,
         MeetingLoggingService meetingLoggingService,
         QuestionService questionService,
         MemberService memberService,
-        MemberSessionRepository memberSessionRepository
+        MemberSessionRepository memberSessionRepository,
+        MemberRepository memberRepository
     ) {
         this.messagingTemplate = messagingTemplate;
         this.meetingLoggingService = meetingLoggingService;
         this.questionService = questionService;
         this.memberService = memberService;
         this.memberSessionRepository = memberSessionRepository;
+        this.memberRepository = memberRepository;
     }
 
     @MessageMapping("/topic/activity")
@@ -92,9 +100,71 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
 
     @MessageMapping("/topic/start-zoom")
     @SendTo("/topic/get-zoom")
-    public ZoomDTO sendToAll(@Payload ZoomDTO zoomDTO) {
+    public MemberSession zoom(@Payload ZoomDTO zoomDTO) {
         log.debug("Start and Stop Zoom-Meeting logging data {}", zoomDTO);
-        return zoomDTO;
+        if (
+            zoomDTO.getMeetingId() != null && zoomDTO.getMemberId() != null && memberRepository.findById(zoomDTO.getMemberId()).isPresent()
+        ) { // General check
+            MemberTypeEnum memberTypeEnum = memberRepository.findById(zoomDTO.getMemberId()).get().getMemberTypeEnum();
+            boolean isManager = memberTypeEnum.equals(MemberTypeEnum.SECRETARY) || memberTypeEnum.equals(MemberTypeEnum.CHAIRMAN);
+            Optional<MemberSession> optionalManagerMemberSession = memberSessionRepository.findOneByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(
+                zoomDTO.getMeetingId()
+            );
+            Optional<MemberSession> optionalCurrentMemberSession = memberSessionRepository.findOneByMemberId(zoomDTO.getMemberId());
+
+            if (
+                zoomDTO.isZoom() &&
+                StringUtils.isNotEmpty(zoomDTO.getPassword()) &&
+                optionalCurrentMemberSession.isPresent() &&
+                isManager &&
+                !optionalManagerMemberSession.isPresent()
+            ) { // <------Secretary or Chairmen created Zoom----->
+                MemberSession memberSession = optionalCurrentMemberSession.get();
+                memberSession.setZoom(true);
+                memberSession.setZoomPassword(zoomDTO.getPassword());
+                return memberSessionRepository.saveAndFlush(memberSession);
+            } else if (
+                !zoomDTO.isZoom() &&
+                StringUtils.isEmpty(zoomDTO.getPassword()) &&
+                isManager &&
+                optionalCurrentMemberSession.isPresent() &&
+                optionalManagerMemberSession.isPresent() &&
+                optionalManagerMemberSession.get().getSessionId().equals(optionalCurrentMemberSession.get().getSessionId())
+            ) { // <-----Secretary or Chairmen finished Zoom----->
+                memberSessionRepository
+                    .findAllByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(zoomDTO.getMeetingId())
+                    .ifPresent(
+                        memberSessions -> {
+                            memberSessions.forEach(
+                                memberSession -> {
+                                    memberSession.setZoom(false);
+                                    memberSession.setZoomPassword(null);
+                                    memberSessionRepository.save(memberSession);
+                                }
+                            );
+                        }
+                    );
+                MemberSession memberSession = optionalCurrentMemberSession.get();
+                memberSession.setZoom(false);
+                memberSession.setZoomPassword(null);
+                return memberSessionRepository.saveAndFlush(memberSession);
+            } else if (
+                !zoomDTO.isZoom() &&
+                StringUtils.isEmpty(zoomDTO.getPassword()) &&
+                optionalCurrentMemberSession.isPresent() &&
+                optionalManagerMemberSession.isPresent() &&
+                !optionalManagerMemberSession.get().getSessionId().equals(optionalCurrentMemberSession.get().getSessionId())
+            ) { // <-----Secretary or Chairmen or Simple joining to Zoom----->
+                MemberSession memberSession = optionalCurrentMemberSession.get();
+                memberSession.setZoom(true);
+                memberSession.setZoomPassword(optionalManagerMemberSession.get().getZoomPassword());
+                return memberSessionRepository.saveAndFlush(memberSession);
+            } else {
+                throw new BadRequestAlertException("Please check all fields in ZoomDTO", "ZoomDTOManagement", "fieldsHasSomeError");
+            }
+        } else {
+            throw new BadRequestAlertException("MemberId or MeetingId must not be null", "MemberSessionManagement", "IdNull");
+        }
     }
 
     @MessageMapping("/topic/question")

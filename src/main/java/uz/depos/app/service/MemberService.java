@@ -255,7 +255,10 @@ public class MemberService {
                 Optional<Meeting> meetingOptional = meetingRepository.findById(savedMember.getMeeting().getId());
                 if (meetingOptional.isPresent()) {
                     Meeting meeting = meetingOptional.get();
-                    memberSessionRepository.save(new MemberSession(meeting.getId(), sessionId, savedMember.getId()));
+                    memberSessionRepository
+                        .findAllByMeetingIdAndMemberId(meeting.getId(), member.getId())
+                        .ifPresent(memberSessionRepository::deleteAll);
+                    memberSessionRepository.save(new MemberSession(meeting.getId(), sessionId, savedMember.getId(), false, null));
                     getMembersForOnlineList(meeting);
                 } else {
                     throw new ResourceNotFoundException("Meeting not found by this ID: " + savedMember.getMeeting().getId());
@@ -296,7 +299,7 @@ public class MemberService {
         if (allByMeetingId.isPresent()) {
             List<Member> members = allByMeetingId.get();
             List<MemberDTO> memberDTOList = members.stream().map(MemberDTO::new).collect(Collectors.toList());
-            messagingTemplate.convertAndSend("/topic/getMember", memberDTOList);
+            messagingTemplate.convertAndSend("/topic/getMember/" + meeting.getId(), memberDTOList);
         } else {
             throw new ResourceNotFoundException("Member not found by Meeting ID: " + meeting.getId());
         }

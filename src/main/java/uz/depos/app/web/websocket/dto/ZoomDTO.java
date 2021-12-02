@@ -2,16 +2,34 @@ package uz.depos.app.web.websocket.dto;
 
 public class ZoomDTO {
 
+    private Long meetingId;
+    private Long memberId;
     private String password;
-    private boolean startCall = false;
-    private boolean endCall = true;
+    private boolean zoom = false;
 
     public ZoomDTO() {}
 
-    public ZoomDTO(String password, boolean startCall, boolean endCall) {
+    public ZoomDTO(Long meetingId, Long memberId, String password, boolean zoom) {
+        this.meetingId = meetingId;
+        this.memberId = memberId;
         this.password = password;
-        this.startCall = startCall;
-        this.endCall = endCall;
+        this.zoom = zoom;
+    }
+
+    public Long getMeetingId() {
+        return meetingId;
+    }
+
+    public void setMeetingId(Long meetingId) {
+        this.meetingId = meetingId;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
     }
 
     public String getPassword() {
@@ -22,19 +40,11 @@ public class ZoomDTO {
         this.password = password;
     }
 
-    public boolean isStartCall() {
-        return startCall;
+    public boolean isZoom() {
+        return zoom;
     }
 
-    public void setStartCall(boolean startCall) {
-        this.startCall = startCall;
-    }
-
-    public boolean isEndCall() {
-        return endCall;
-    }
-
-    public void setEndCall(boolean endCall) {
-        this.endCall = endCall;
+    public void setZoom(boolean zoom) {
+        this.zoom = zoom;
     }
 }
