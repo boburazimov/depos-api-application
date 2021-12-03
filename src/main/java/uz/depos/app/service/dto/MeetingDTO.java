@@ -3,6 +3,7 @@ package uz.depos.app.service.dto;
 import java.time.Instant;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import uz.depos.app.domain.City;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
@@ -31,6 +32,8 @@ public class MeetingDTO {
 
     private Integer cityId;
 
+    private City city;
+
     private String address;
 
     @NotBlank(message = "Description must not be null")
@@ -48,6 +51,7 @@ public class MeetingDTO {
         this.companyId = meeting.getCompany().getId();
         this.companyName = meeting.getCompany().getName();
         this.cityId = meeting.getCity() != null ? meeting.getCity().getId() : null;
+        this.city = meeting.getCity() != null ? meeting.getCity() : null;
         this.address = meeting.getAddress();
         this.description = meeting.getDescription();
     }
@@ -140,6 +144,14 @@ public class MeetingDTO {
         this.description = description;
     }
 
+    public City getCity() {
+        return city;
+    }
+
+    public void setCity(City city) {
+        this.city = city;
+    }
+
     @Override
     public String toString() {
         return (
@@ -163,6 +175,8 @@ public class MeetingDTO {
             '\'' +
             ", cityId=" +
             cityId +
+            ", city=" +
+            city +
             ", address='" +
             address +
             '\'' +
