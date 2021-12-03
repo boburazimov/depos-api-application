@@ -278,6 +278,19 @@ public class MemberService {
                     Member member = byId.get();
                     member.setInvolved(false);
                     Member savedMember = memberRepository.save(member);
+                    MemberTypeEnum memberTypeEnum = member.getMemberTypeEnum();
+                    boolean isManager = memberTypeEnum.equals(MemberTypeEnum.SECRETARY) || memberTypeEnum.equals(MemberTypeEnum.CHAIRMAN);
+                    if (memberSession.isZoom() && memberSession.getZoomPassword() != null && isManager) messagingTemplate.convertAndSend(
+                        "/topic/get-zoom",
+                        new MemberSession(
+                            memberSession.getId(),
+                            member.getMeeting().getId(),
+                            memberSession.getSessionId(),
+                            member.getId(),
+                            false,
+                            null
+                        )
+                    );
                     memberSessionRepository.delete(memberSession);
                     Optional<Meeting> meetingOptional = meetingRepository.findById(savedMember.getMeeting().getId());
                     if (meetingOptional.isPresent()) {

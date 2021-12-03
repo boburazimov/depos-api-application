@@ -159,6 +159,13 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(optionalManagerMemberSession.get().getZoomPassword());
                 return memberSessionRepository.saveAndFlush(memberSession);
+            } else if (
+                !zoomDTO.isZoom() &&
+                StringUtils.isEmpty(zoomDTO.getPassword()) &&
+                optionalCurrentMemberSession.isPresent() &&
+                !optionalManagerMemberSession.isPresent()
+            ) {
+                return optionalCurrentMemberSession.get();
             } else {
                 throw new BadRequestAlertException("Please check all fields in ZoomDTO", "ZoomDTOManagement", "fieldsHasSomeError");
             }
