@@ -32,11 +32,9 @@ import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
-import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
 import uz.depos.app.service.view.View;
-import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
@@ -285,12 +283,29 @@ public class MemberResource {
      */
     @PostMapping("/elect-chairmen/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Switch isConfirmed", notes = "This method to switch member field isConfirmed which calculate for Kvorum")
+    @ApiOperation(value = "Elect Chairmen", notes = "This method to elect Chairmen from uploaded reestr")
     public ResponseEntity<MemberDTO> electChairmen(@PathVariable Long id) {
         log.debug("REST request to elect Chairmen by ID: {}", id);
         MemberDTO memberDTO = memberService.electChairmen(id);
         return ResponseEntity
             .status(memberDTO.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN) ? HttpStatus.OK : HttpStatus.BAD_REQUEST)
             .body(memberDTO);
+    }
+
+    /**
+     * {@code GET /memberTypes} : Get all memberTypes by userId and MeetingId.
+     *
+     * @param userId    the userId to get.
+     * @param meetingId the meetingId to get.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the memberTypes.
+     * @throws ResourceNotFoundException {@code 400 (Bad Request)} if the subject not found.
+     */
+    @GetMapping("/member-types")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get MemberTypes", notes = "This method to get all memberTypes by UserID and MeetingID for Current Member")
+    public ResponseEntity<List<MemberTypeEnum>> getMemberTypes(@Valid @RequestParam Long userId, Long meetingId) {
+        log.debug("REST request to get member Types by User ID: {}", userId);
+        List<MemberTypeEnum> memberTypes = memberService.getMemberTypes(userId, meetingId);
+        return ResponseEntity.status(memberTypes != null ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(memberTypes);
     }
 }

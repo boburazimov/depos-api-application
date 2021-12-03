@@ -4,6 +4,7 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -17,7 +18,6 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tech.jhipster.security.RandomUtil;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.MemberSession;
@@ -337,6 +337,17 @@ public class MemberService {
             }
         } else {
             throw new BadRequestAlertException("Member must be fromReestr", "memberManagement", "notFromReestr");
+        }
+    }
+
+    public List<MemberTypeEnum> getMemberTypes(Long userId, Long meetingId) {
+        List<Member> memberList = memberRepository.findAllByUserIdAndMeetingId(userId, meetingId);
+        List<MemberTypeEnum> typeEnumList = new ArrayList<>();
+        if (!memberList.isEmpty()) {
+            memberList.forEach(member -> typeEnumList.add(member.getMemberTypeEnum()));
+            return typeEnumList.stream().distinct().collect(Collectors.toList());
+        } else {
+            throw new ResourceNotFoundException("Members not found by userID: " + userId + " and meetingID: " + meetingId);
         }
     }
 }

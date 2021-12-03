@@ -34,4 +34,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Page<Member> findAllByMeetingIdAndFromReestr(Long meetingId, Boolean fromReestr, Pageable pageable);
 
     Optional<List<Member>> findAllByMeetingId(Long meetingId);
+
+    List<Member> findAllByUserIdAndMeetingId(Long userId, Long meetingId);
 }
