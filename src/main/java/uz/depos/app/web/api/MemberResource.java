@@ -303,7 +303,7 @@ public class MemberResource {
     @GetMapping("/member-types")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Get MemberTypes", notes = "This method to get all memberTypes by UserID and MeetingID for Current Member")
-    public ResponseEntity<List<MemberTypeEnum>> getMemberTypes(@Valid @RequestParam Long userId, Long meetingId) {
+    public ResponseEntity<List<MemberTypeEnum>> getMemberTypes(@Valid @RequestParam Long userId, @Valid Long meetingId) {
         log.debug("REST request to get member Types by User ID: {}", userId);
         List<MemberTypeEnum> memberTypes = memberService.getMemberTypes(userId, meetingId);
         return ResponseEntity.status(memberTypes != null ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(memberTypes);
