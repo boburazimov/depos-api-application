@@ -31,7 +31,7 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findFirstByMeetingIdAndMemberTypeEnumAndFromReestrTrue(Long companyId, MemberTypeEnum typeEnum);
 
-    Page<Member> findAllByMeetingId(Long meetingId, Pageable pageable);
+    Page<Member> findAllByMeetingIdAndFromReestr(Long meetingId, Boolean fromReestr, Pageable pageable);
 
     Optional<List<Member>> findAllByMeetingId(Long meetingId);
 }

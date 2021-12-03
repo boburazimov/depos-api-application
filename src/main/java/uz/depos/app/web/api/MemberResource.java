@@ -177,12 +177,12 @@ public class MemberResource {
     @GetMapping("/by-meeting")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Get members by meeting", notes = "This method to get members by meeting ID")
-    public ResponseEntity<List<MemberDTO>> getMembersByMeeting(@RequestParam Long meetingId, Pageable pageable) {
+    public ResponseEntity<List<MemberDTO>> getMembersByMeeting(@RequestParam Long meetingId, Pageable pageable, Boolean fromReestr) {
         log.debug("REST request to get Members by Meeting ID: " + meetingId);
         if (!onlyContainsAllowedProperties(pageable)) {
             return ResponseEntity.badRequest().build();
         }
-        final Page<MemberDTO> page = memberService.getMembersByMeeting(meetingId, pageable);
+        final Page<MemberDTO> page = memberService.getMembersByMeeting(meetingId, pageable, fromReestr);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

@@ -231,8 +231,8 @@ public class MemberService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MemberDTO> getMembersByMeeting(Long meetingId, Pageable pageable) {
-        return memberRepository.findAllByMeetingId(meetingId, pageable).map(MemberDTO::new);
+    public Page<MemberDTO> getMembersByMeeting(Long meetingId, Pageable pageable, Boolean fromReestr) {
+        return memberRepository.findAllByMeetingIdAndFromReestr(meetingId, fromReestr, pageable).map(MemberDTO::new);
     }
 
     public MemberDTO turnOnConfirmed(Long memberId) {
