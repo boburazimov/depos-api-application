@@ -221,4 +221,21 @@ public class CompanyResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
+
+    /**
+     * {@code POST /company/spec-filter} : get all companies Filtered for header table by Specification interface.
+     *
+     * @param companyDTO    - Column in the table (entity).
+     * @param pageable - params for pageable.
+     * @return - List of CompanyDTO.
+     */
+    @PostMapping("/spec-filter")
+    @ApiOperation(value = "Filter company", notes = "This method to get Companies by Specification filter")
+    public ResponseEntity<List<CompanyDTO>> filterCompany(@RequestBody CompanyDTO companyDTO, Pageable pageable) {
+        log.debug("REST request to filter Companies by Specification interface : {}", companyDTO);
+
+        final Page<CompanyDTO> page = companyService.getCompanyListByFilterCompany(companyDTO, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
 }

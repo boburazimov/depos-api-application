@@ -33,6 +33,9 @@ public interface CompanyService {
     Page<CompanyDTO> filterCompany(CompanySearchFieldEnum field, String text, Pageable pageable);
 
     @Transactional(readOnly = true)
+    Page<CompanyDTO> getCompanyListByFilterCompany(CompanyDTO companyDTO, Pageable pageable);
+
+    @Transactional(readOnly = true)
     Page<CompanyDTO> getAllCompaniesByChairman(Long userId, Pageable pageable);
 
     @Transactional(readOnly = true)

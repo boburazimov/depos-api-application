@@ -22,13 +22,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
-import uz.depos.app.domain.Member;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
-import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
+import uz.depos.app.repository.specification.CompanySpecification;
 import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.CompanyMapper;
 
@@ -48,6 +47,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final FilesStorageService filesStorageService;
     private final MeetingRepository meetingRepository;
     private final MemberRepository memberRepository;
+    private final CompanySpecification companySpecification;
 
     public CompanyServiceImpl(
         CompanyRepository companyRepository,
@@ -56,7 +56,8 @@ public class CompanyServiceImpl implements CompanyService {
         CacheManager cacheManager,
         FilesStorageService filesStorageService,
         MeetingRepository meetingRepository,
-        MemberRepository memberRepository
+        MemberRepository memberRepository,
+        CompanySpecification companySpecification
     ) {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -65,6 +66,7 @@ public class CompanyServiceImpl implements CompanyService {
         this.filesStorageService = filesStorageService;
         this.meetingRepository = meetingRepository;
         this.memberRepository = memberRepository;
+        this.companySpecification = companySpecification;
     }
 
     /**
@@ -206,6 +208,11 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    public Page<CompanyDTO> getCompanyListByFilterCompany(CompanyDTO companyDTO, Pageable pageable) {
+        return companyRepository.findAll(companySpecification.getCompanies(companyDTO), pageable).map(CompanyDTO::new);
+    }
+
+    @Override
     public Page<CompanyDTO> filterCompany(CompanySearchFieldEnum field, String value, Pageable pageable) {
         Company company = new Company();
         switch (field) {
@@ -262,11 +269,8 @@ public class CompanyServiceImpl implements CompanyService {
         return companyByUserDTOs
             .stream()
             .peek(
-                companyByUserDTO -> {
-                    List<Meeting> meetingsByUser = meetingRepository.findMeetingsByUser(userId, companyByUserDTO.getId());
-                    companyByUserDTO.setMeetings(meetingsByUser.stream().map(MeetingByUserDTO::new).collect(Collectors.toList()));
-                    companyByUserDTO.setMeetingCount(meetingsByUser.size());
-                }
+                companyByUserDTO ->
+                    companyByUserDTO.setMeetingCount(meetingRepository.findMeetingsByQuery(userId, companyByUserDTO.getId()).size())
             )
             .collect(Collectors.toList());
     }

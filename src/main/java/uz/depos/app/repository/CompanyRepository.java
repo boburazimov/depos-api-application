@@ -4,9 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNullApi;
 import org.springframework.stereotype.Repository;
 import uz.depos.app.domain.Company;
 import uz.depos.app.service.dto.CompanyByUserDTO;
@@ -15,7 +18,7 @@ import uz.depos.app.service.dto.CompanyByUserDTO;
  * Spring Data JPA repository for the {@link Company} entity.
  */
 @Repository
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
     String COMPANIES_BY_NAME_CACHE = "companiesByName";
 
     String COMPANIES_BY_EMAIL_CACHE = "companiesByEmail";
@@ -52,4 +55,9 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     List<Company> findCompanyByUser(@Param("user_id") Long user_id);
 
     List<Company> findAllByChairmanIdOrSecretaryId(Long chairman_id, Long secretary_id);
+
+    @Override
+    Page<Company> findAll(Specification<Company> specification, Pageable pageable);
+
+    List<Company> findAll(Specification<Company> specification);
 }
