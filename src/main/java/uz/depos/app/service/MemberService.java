@@ -4,9 +4,12 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +30,9 @@ import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
+import uz.depos.app.service.dto.MemberTypeDTO;
 import uz.depos.app.service.mapper.MemberMapper;
+import uz.depos.app.service.utils.DistinctByKey;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
@@ -340,14 +345,16 @@ public class MemberService {
         }
     }
 
-    public List<MemberTypeEnum> getMemberTypes(Long userId, Long meetingId) {
-        List<Member> memberList = memberRepository.findAllByUserIdAndMeetingId(userId, meetingId);
-        List<MemberTypeEnum> typeEnumList = new ArrayList<>();
-        if (!memberList.isEmpty()) {
-            memberList.forEach(member -> typeEnumList.add(member.getMemberTypeEnum()));
-            return typeEnumList.stream().distinct().collect(Collectors.toList());
-        } else {
-            throw new ResourceNotFoundException("Members not found by userID: " + userId + " and meetingID: " + meetingId);
-        }
+    public List<MemberTypeDTO> getMemberTypes(Long userId, Long meetingId) {
+        return memberRepository
+            .findAllByUserIdAndMeetingId(userId, meetingId)
+            .stream()
+            .filter(DistinctByKey.runT(Member::getMemberTypeEnum))
+            .map(MemberTypeDTO::new)
+            .collect(Collectors.toList());
     }
+    //    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+    //        Set<Object> seen = ConcurrentHashMap.newKeySet();
+    //        return t -> seen.add(keyExtractor.apply(t));
+    //    }
 }

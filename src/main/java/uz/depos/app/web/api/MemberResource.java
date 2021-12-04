@@ -34,6 +34,7 @@ import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.MemberService;
 import uz.depos.app.service.dto.MemberDTO;
 import uz.depos.app.service.dto.MemberManagersDTO;
+import uz.depos.app.service.dto.MemberTypeDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
@@ -303,9 +304,9 @@ public class MemberResource {
     @GetMapping("/member-types")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Get MemberTypes", notes = "This method to get all memberTypes by UserID and MeetingID for Current Member")
-    public ResponseEntity<List<MemberTypeEnum>> getMemberTypes(@Valid @RequestParam Long userId, @Valid @RequestParam Long meetingId) {
+    public ResponseEntity<List<MemberTypeDTO>> getMemberTypes(@Valid @RequestParam Long userId, @Valid @RequestParam Long meetingId) {
         log.debug("REST request to get member Types by User ID: {}", userId);
-        List<MemberTypeEnum> memberTypes = memberService.getMemberTypes(userId, meetingId);
+        List<MemberTypeDTO> memberTypes = memberService.getMemberTypes(userId, meetingId);
         return ResponseEntity.status(memberTypes != null ? HttpStatus.OK : HttpStatus.BAD_REQUEST).body(memberTypes);
     }
 }
