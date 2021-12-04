@@ -8,8 +8,8 @@
   <body>
     <p th:text="#{email.invite.greeting(${user.fullName})}">Dear <span>!</span></p>
     <p th:text="#{email.invite.text1}">The Central Securities Depository of the Republic of Uzbekistan, notifies you that the</p>
-    <span th:text="#{email.invite.company(${company})}">Company</span>
-    <span th:text="#{email.invite.text1-1(${#temporals.format(start, 'dd-MMMM-yyyy')})}">in </span>
+    <span th:text="#{email.invite.company-name(${company.getName()})}">Company</span>
+    <span th:text="#{email.invite.text1-1(${#temporals.format(start, 'dd-MMMM-yyyy HH-MM')})}">in </span>
     <span th:text="#{email.invite.text1-2}"
       >is holding an electronic meeting of the Meetings of the supervisory board on the platform
     </span>
@@ -17,8 +17,12 @@
     <span th:text="#{email.invite.text1-3}"
       >To view the agenda and materials of the General Meeting of Shareholders, click on the following link:</span
     >
+    <!--    /issuerLegal/meeting/26802/agenda?companyId=26752&memberId=26852-->
     <p>
-      <a th:with="url=(@{|${baseUrl}/issuerLegal/meetingSetting/${meeting.id}|})" th:href="${url}" th:text="#{email.invite.link-meeting}"
+      <a
+        th:with="url=(@{|${baseUrl}/issuerLegal/meeting/${meeting.id}/agenda?companyId=${company.getId()}&memberId=${member.id}|})"
+        th:href="${url}"
+        th:text="#{email.invite.link-meeting}"
         >Link meeting</a
       >
     </p>

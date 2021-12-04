@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import tech.jhipster.config.JHipsterProperties;
+import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
+import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
 
 /**
@@ -33,6 +35,8 @@ public class MailService {
     private static final String BASE_URL = "baseUrl";
 
     private static final String MEETING = "meeting";
+    private static final String COMPANY = "company";
+    private static final String MEMBER = "member";
     private static final String START_DATE = "start";
     private static final String COMPANY_NAME = "company";
     private static final String PASSWORD = "password";
@@ -111,25 +115,35 @@ public class MailService {
         sendEmailFromTemplate(user, "mail/creationEmail", "email.activation.title");
     }
 
-    public void sendInvitationEmail(User user, Meeting meeting, String password) {
+    public void sendInvitationEmail(User user, Meeting meeting, Member member, String password) {
         log.debug("Sending invitation email to '{}'", user.getEmail());
         //        user.setPassword(password);
-        sendEmailFromInviteTemplate(user, "mail/invitationEmail", "email.invite.title", meeting, password);
+        sendEmailFromInviteTemplate(user, "mail/invitationEmail", "email.invite.title", meeting, member, password);
     }
 
-    public void sendEmailFromInviteTemplate(User user, String templateName, String titleKey, Meeting meeting, String password) {
+    public void sendEmailFromInviteTemplate(
+        User user,
+        String templateName,
+        String titleKey,
+        Meeting meeting,
+        Member member,
+        String password
+    ) {
         if (user.getEmail() == null || meeting == null) {
             log.debug("Email or meetingID doesn't exist for user '{}'", user.getLogin());
             return;
         }
+        Company company = meeting.getCompany();
         Locale locale = Locale.forLanguageTag(user.getLangKey());
         Context context = new Context(locale);
         context.setVariable(USER, user);
         context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
         context.setVariable(MEETING, meeting);
+        context.setVariable(COMPANY, company);
+        context.setVariable(MEMBER, member);
         context.setVariable(PASSWORD, password);
         context.setVariable(START_DATE, meeting.getStartDate());
-        context.setVariable(COMPANY_NAME, meeting.getCompany().getName());
+        //        context.setVariable(COMPANY_NAME, );
         context.setVariable(DEPONET, "http://deponet.uz");
         String content = templateEngine.process(templateName, context);
         String subject = messageSource.getMessage(titleKey, null, locale);

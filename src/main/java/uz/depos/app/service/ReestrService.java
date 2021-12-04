@@ -87,16 +87,11 @@ public class ReestrService {
         List<Member> memberList = new ArrayList<Member>();
         DataFormatter formatter = new DataFormatter();
 
-        String chairmanPinfl = Objects
-            .requireNonNull(
-                meetingRepository
-                    .findById(meetingId)
-                    .flatMap(meeting -> companyRepository.findById(meeting.getCompany().getId()))
-                    .orElse(null)
-            )
-            .getChairman()
-            .getPinfl();
-        boolean hasChairmen = false;
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(meetingId);
+        String chairmanPinfl = "";
+        if (optionalMeeting.isPresent()) {
+            chairmanPinfl = optionalMeeting.get().getCompany().getChairman().getPinfl();
+        }
 
         int rowNumber = 0;
 
@@ -197,7 +192,6 @@ public class ReestrService {
             member.setInvolved(false);
             if (chairmanPinfl.equals(currentRowPinfl)) {
                 member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
-                hasChairmen = true;
             } else {
                 member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
             }
@@ -208,7 +202,7 @@ public class ReestrService {
 
             if (meetingRepository.findById(meetingId).isPresent() && savedUser != null) {
                 Meeting meeting = meetingRepository.findById(meetingId).get();
-                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, isNew ? password : "");
+                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, savedMember, isNew ? password : "");
                 runnable.run();
             }
             memberList.add(savedMember);

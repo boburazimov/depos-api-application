@@ -111,24 +111,9 @@ public class ReestrResource {
             "reestrManagement",
             "notFound"
         );
-
         AttachReestrDTO attachReestrDTO = reestrService.parse(file, meetingId);
-        if (attachReestrDTO != null) {
-            //            memberRepository.findAllByMeetingIdAndFromReestrTrue(meetingId).ifPresent(
-            //                members -> {
-            //                    members.forEach(member -> {
-            //                        if (meetingRepository.findById(meetingId).isPresent() && userRepository.findById(member.getUser().getId()).isPresent()) {
-            //                            Meeting meeting = meetingRepository.findById(meetingId).get();
-            //                            User user = userRepository.findById(member.getUser().getId()).get();
-            //                            mailService.sendInvitationEmail(user, meeting, password);
-            //                        }
-            //                    });
-            //            });
-            log.debug("Changed Information for Reestr: {}", attachReestrDTO);
-            return ResponseEntity.status(HttpStatus.OK).body(attachReestrDTO);
-        } else {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(meetingId);
-        }
+        log.debug("Changed Information for Reestr: {}", attachReestrDTO);
+        return ResponseEntity.status(attachReestrDTO != null ? HttpStatus.OK : HttpStatus.EXPECTATION_FAILED).body(attachReestrDTO);
     }
 
     /**
