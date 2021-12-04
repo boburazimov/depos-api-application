@@ -205,6 +205,29 @@ public class MeetingResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+    /**
+     * {@code GET /meetings} : get meetings by the company and user with all the details.
+     *
+     * @param companyId the company ID for search by him.
+     * @param userId the user ID for search by him.
+     * @param pageable  the pagination information.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meetings by the company and user.
+     */
+    @GetMapping("/by-user")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get meetings by company and user", notes = "This method to get meetings by company ID and user ID")
+    public ResponseEntity<List<MeetingDTO>> getMeetingsByCompanyAndUser(
+        @RequestParam Long userId,
+        @RequestParam Long companyId,
+        Pageable pageable
+    ) {
+        log.debug("REST request to get meetings by company ID: " + companyId + " and user ID: " + userId);
+
+        final Page<MeetingDTO> page = meetingService.getMeetingsByCompanyAndUser(userId, companyId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
     @PatchMapping("/meeting-status")
     @ApiOperation(value = "Change status of meeting", notes = "This method to set status by Meeting ID and statusEnum")
     public ResponseEntity<MeetingDTO> changeMeetingStatus(@RequestParam Long meetingId, @RequestParam MeetingStatusEnum statusEnum) {

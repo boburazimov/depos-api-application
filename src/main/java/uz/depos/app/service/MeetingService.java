@@ -262,6 +262,11 @@ public class MeetingService {
         return meetingRepository.findAllByCompanyId(companyId, pageable).map(MeetingDTO::new);
     }
 
+    @Transactional(readOnly = true)
+    public Page<MeetingDTO> getMeetingsByCompanyAndUser(Long userId, Long companyId, Pageable pageable) {
+        return meetingRepository.findMeetingsByUserAndCompany(userId, companyId, pageable).map(MeetingDTO::new);
+    }
+
     public MeetingDTO changeMeetingStatus(Long meetingId, MeetingStatusEnum statusEnum) {
         Optional<Meeting> meetingOptional = meetingRepository.findById(meetingId);
         if (meetingOptional.isPresent()) {
