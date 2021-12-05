@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.undertow.util.BadRequestException;
@@ -27,11 +28,9 @@ import uz.depos.app.domain.Company;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.service.CompanyService;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.CompanyByUserDTO;
-import uz.depos.app.service.dto.CompanyDTO;
-import uz.depos.app.service.dto.CompanyNameDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.CompanyMapper;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.*;
 import uz.depos.app.web.rest.errors.company.CompanyEmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.company.CompanyInnAlreadyUsedException;
@@ -231,10 +230,13 @@ public class CompanyResource {
      */
     @PostMapping("/spec-filter")
     @ApiOperation(value = "Filter company", notes = "This method to get Companies by Specification filter")
-    public ResponseEntity<List<CompanyDTO>> filterCompany(@RequestBody CompanyDTO companyDTO, Pageable pageable) {
+    public ResponseEntity<List<CompanyFilerDTO>> filterCompany(
+        @RequestBody @JsonView(value = View.ModelView.Post.class) CompanyFilerDTO companyDTO,
+        Pageable pageable
+    ) {
         log.debug("REST request to filter Companies by Specification interface : {}", companyDTO);
 
-        final Page<CompanyDTO> page = companyService.getCompanyListByFilterCompany(companyDTO, pageable);
+        final Page<CompanyFilerDTO> page = companyService.getCompanyListByFilterCompany(companyDTO, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

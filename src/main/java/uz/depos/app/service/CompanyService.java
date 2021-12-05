@@ -8,10 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.CompanyByUserDTO;
-import uz.depos.app.service.dto.CompanyDTO;
-import uz.depos.app.service.dto.CompanyNameDTO;
+import uz.depos.app.service.dto.*;
 
 public interface CompanyService {
     CompanyDTO createCompany(CompanyDTO companyDTO);
@@ -33,7 +30,7 @@ public interface CompanyService {
     Page<CompanyDTO> filterCompany(CompanySearchFieldEnum field, String text, Pageable pageable);
 
     @Transactional(readOnly = true)
-    Page<CompanyDTO> getCompanyListByFilterCompany(CompanyDTO companyDTO, Pageable pageable);
+    Page<CompanyFilerDTO> getCompanyListByFilterCompany(CompanyFilerDTO companyDTO, Pageable pageable);
 
     @Transactional(readOnly = true)
     Page<CompanyDTO> getAllCompaniesByChairman(Long userId, Pageable pageable);

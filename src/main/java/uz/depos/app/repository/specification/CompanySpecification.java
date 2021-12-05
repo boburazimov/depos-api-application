@@ -8,11 +8,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import uz.depos.app.domain.Company;
 import uz.depos.app.service.dto.CompanyDTO;
+import uz.depos.app.service.dto.CompanyFilerDTO;
 
 @Component
 public class CompanySpecification {
 
-    public Specification<Company> getCompanies(CompanyDTO request) {
+    public Specification<Company> getCompanies(CompanyFilerDTO request) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

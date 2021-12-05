@@ -208,8 +208,8 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public Page<CompanyDTO> getCompanyListByFilterCompany(CompanyDTO companyDTO, Pageable pageable) {
-        return companyRepository.findAll(companySpecification.getCompanies(companyDTO), pageable).map(CompanyDTO::new);
+    public Page<CompanyFilerDTO> getCompanyListByFilterCompany(CompanyFilerDTO companyDTO, Pageable pageable) {
+        return companyRepository.findAll(companySpecification.getCompanies(companyDTO), pageable).map(CompanyFilerDTO::new);
     }
 
     @Override
