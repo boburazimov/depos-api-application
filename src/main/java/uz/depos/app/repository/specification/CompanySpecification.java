@@ -38,9 +38,6 @@ public class CompanySpecification {
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("webPage")), "%" + request.getWebPage().toLowerCase() + "%")
                 );
             }
-            //            if (request.getActive() != null && request.getActive()){
-            //                predicates.add(criteriaBuilder.equal(criteriaBuilder.isTrue(root.get("isActive")), request.getActive()));
-            //            }
 
             query.orderBy(criteriaBuilder.desc(root.get("name")));
 
