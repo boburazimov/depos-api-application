@@ -166,6 +166,7 @@ public class MemberService {
             .ifPresent(
                 members -> {
                     memberRepository.deleteAllByMeetingIdAndFromReestrTrue(meetingId);
+                    memberRepository.deleteAll(members);
                     log.debug("Deleted Members by Meeting ID: {}", meetingId);
                 }
             );
