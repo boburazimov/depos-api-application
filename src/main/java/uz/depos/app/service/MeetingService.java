@@ -4,6 +4,7 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -204,13 +205,23 @@ public class MeetingService {
             .findOneById(id)
             .ifPresent(
                 meeting -> {
-                    boolean present = memberRepository.findAllByMeetingIdAndFromReestrTrue(meeting.getId()).isPresent();
-                    if (present) {
-                        throw new BadRequestAlertException("By this Meeting already has Reestr!", "MeetingManagement", "ReestrExist");
-                    } else {
-                        meetingRepository.delete(meeting);
-                        log.debug("Deleted Meeting: {}", meeting);
-                    }
+                    Optional<List<Member>> allByMeetingIdAndFromReestrTrue = memberRepository.findAllByMeetingIdAndFromReestrTrue(
+                        meeting.getId()
+                    );
+                    allByMeetingIdAndFromReestrTrue.ifPresent(
+                        members -> {
+                            if (!members.isEmpty()) {
+                                throw new BadRequestAlertException(
+                                    "By this Meeting already has Reestr!",
+                                    "MeetingManagement",
+                                    "ReestrExist"
+                                );
+                            } else {
+                                meetingRepository.delete(meeting);
+                                log.debug("Deleted Meeting: {}", meeting);
+                            }
+                        }
+                    );
                 }
             );
     }

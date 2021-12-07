@@ -191,8 +191,8 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
         }
     }
 
-    @MessageMapping("/topic/setStatus")
     //    @SendTo("/topic/getMember")
+    @MessageMapping("/topic/setStatus")
     public void setMemberStatus(@Payload MemberSessionDTO memberSessionDTO, StompHeaderAccessor headerAccessor) {
         log.debug("Set member status by ID: {}", memberSessionDTO.getMemberId());
 

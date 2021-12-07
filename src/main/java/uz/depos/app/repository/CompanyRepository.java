@@ -2,6 +2,7 @@ package uz.depos.app.repository;
 
 import java.util.List;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,7 +57,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
 
     List<Company> findAllByChairmanIdOrSecretaryId(Long chairman_id, Long secretary_id);
 
-    @Override
     Page<Company> findAll(Specification<Company> specification, Pageable pageable);
 
     List<Company> findAll(Specification<Company> specification);
