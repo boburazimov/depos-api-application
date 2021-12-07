@@ -144,10 +144,11 @@ public class FilesStorageService {
             .stream()
             .map(
                 attachment -> {
-                    Agenda agenda = agendaRepository.findById(attachment.getAgendaId()).orElse(null);
-                    assert agenda != null;
                     AttachMeetingDTO attachMeetingDTO = attachmentMapper.attachmentToAttachmentMeetingDTO(attachment);
-                    attachMeetingDTO.setAgendaSubject(agenda.getSubject());
+                    if (attachment.getAgendaId() != null) {
+                        Optional<Agenda> optionalAgenda = agendaRepository.findById(attachment.getAgendaId());
+                        optionalAgenda.ifPresent(agenda -> attachMeetingDTO.setAgendaSubject(agenda.getSubject()));
+                    }
                     return attachMeetingDTO;
                 }
             )
