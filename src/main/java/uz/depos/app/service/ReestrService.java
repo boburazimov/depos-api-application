@@ -84,13 +84,15 @@ public class ReestrService {
         checkerReestrColumn(sheet, 6, CellType.STRING, 0); // EMAIL
 
         Iterator<Row> rows = sheet.iterator();
-        List<Member> memberList = new ArrayList<Member>();
+        List<Member> memberList = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
 
         Optional<Meeting> optionalMeeting = meetingRepository.findById(meetingId);
         String chairmanPinfl = "";
         if (optionalMeeting.isPresent()) {
-            chairmanPinfl = optionalMeeting.get().getCompany().getChairman().getPinfl();
+            Meeting meeting = optionalMeeting.get();
+            if (meeting.getCompany() != null) if (meeting.getCompany().getChairman() != null) chairmanPinfl =
+                meeting.getCompany().getChairman().getPinfl();
         }
 
         int rowNumber = 0;
