@@ -7,7 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import uz.depos.app.domain.Company;
-import uz.depos.app.service.dto.CompanyDTO;
 import uz.depos.app.service.dto.CompanyFilerDTO;
 
 @Component
@@ -17,7 +16,7 @@ public class CompanySpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (request.getName() != null && !request.getName().isEmpty()) {
+            if (StringUtils.isNotEmpty(request.getName())) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("name")), "%" + request.getName().toLowerCase() + "%"));
             }
             if (StringUtils.isNotEmpty(request.getInn())) {

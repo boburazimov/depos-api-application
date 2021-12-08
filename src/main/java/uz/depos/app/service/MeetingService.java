@@ -25,7 +25,9 @@ import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.*;
+import uz.depos.app.repository.specification.MeetingSpecification;
 import uz.depos.app.service.dto.MeetingDTO;
+import uz.depos.app.service.dto.MeetingFilterDTO;
 import uz.depos.app.service.mapper.MeetingMapper;
 import uz.depos.app.service.mapper.UserMapper;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -47,6 +49,7 @@ public class MeetingService {
     final AgendaRepository agendaRepository;
     final MeetingMapper meetingMapper;
     final UserMapper userMapper;
+    final MeetingSpecification meetingSpecification;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -56,7 +59,8 @@ public class MeetingService {
         MemberRepository memberRepository,
         AgendaRepository agendaRepository,
         MeetingMapper meetingMapper,
-        UserMapper userMapper
+        UserMapper userMapper,
+        MeetingSpecification meetingSpecification
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -66,6 +70,7 @@ public class MeetingService {
         this.agendaRepository = agendaRepository;
         this.meetingMapper = meetingMapper;
         this.userMapper = userMapper;
+        this.meetingSpecification = meetingSpecification;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
@@ -167,14 +172,13 @@ public class MeetingService {
                                 memberRepository
                                     .findAllByMeetingId(meetingDTO.getId())
                                     .ifPresent(
-                                        members -> {
+                                        members ->
                                             members.forEach(
                                                 member -> {
                                                     member.setCompany(company);
                                                     memberRepository.save(member);
                                                 }
-                                            );
-                                        }
+                                            )
                                     );
                             }
                         );
@@ -297,5 +301,9 @@ public class MeetingService {
         } else {
             throw new BadRequestAlertException("Meeting not found by this ID " + meetingId, "MeetingManagement", "NotFoundMeeting");
         }
+    }
+
+    public Page<MeetingFilterDTO> getFilteredMeetings(MeetingFilterDTO meetingDTO, Pageable pageable) {
+        return meetingRepository.findAll(meetingSpecification.getMeetings(meetingDTO), pageable).map(MeetingFilterDTO::new);
     }
 }

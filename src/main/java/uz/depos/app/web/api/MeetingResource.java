@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
@@ -30,6 +31,8 @@ import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.service.MeetingLoggingService;
 import uz.depos.app.service.MeetingService;
 import uz.depos.app.service.dto.MeetingDTO;
+import uz.depos.app.service.dto.MeetingFilterDTO;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
 import uz.depos.app.web.rest.errors.MeetingWithStartDateAlreadyCreatedException;
 
@@ -209,7 +212,7 @@ public class MeetingResource {
      * {@code GET /meetings} : get meetings by the company and user with all the details.
      *
      * @param companyId the company ID for search by him.
-     * @param userId the user ID for search by him.
+     * @param userId    the user ID for search by him.
      * @param pageable  the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all meetings by the company and user.
      */
@@ -234,5 +237,25 @@ public class MeetingResource {
         log.debug("REST request to set active status for meeting by ID: " + meetingId);
 
         return ResponseEntity.status(HttpStatus.OK).body(meetingService.changeMeetingStatus(meetingId, statusEnum));
+    }
+
+    /**
+     * {@code POST /meeting/spec-filter} : get all meetings Filtered for header table by Specification interface.
+     *
+     * @param meetingDTO - Column in the table (entity).
+     * @param pageable   - params for pageable.
+     * @return - List of MeetingFilterDTO.
+     */
+    @PostMapping("/spec-filter")
+    @ApiOperation(value = "Filter meetings", notes = "This method to get Meetings by Specification filter")
+    public ResponseEntity<List<MeetingFilterDTO>> filterMeetings(
+        @RequestBody @JsonView(value = View.ModelView.Post.class) MeetingFilterDTO meetingDTO,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Meetings by Specification interface : {}", meetingDTO);
+
+        final Page<MeetingFilterDTO> page = meetingService.getFilteredMeetings(meetingDTO, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 }

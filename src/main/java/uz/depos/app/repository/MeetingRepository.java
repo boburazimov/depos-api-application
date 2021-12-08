@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +17,7 @@ import uz.depos.app.domain.Meeting;
  * Spring Data JPA repository for the {@link Meeting} entity.
  */
 @Repository
-public interface MeetingRepository extends JpaRepository<Meeting, Long> {
+public interface MeetingRepository extends JpaRepository<Meeting, Long>, JpaSpecificationExecutor<Meeting> {
     Optional<Meeting> findOneById(Long id);
 
     Optional<Meeting> findOneByStartDateAndCompanyId(Instant date, Long companyId);
@@ -35,4 +37,8 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     Optional<Meeting> findFirstByCompanyId(Long companyId);
 
     Page<Meeting> findAllByCompanyId(Long companyId, Pageable pageable);
+
+    Page<Meeting> findAll(Specification<Meeting> specification, Pageable pageable);
+
+    List<Meeting> findAll(Specification<Meeting> specification);
 }
