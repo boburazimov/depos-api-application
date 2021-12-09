@@ -102,6 +102,16 @@ public class MemberResource {
             throw new ResourceNotFoundException("Meeting not found by ID: " + memberDTO.getMeetingId());
         } else if (!userRepository.existsById(memberDTO.getUserId())) {
             throw new ResourceNotFoundException("User not found by ID: " + memberDTO.getUserId());
+        } else if (
+            memberRepository
+                .findOneByMeetingIdAndUserIdAndMemberTypeEnum(
+                    memberDTO.getMeetingId(),
+                    memberDTO.getUserId(),
+                    memberDTO.getMemberTypeEnum()
+                )
+                .isPresent()
+        ) {
+            throw new BadRequestAlertException("Member already has by this MemberTypeEnum", "memberManagement", "memberExistByType");
         }
 
         MemberDTO savedMemberDTO = memberService.createMember(memberDTO);
