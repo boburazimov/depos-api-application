@@ -1,6 +1,8 @@
 package uz.depos.app.repository.specification;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.criteria.Join;
@@ -29,10 +31,24 @@ public class MeetingSpecification {
                 predicates.add(criteriaBuilder.equal(root.get("status"), request.getStatus()));
             }
             if (request.getStartRegistration() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("startRegistration").as(Instant.class), request.getStartRegistration()));
+                Instant startRegistration1 = request.getStartRegistration();
+                Instant startRegistration2 = startRegistration1.plus(1, ChronoUnit.MINUTES);
+                predicates.add(
+                    criteriaBuilder.and(
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("startRegistration").as(Instant.class), startRegistration1),
+                        criteriaBuilder.lessThanOrEqualTo(root.get("startRegistration").as(Instant.class), startRegistration2)
+                    )
+                );
             }
             if (request.getStartDate() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("startDate").as(Instant.class), request.getStartDate()));
+                Instant startDate1 = request.getStartDate();
+                Instant startDate2 = request.getStartDate().plus(1, ChronoUnit.MINUTES);
+                predicates.add(
+                    criteriaBuilder.and(
+                        criteriaBuilder.greaterThanOrEqualTo(root.get("startDate").as(Instant.class), startDate1),
+                        criteriaBuilder.lessThanOrEqualTo(root.get("startDate").as(Instant.class), startDate2)
+                    )
+                );
             }
             if (request.getCityId() != null) {
                 Join<Meeting, City> join = root.join("city"); // city.id = ?
