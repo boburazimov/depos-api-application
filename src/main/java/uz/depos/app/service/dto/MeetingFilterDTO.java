@@ -5,7 +5,6 @@ import java.time.Instant;
 import uz.depos.app.domain.City;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
-import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.service.view.View;
 
 /**
@@ -23,7 +22,7 @@ public class MeetingFilterDTO {
     private MeetingStatusEnum status;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
-    private MeetingTypeEnum typeEnum;
+    private Instant startRegistration;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Instant startDate;
@@ -42,7 +41,7 @@ public class MeetingFilterDTO {
     public MeetingFilterDTO(Meeting meeting) {
         this.id = meeting.getId();
         this.status = meeting.getStatus();
-        this.typeEnum = meeting.getTypeEnum();
+        this.startRegistration = meeting.getStartRegistration();
         this.startDate = meeting.getStartDate();
         this.companyId = meeting.getCompany().getId();
         this.companyName = meeting.getCompany().getName();
@@ -74,12 +73,12 @@ public class MeetingFilterDTO {
         this.status = status;
     }
 
-    public MeetingTypeEnum getTypeEnum() {
-        return typeEnum;
+    public Instant getStartRegistration() {
+        return startRegistration;
     }
 
-    public void setTypeEnum(MeetingTypeEnum typeEnum) {
-        this.typeEnum = typeEnum;
+    public void setStartRegistration(Instant startRegistration) {
+        this.startRegistration = startRegistration;
     }
 
     public Instant getStartDate() {
@@ -124,8 +123,8 @@ public class MeetingFilterDTO {
             companyId +
             ", status=" +
             status +
-            ", typeEnum=" +
-            typeEnum +
+            ", startRegistration=" +
+            startRegistration +
             ", startDate=" +
             startDate +
             ", companyName='" +

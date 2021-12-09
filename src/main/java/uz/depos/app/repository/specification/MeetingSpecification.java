@@ -12,7 +12,6 @@ import uz.depos.app.domain.City;
 import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
-import uz.depos.app.domain.enums.MeetingTypeEnum;
 import uz.depos.app.service.dto.MeetingFilterDTO;
 
 @Component
@@ -29,11 +28,11 @@ public class MeetingSpecification {
             if (request.getStatus() != null && EnumUtils.isValidEnum(MeetingStatusEnum.class, request.getStatus().toString())) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), request.getStatus()));
             }
-            if (request.getTypeEnum() != null && EnumUtils.isValidEnum(MeetingTypeEnum.class, request.getTypeEnum().toString())) {
-                predicates.add(criteriaBuilder.equal(root.get("typeEnum"), request.getTypeEnum()));
+            if (request.getStartRegistration() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("startRegistration").as(Instant.class), request.getStartRegistration()));
             }
             if (request.getStartDate() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("startDate").as(Instant.class), request.getStartDate()));
+                predicates.add(criteriaBuilder.equal(root.get("startDate").as(Instant.class), request.getStartDate()));
             }
             if (request.getCityId() != null) {
                 Join<Meeting, City> join = root.join("city"); // city.id = ?
