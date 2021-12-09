@@ -18,11 +18,6 @@ public class MemberManagersDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long meetingId;
 
-    //
-    //    @NotNull
-    //    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
-    //    private Long companyId;
-
     @NotNull
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Long userId;
