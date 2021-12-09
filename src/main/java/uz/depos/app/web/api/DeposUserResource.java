@@ -1,5 +1,6 @@
 package uz.depos.app.web.api;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -30,10 +31,9 @@ import uz.depos.app.domain.enums.UserSearchFieldEnum;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.UserService;
 import uz.depos.app.service.UsernameAlreadyUsedException;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.DeposUserDTO;
-import uz.depos.app.service.dto.DeposUserNameDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.UserMapper;
+import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.AccountResource;
 import uz.depos.app.web.rest.UserResource;
 import uz.depos.app.web.rest.errors.*;
@@ -235,7 +235,7 @@ public class DeposUserResource {
      */
     @GetMapping("/filter")
     @ApiOperation(value = "Filter user", notes = "This method to filter users by field and search-value in pageable form.")
-    public ResponseEntity<List<DeposUserDTO>> filterUser(
+    public ResponseEntity<List<DeposUserDTO>> filterUserByField(
         @RequestParam UserSearchFieldEnum field,
         @RequestParam String value,
         Pageable pageable
@@ -243,6 +243,26 @@ public class DeposUserResource {
         log.debug("REST request to filter Users field : {}", field);
 
         final Page<DeposUserDTO> page = userService.filterUsers(field, value, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * {@code POST /user/spec-filter} : get all users Filtered for header table by Specification interface.
+     *
+     * @param userDTO    - Column in the table (entity).
+     * @param pageable - params for pageable.
+     * @return - List of UserDTO.
+     */
+    @PostMapping("/spec-filter")
+    @ApiOperation(value = "Filter users", notes = "This method to get Users by Specification filter")
+    public ResponseEntity<List<UserFilterDTO>> filterUser(
+        @RequestBody @JsonView(value = View.ModelView.Post.class) UserFilterDTO userDTO,
+        Pageable pageable
+    ) {
+        log.debug("REST request to filter Users by Specification interface : {}", userDTO);
+
+        final Page<UserFilterDTO> page = userService.getFilteredUsers(userDTO, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

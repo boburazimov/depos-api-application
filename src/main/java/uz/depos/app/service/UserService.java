@@ -7,7 +7,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,6 +28,7 @@ import uz.depos.app.domain.enums.UserGroupEnum;
 import uz.depos.app.domain.enums.UserSearchFieldEnum;
 import uz.depos.app.repository.AuthorityRepository;
 import uz.depos.app.repository.UserRepository;
+import uz.depos.app.repository.specification.UserSpecification;
 import uz.depos.app.security.AuthoritiesConstants;
 import uz.depos.app.security.SecurityUtils;
 import uz.depos.app.service.dto.*;
@@ -54,19 +54,22 @@ public class UserService {
     private final AuthorityRepository authorityRepository;
     private final CacheManager cacheManager;
     private final UserMapper userMapper;
+    private final UserSpecification userSpecification;
 
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
         CacheManager cacheManager,
-        UserMapper userMapper
+        UserMapper userMapper,
+        UserSpecification userSpecification
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
         this.userMapper = userMapper;
+        this.userSpecification = userSpecification;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -730,5 +733,9 @@ public class UserService {
             log.debug("Filtered Information for User by filed: {}", field);
             return userRepository.findAll(Example.of(user, matcher), pageable).map(DeposUserDTO::new);
         }
+    }
+
+    public Page<UserFilterDTO> getFilteredUsers(UserFilterDTO userDTO, Pageable pageable) {
+        return userRepository.findAll(userSpecification.getUsers(userDTO), pageable).map(UserFilterDTO::new);
     }
 }
