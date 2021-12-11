@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Agenda;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.VotingOption;
+import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
@@ -125,6 +126,10 @@ public class AgendaService {
     }
 
     public Optional<AgendaDTO> updateAgenda(AgendaDTO agendaDTO) {
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(agendaDTO.getMeetingId());
+        if (optionalMeeting.isPresent() && optionalMeeting.get().getStatus().equals(MeetingStatusEnum.ACTIVE)) {
+            throw new BadRequestAlertException("Agenda can not EDITED for Meeting by ACTIVE status", "agentManagement", "meetingIsActive");
+        }
         agendaRepository
             .findOneBySubjectIgnoreCaseContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
             .ifPresent(
