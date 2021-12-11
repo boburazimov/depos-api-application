@@ -165,6 +165,10 @@ public class AgendaService {
     }
 
     public Optional<AgendaDTO> switchAgendaStatus(AgendaDTO agendaDTO) {
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(agendaDTO.getMeetingId());
+        if (optionalMeeting.isPresent() && optionalMeeting.get().getStatus().equals(MeetingStatusEnum.ACTIVE)) {
+            throw new BadRequestAlertException("Agenda can not EDITED for Meeting by ACTIVE status", "agentManagement", "meetingIsActive");
+        }
         return Optional
             .of(agendaRepository.findById(agendaDTO.getId()))
             .filter(Optional::isPresent)
