@@ -4,6 +4,7 @@ import io.undertow.util.BadRequestException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
+import liquibase.pro.packaged.C;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -11,9 +12,11 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
@@ -76,25 +79,21 @@ public class ReestrService {
         log.debug("Checked Information for Reestr Sheet: {}", sheet);
     }
 
-    public AttachReestrDTO parse(MultipartFile file, Long meetingId) throws IOException, BadRequestException {
-        Workbook workbook = new XSSFWorkbook(file.getInputStream());
-        Sheet sheet = workbook.getSheetAt(0); // Get first sheet from book.
-
-        checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14); // PINFL
-        checkerReestrColumn(sheet, 6, CellType.STRING, 0); // EMAIL
-
+    private void parseThread(Workbook workbook, Sheet sheet, Meeting meeting) throws BadRequestException, IOException {
         Iterator<Row> rows = sheet.iterator();
-        List<Member> memberList = new ArrayList<>();
         DataFormatter formatter = new DataFormatter();
+        //        Optional<Meeting> optionalMeeting = meetingRepository.findById(meetingId);
 
-        Optional<Meeting> optionalMeeting = meetingRepository.findById(meetingId);
         String chairmanPinfl = "";
-        if (optionalMeeting.isPresent()) {
-            Meeting meeting = optionalMeeting.get();
-            if (meeting.getCompany() != null) if (meeting.getCompany().getChairman() != null) chairmanPinfl =
-                meeting.getCompany().getChairman().getPinfl();
+        ////        Company company = new Company();
+        ////        Meeting meeting = new Meeting();
+        //        if (optionalMeeting.isPresent()) {
+        //            Meeting meeting = optionalMeeting.get();
+        //        }
+        if (meeting.getCompany().getChairman() != null) {
+            //            Company company = meeting.getCompany();
+            chairmanPinfl = meeting.getCompany().getChairman().getPinfl();
         }
-
         int rowNumber = 0;
 
         while (rows.hasNext()) {
@@ -176,18 +175,9 @@ public class ReestrService {
                 savedUser = userService.editUser(user).get();
             }
             Member member = new Member(); // Create member for fill from current row.
-            meetingRepository
-                .findOneById(meetingId)
-                .ifPresent(
-                    meeting -> {
-                        member.setMeeting(meeting); // Set Meeting
-                        if (meeting.getCompany() != null) {
-                            companyRepository.findById(meeting.getCompany().getId()).ifPresent(member::setCompany); // Set Company
-                        } else {
-                            throw new NullPointerException("Company must not be null for meeting!");
-                        }
-                    }
-                );
+
+            member.setCompany(meeting.getCompany());
+            member.setMeeting(meeting);
             member.setUser(savedUser);
             member.setRemotely(true);
             member.setConfirmed(false);
@@ -200,23 +190,34 @@ public class ReestrService {
             member.setHldIt(currentRow.getCell(3).getStringCellValue());
             member.setPosition(currentRow.getCell(7).getStringCellValue());
             member.setFromReestr(true);
-            Member savedMember = memberRepository.saveAndFlush(member);
-
-            if (meetingRepository.findById(meetingId).isPresent() && savedUser != null) {
-                Meeting meeting = meetingRepository.findById(meetingId).get();
-                Runnable runnable = () -> mailService.sendInvitationEmail(savedUser, meeting, savedMember, isNew ? password : "");
-                runnable.run();
-            }
-            memberList.add(savedMember);
+            Member savedMember = memberRepository.save(member);
+            //            Meeting finalMeeting = meeting;
+            new Thread(() -> mailService.sendInvitationEmail(savedUser, meeting, savedMember, isNew ? password : "")).start();
         }
         workbook.close();
-        //        if (!hasChairmen) throw new BadRequestAlertException(
-        //            "From this Reestr don't have Chairmen by Company",
-        //            "reestrManagement",
-        //            "chairmenError"
-        //        );
+    }
+
+    public AttachReestrDTO parse(MultipartFile file, Long meetingId) throws IOException, BadRequestException {
+        Workbook workbook = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = workbook.getSheetAt(0); // Get first sheet from book.
+
+        checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14); // PINFL
+        checkerReestrColumn(sheet, 6, CellType.STRING, 0); // EMAIL
+
+        meetingRepository
+            .findById(meetingId)
+            .ifPresent(
+                meeting -> {
+                    try {
+                        parseThread(workbook, sheet, meeting);
+                    } catch (BadRequestException | IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            );
+
         AttachReestrDTO savedReestr = filesStorageService.uploadReestrExcel(file, meetingId);
-        savedReestr.setExtraInfo("By this Reestr uploaded members: " + memberList.size());
+        savedReestr.setExtraInfo("Reestr uploaded success");
         log.debug("Parsed Information for Reestr: {}", workbook);
         return savedReestr;
     }

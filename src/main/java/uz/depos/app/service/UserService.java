@@ -491,7 +491,7 @@ public class UserService {
                     // Email
                     if (StringUtils.isNoneBlank(userDTO.getEmail())) user.setEmail(userDTO.getEmail().toLowerCase());
                     // Password - Encryption @password if not null
-                    if (StringUtils.isNoneBlank(userDTO.getPassword())) {
+                    if (StringUtils.isNotEmpty(userDTO.getPassword()) && StringUtils.isNotBlank(userDTO.getPassword())) {
                         String encryptedPassword = passwordEncoder.encode(userDTO.getPassword());
                         user.setPassword(encryptedPassword);
                     }
@@ -518,7 +518,7 @@ public class UserService {
                     // FullName
                     if (StringUtils.isNoneBlank(userDTO.getFullName())) user.setFullName(userDTO.getFullName());
                     // Passport
-                    if (StringUtils.isNoneBlank(userDTO.getPassport().toUpperCase())) user.setPassport(userDTO.getPassport().toUpperCase());
+                    if (StringUtils.isNoneBlank(userDTO.getPassport())) user.setPassport(userDTO.getPassport().toUpperCase());
                     // Pinfl
                     if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
                     // GroupEnum
