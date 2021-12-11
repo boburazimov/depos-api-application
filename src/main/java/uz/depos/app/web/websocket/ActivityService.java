@@ -74,11 +74,7 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     public void onApplicationEvent(SessionDisconnectEvent event) {
         memberSessionRepository
             .findOneBySessionId(event.getSessionId())
-            .ifPresent(
-                memberSession -> {
-                    memberService.setStatusForMember(null, false, memberSession.getSessionId());
-                }
-            );
+            .ifPresent(memberSession -> memberService.setStatusForMember(null, false, memberSession.getSessionId()));
         System.out.println(">>>>>>>>>>>>> DISCONNECT !!!!");
         ActivityDTO activityDTO = new ActivityDTO();
         activityDTO.setSessionId(event.getSessionId());
@@ -100,16 +96,18 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
 
     @MessageMapping("/topic/start-zoom")
     @SendTo("/topic/get-zoom")
-    public MemberSession zoom(@Payload ZoomDTO zoomDTO) {
+    public void zoom(@Payload ZoomDTO zoomDTO) {
         log.debug("Start and Stop Zoom-Meeting logging data {}", zoomDTO);
         if (
             zoomDTO.getMeetingId() != null && zoomDTO.getMemberId() != null && memberRepository.findById(zoomDTO.getMemberId()).isPresent()
         ) { // General check
             MemberTypeEnum memberTypeEnum = memberRepository.findById(zoomDTO.getMemberId()).get().getMemberTypeEnum();
             boolean isManager = memberTypeEnum.equals(MemberTypeEnum.SECRETARY) || memberTypeEnum.equals(MemberTypeEnum.CHAIRMAN);
+            // Найти председателя или секретаря по Митинг ID с проверкой начинали ли они Zoom video
             Optional<MemberSession> optionalManagerMemberSession = memberSessionRepository.findOneByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(
                 zoomDTO.getMeetingId()
             );
+            // получение сессии текущего ползователя который был создан при первом входе в сокет
             Optional<MemberSession> optionalCurrentMemberSession = memberSessionRepository.findOneByMemberId(zoomDTO.getMemberId());
 
             if (
@@ -122,7 +120,8 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 MemberSession memberSession = optionalCurrentMemberSession.get();
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(zoomDTO.getPassword());
-                return memberSessionRepository.saveAndFlush(memberSession);
+                MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
@@ -134,20 +133,20 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 memberSessionRepository
                     .findAllByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(zoomDTO.getMeetingId())
                     .ifPresent(
-                        memberSessions -> {
+                        memberSessions ->
                             memberSessions.forEach(
                                 memberSession -> {
                                     memberSession.setZoom(false);
                                     memberSession.setZoomPassword(null);
                                     memberSessionRepository.save(memberSession);
                                 }
-                            );
-                        }
+                            )
                     );
                 MemberSession memberSession = optionalCurrentMemberSession.get();
                 memberSession.setZoom(false);
                 memberSession.setZoomPassword(null);
-                return memberSessionRepository.saveAndFlush(memberSession);
+                MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
@@ -158,14 +157,15 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 MemberSession memberSession = optionalCurrentMemberSession.get();
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(optionalManagerMemberSession.get().getZoomPassword());
-                return memberSessionRepository.saveAndFlush(memberSession);
+                MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
                 optionalCurrentMemberSession.isPresent() &&
                 !optionalManagerMemberSession.isPresent()
             ) {
-                return optionalCurrentMemberSession.get();
+                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), optionalCurrentMemberSession.get());
             } else {
                 throw new BadRequestAlertException("Please check all fields in ZoomDTO", "ZoomDTOManagement", "fieldsHasSomeError");
             }
