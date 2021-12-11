@@ -212,6 +212,27 @@ public class MemberService {
     }
 
     public MemberManagersDTO addManagers(MemberManagersDTO managersDTO) {
+        if (
+            memberRepository
+                .findOneByMeetingIdAndUserIdAndMemberTypeEnum(
+                    managersDTO.getMeetingId(),
+                    managersDTO.getUserId(),
+                    managersDTO.getMemberTypeEnum()
+                )
+                .isPresent()
+        ) {
+            throw new BadRequestAlertException("Member already has by this MemberTypeEnum", "memberManagement", "memberExistByType");
+        }
+        if (
+            managersDTO.getMemberTypeEnum().equals(MemberTypeEnum.SECRETARY) &&
+            memberRepository.findOneByMeetingIdAndMemberTypeEnum(managersDTO.getMeetingId(), MemberTypeEnum.SECRETARY).isPresent()
+        ) {
+            throw new BadRequestAlertException(
+                "Member already has by this MemberTypeEnum : SECRETARY",
+                "memberManagement",
+                "memberExistByTypeSecretary"
+            );
+        }
         if (userRepository.findById(managersDTO.getUserId()).isPresent()) {
             Member member = new Member();
             meetingRepository

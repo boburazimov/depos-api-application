@@ -261,17 +261,7 @@ public class MemberResource {
         @Valid @RequestBody @JsonView(value = View.ModelView.Post.class) MemberManagersDTO managersDTO
     ) throws URISyntaxException {
         log.debug("REST request to add Managers by user ID : {}", managersDTO.getUserId());
-        if (
-            memberRepository
-                .findOneByMeetingIdAndUserIdAndMemberTypeEnum(
-                    managersDTO.getMeetingId(),
-                    managersDTO.getUserId(),
-                    managersDTO.getMemberTypeEnum()
-                )
-                .isPresent()
-        ) {
-            throw new BadRequestAlertException("Member already has by this MemberTypeEnum", "memberManagement", "memberExistByType");
-        }
+
         MemberManagersDTO memberManagersDTO = memberService.addManagers(managersDTO);
         return ResponseEntity
             .created(new URI("/api/meeting/managers"))
