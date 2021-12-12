@@ -87,9 +87,9 @@ public class AgendaResource {
     @GetMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.MODERATOR + "\")")
     @ApiOperation(value = "Get agenda", notes = "This method to get one agenda by ID")
-    public ResponseEntity<AgendaDTO> getAgenda(@PathVariable Long id) {
+    public ResponseEntity<AgendaEditDTO> getAgenda(@PathVariable Long id) {
         log.debug("REST request to get Agenda : {}", id);
-        return ResponseUtil.wrapOrNotFound(agendaService.getAgenda(id).map(AgendaDTO::new));
+        return ResponseUtil.wrapOrNotFound(agendaService.getAgendaDTO(id));
     }
 
     /**

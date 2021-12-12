@@ -112,6 +112,26 @@ public class AgendaService {
      * @return get agenda.
      */
     @Transactional(readOnly = true)
+    public Optional<AgendaEditDTO> getAgendaDTO(Long id) {
+        return Optional
+            .of(agendaRepository.findById(id))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(
+                agenda -> {
+                    List<VotingEditDTO> votingEditDTOS = new ArrayList<>();
+                    votingRepository
+                        .findAllByAgendaId(agenda.getId())
+                        .stream()
+                        .map(VotingEditDTO::new)
+                        .collect(Collectors.toList())
+                        .addAll(votingEditDTOS);
+                    return new AgendaEditDTO(agenda, votingEditDTOS);
+                }
+            );
+    }
+
+    @Transactional(readOnly = true)
     public Optional<Agenda> getAgenda(Long id) {
         return agendaRepository.findById(id);
     }

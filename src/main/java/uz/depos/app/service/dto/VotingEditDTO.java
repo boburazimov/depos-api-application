@@ -13,8 +13,8 @@ public class VotingEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long id;
 
-    @NotNull(message = "Voting text must not be null.")
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
+    @NotNull(message = "Voting text must not be null!")
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private String votingText;
 
     public VotingEditDTO() {}
