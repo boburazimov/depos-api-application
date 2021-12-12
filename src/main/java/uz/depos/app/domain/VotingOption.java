@@ -1,13 +1,17 @@
 package uz.depos.app.domain;
 
+import java.util.Objects;
 import javax.persistence.*;
-import lombok.*;
+import org.hibernate.Hibernate;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * Варианты решения для голосования
  */
-@EqualsAndHashCode(callSuper = true)
 @Entity
+@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
+@Where(clause = "deleted=false")
 public class VotingOption extends AbstractAuditingEntity {
 
     @Id
@@ -77,5 +81,18 @@ public class VotingOption extends AbstractAuditingEntity {
     @Override
     public String toString() {
         return "VotingOption{" + "id=" + id + ", votingText='" + votingText + '\'' + ", meeting=" + meeting + ", agenda=" + agenda + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        VotingOption that = (VotingOption) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

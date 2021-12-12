@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.persistence.*;
 import org.hibernate.Hibernate;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
 import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
 import uz.depos.app.domain.enums.AgendaTypeEnum;
@@ -13,6 +15,8 @@ import uz.depos.app.domain.enums.AgendaTypeEnum;
  * Повестка дня - вопросы для голосование
  */
 @Entity
+@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
+@Where(clause = "deleted=false")
 public class Agenda extends AbstractAuditingEntity implements Serializable {
 
     @Id
