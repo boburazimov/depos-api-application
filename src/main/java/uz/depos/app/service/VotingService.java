@@ -13,6 +13,7 @@ import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.dto.VotingEditDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 
 /**
@@ -85,7 +86,7 @@ public class VotingService {
      * @param votingDTO votingOption to edit.
      * @return edited votingOption.
      */
-    public Optional<VotingDTO> updateVotingOption(VotingDTO votingDTO) {
+    public Optional<VotingEditDTO> updateVotingOption(VotingEditDTO votingDTO) {
         return Optional
             .of(votingRepository.findById(votingDTO.getId()))
             .filter(Optional::isPresent)
@@ -93,14 +94,12 @@ public class VotingService {
             .map(
                 votingOption -> {
                     votingOption.setVotingText(votingDTO.getVotingText());
-                    meetingRepository.findById(votingDTO.getMeetingId()).ifPresent(votingOption::setMeeting);
-                    agendaRepository.findById(votingDTO.getAgendaId()).ifPresent(votingOption::setAgenda);
                     VotingOption savedVotingOption = votingRepository.saveAndFlush(votingOption);
                     log.debug("Changed Information for VotingOption: {}", savedVotingOption);
                     return savedVotingOption;
                 }
             )
-            .map(VotingDTO::new);
+            .map(VotingEditDTO::new);
     }
 
     /**

@@ -5,7 +5,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +28,7 @@ import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.service.AgendaService;
 import uz.depos.app.service.dto.AgendaAndOptionsDTO;
 import uz.depos.app.service.dto.AgendaDTO;
-import uz.depos.app.service.dto.MemberDTO;
-import uz.depos.app.service.dto.QuestionDTO;
+import uz.depos.app.service.dto.AgendaEditDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -113,7 +115,7 @@ public class AgendaResource {
      * {@code GET /agendas} : get agendas by the meeting with all the details - calling this are only allowed for the administrators.
      *
      * @param meetingId the member ID for search by him.
-     * @param pageable the pagination information.
+     * @param pageable  the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all agendas by the meeting.
      */
     @GetMapping("/by-meeting")
@@ -147,10 +149,12 @@ public class AgendaResource {
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update agenda", notes = "This method to update agenda fields")
-    public ResponseEntity<AgendaDTO> updateAgenda(@Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) AgendaDTO agendaDTO) {
+    public ResponseEntity<AgendaEditDTO> updateAgenda(
+        @Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) AgendaEditDTO agendaDTO
+    ) {
         log.debug("REST request to update Agenda : {}", agendaDTO);
 
-        Optional<AgendaDTO> updatedAgendaDTO = agendaService.updateAgenda(agendaDTO);
+        Optional<AgendaEditDTO> updatedAgendaDTO = agendaService.updateAgenda(agendaDTO);
         return ResponseUtil.wrapOrNotFound(
             updatedAgendaDTO,
             HeaderUtil.createAlert(applicationName, "agendaManagement.edited", agendaDTO.getSubject())

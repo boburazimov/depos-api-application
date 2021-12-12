@@ -1,8 +1,10 @@
 package uz.depos.app.domain;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
 import javax.persistence.*;
-import lombok.EqualsAndHashCode;
+import org.hibernate.Hibernate;
 import uz.depos.app.domain.enums.AgendaDebateEnum;
 import uz.depos.app.domain.enums.AgendaSpeakTimeEnum;
 import uz.depos.app.domain.enums.AgendaTypeEnum;
@@ -10,7 +12,6 @@ import uz.depos.app.domain.enums.AgendaTypeEnum;
 /**
  * Повестка дня - вопросы для голосование
  */
-@EqualsAndHashCode(callSuper = true)
 @Entity
 public class Agenda extends AbstractAuditingEntity implements Serializable {
 
@@ -46,16 +47,12 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    //    // Файлы для повестки дня
-    //    @OneToMany(cascade = CascadeType.ALL)
-    //    private List<Attachment> attachments;
-
-    //    // Варианты решения для голосования
-    //    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
-    //    private List<VotingOption> votingOptions;
+    // Варианты решения для голосования
+    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
+    private List<VotingOption> votingOptions;
 
     // Доп инфо
-    @Column(length = 255, name = "extra_info")
+    @Column(name = "extra_info")
     private String extraInfo;
 
     public Agenda() {}
@@ -154,6 +151,14 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         this.extraInfo = extraInfo;
     }
 
+    public List<VotingOption> getVotingOptions() {
+        return votingOptions;
+    }
+
+    public void setVotingOptions(List<VotingOption> votingOptions) {
+        this.votingOptions = votingOptions;
+    }
+
     @Override
     public String toString() {
         return (
@@ -175,10 +180,25 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
             debateEnum +
             ", isActive=" +
             isActive +
+            ", votingOptions=" +
+            votingOptions +
             ", extraInfo='" +
             extraInfo +
             '\'' +
             '}'
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Agenda agenda = (Agenda) o;
+        return id != null && Objects.equals(id, agenda.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

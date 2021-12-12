@@ -23,8 +23,8 @@ import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.VotingService;
-import uz.depos.app.service.dto.AgendaDTO;
 import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.dto.VotingEditDTO;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 import uz.depos.app.web.rest.errors.VotinOptionTextAlreadyUsedException;
@@ -126,7 +126,7 @@ public class VotingResource {
      * {@code GET /votings} : get votings by the meeting with all the details.
      *
      * @param meetingId the meeting ID for search by him.
-     * @param pageable the pagination information.
+     * @param pageable  the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body all votings by the meeting.
      */
     @GetMapping("/by-meeting")
@@ -184,22 +184,28 @@ public class VotingResource {
     @PutMapping
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
     @ApiOperation(value = "Update voting", notes = "This method to update votingOption fields")
-    public ResponseEntity<VotingDTO> updateVoting(@Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) VotingDTO votingDTO) {
+    public ResponseEntity<VotingEditDTO> updateVoting(
+        @Valid @RequestBody @JsonView(value = View.ModelView.PUT.class) VotingEditDTO votingDTO
+    ) {
         log.debug("REST request to update Voting : {}", votingDTO);
 
         votingRepository
-            .findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingDTO.getMeetingId())
+            .findById(votingDTO.getId())
+            .flatMap(
+                votingOption ->
+                    votingRepository.findOneByVotingTextAndAgendaId(votingDTO.getVotingText(), votingOption.getMeeting().getId())
+            )
             .ifPresent(
-                votingOption -> {
-                    if (!votingOption.getId().equals(votingDTO.getId())) {
+                votingOption1 -> {
+                    if (!votingOption1.getId().equals(votingDTO.getId())) {
                         if (
-                            Objects.equals(votingDTO.getVotingText(), votingOption.getVotingText())
+                            Objects.equals(votingDTO.getVotingText(), votingOption1.getVotingText())
                         ) throw new VotinOptionTextAlreadyUsedException();
                     }
                 }
             );
 
-        Optional<VotingDTO> updatedVotingOptionDTO = votingService.updateVotingOption(votingDTO);
+        Optional<VotingEditDTO> updatedVotingOptionDTO = votingService.updateVotingOption(votingDTO);
 
         return ResponseUtil.wrapOrNotFound(
             updatedVotingOptionDTO,

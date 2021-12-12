@@ -34,6 +34,12 @@ public class VotingDTO {
         this.agendaId = votingOption.getAgenda().getId();
     }
 
+    public VotingDTO(String votingText, Long meetingId, Long agendaId) {
+        this.votingText = votingText;
+        this.meetingId = meetingId;
+        this.agendaId = agendaId;
+    }
+
     public Long getId() {
         return id;
     }

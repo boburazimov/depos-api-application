@@ -1,6 +1,7 @@
 package uz.depos.app.service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -18,9 +19,7 @@ import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.VotingRepository;
-import uz.depos.app.service.dto.AgendaAndOptionsDTO;
-import uz.depos.app.service.dto.AgendaDTO;
-import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.AgendaSubjectAlreadyUsedException;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -39,19 +38,22 @@ public class AgendaService {
     private final AgendaRepository agendaRepository;
     private final AgendaAndVotingMapper agendaAndVotingMapper;
     private final VotingRepository votingRepository;
+    private final VotingService votingService;
 
     public AgendaService(
         MemberRepository memberRepository,
         MeetingRepository meetingRepository,
         AgendaRepository agendaRepository,
         AgendaAndVotingMapper agendaAndVotingMapper,
-        VotingRepository votingRepository
+        VotingRepository votingRepository,
+        VotingService votingService
     ) {
         this.memberRepository = memberRepository;
         this.meetingRepository = meetingRepository;
         this.agendaRepository = agendaRepository;
         this.agendaAndVotingMapper = agendaAndVotingMapper;
         this.votingRepository = votingRepository;
+        this.votingService = votingService;
     }
 
     /**
@@ -125,10 +127,18 @@ public class AgendaService {
         return agendaRepository.findAll(pageable).map(AgendaDTO::new);
     }
 
-    public Optional<AgendaDTO> updateAgenda(AgendaDTO agendaDTO) {
+    public Optional<AgendaEditDTO> updateAgenda(AgendaEditDTO agendaDTO) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(agendaDTO.getMeetingId());
-        if (optionalMeeting.isPresent() && optionalMeeting.get().getStatus().equals(MeetingStatusEnum.ACTIVE)) {
-            throw new BadRequestAlertException("Agenda can not EDITED for Meeting by ACTIVE status", "agentManagement", "meetingIsActive");
+        if (
+            optionalMeeting.isPresent() &&
+            optionalMeeting.get().getStatus() != null &&
+            !optionalMeeting.get().getStatus().equals(MeetingStatusEnum.PENDING)
+        ) {
+            throw new BadRequestAlertException(
+                "Agenda can not be EDITED for Meeting of not PENDING status",
+                "agentManagement",
+                "meetingIsNotPending"
+            );
         }
         agendaRepository
             .findOneBySubjectIgnoreCaseContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
@@ -147,11 +157,7 @@ public class AgendaService {
                 agenda -> {
                     meetingRepository.findById(agendaDTO.getMeetingId()).ifPresent(agenda::setMeeting);
                     agenda.setSubject(agendaDTO.getSubject());
-                    if (agendaDTO.getSpeakerId() != null) {
-                        memberRepository.findById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
-                    } else {
-                        agenda.setSpeaker(null);
-                    }
+                    if (agendaDTO.getSpeakerId() != null) memberRepository.findById(agendaDTO.getSpeakerId()).ifPresent(agenda::setSpeaker);
                     agenda.setSpeakTimeEnum(agendaDTO.getSpeakTimeEnum());
                     agenda.setTypeEnum(agendaDTO.getTypeEnum());
                     agenda.setDebateEnum(agendaDTO.getDebateEnum());
@@ -161,7 +167,29 @@ public class AgendaService {
                     return savedAgenda;
                 }
             )
-            .map(AgendaDTO::new);
+            .map(
+                agenda -> {
+                    List<VotingEditDTO> votingEditDTOS = new ArrayList<>();
+                    agendaDTO
+                        .getVotingOptions()
+                        .stream()
+                        .map(
+                            votingEditDTO -> {
+                                if (votingEditDTO.getId() != null) {
+                                    return votingService.updateVotingOption(votingEditDTO);
+                                } else {
+                                    VotingDTO votingDTO = votingService.createVotingOption(
+                                        new VotingDTO(votingEditDTO.getVotingText(), agenda.getMeeting().getId(), agenda.getId())
+                                    );
+                                    return new VotingEditDTO(votingDTO.getId(), votingDTO.getVotingText());
+                                }
+                            }
+                        )
+                        .collect(Collectors.toList())
+                        .addAll(votingEditDTOS);
+                    return new AgendaEditDTO(agenda, votingEditDTOS);
+                }
+            );
     }
 
     public Optional<AgendaDTO> switchAgendaStatus(AgendaDTO agendaDTO) {
@@ -191,6 +219,21 @@ public class AgendaService {
      * @param id the id agenda
      */
     public void deleteAgenda(Long id) {
+        Agenda agenda = agendaRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Agenda could not be found by ID: " + id));
+        Optional<Meeting> optionalMeeting = meetingRepository.findById(agenda.getMeeting().getId());
+        if (
+            optionalMeeting.isPresent() &&
+            optionalMeeting.get().getStatus() != null &&
+            !optionalMeeting.get().getStatus().equals(MeetingStatusEnum.PENDING)
+        ) {
+            throw new BadRequestAlertException(
+                "Agenda can not be DELETED for Meeting status not PENDING",
+                "agentManagement",
+                "meetingIsNotPending"
+            );
+        }
         agendaRepository.findById(id).ifPresent(this::accept);
     }
 

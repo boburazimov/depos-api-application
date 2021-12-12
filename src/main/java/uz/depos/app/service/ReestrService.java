@@ -3,27 +3,28 @@ package uz.depos.app.service;
 import io.undertow.util.BadRequestException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
-import liquibase.pro.packaged.C;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.Member;
 import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
-import uz.depos.app.repository.*;
+import uz.depos.app.repository.CompanyRepository;
+import uz.depos.app.repository.MeetingRepository;
+import uz.depos.app.repository.MemberRepository;
+import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.AttachReestrDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.mapper.ExcelHelpers;
@@ -82,18 +83,9 @@ public class ReestrService {
     private void parseThread(Workbook workbook, Sheet sheet, Meeting meeting) throws BadRequestException, IOException {
         Iterator<Row> rows = sheet.iterator();
         DataFormatter formatter = new DataFormatter();
-        //        Optional<Meeting> optionalMeeting = meetingRepository.findById(meetingId);
 
-        String chairmanPinfl = "";
-        ////        Company company = new Company();
-        ////        Meeting meeting = new Meeting();
-        //        if (optionalMeeting.isPresent()) {
-        //            Meeting meeting = optionalMeeting.get();
-        //        }
-        if (meeting.getCompany().getChairman() != null) {
-            //            Company company = meeting.getCompany();
-            chairmanPinfl = meeting.getCompany().getChairman().getPinfl();
-        }
+        String chairmanPinfl = meeting.getCompany().getChairman() != null ? meeting.getCompany().getChairman().getPinfl() : "";
+
         int rowNumber = 0;
 
         while (rows.hasNext()) {
