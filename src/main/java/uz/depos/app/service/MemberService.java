@@ -6,10 +6,6 @@ import static org.springframework.data.domain.ExampleMatcher.matching;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +47,7 @@ public class MemberService {
     private final CompanyRepository companyRepository;
     private final MemberSessionRepository memberSessionRepository;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final AgendaRepository agendaRepository;
 
     public MemberService(
         MeetingRepository meetingRepository,
@@ -59,7 +56,8 @@ public class MemberService {
         MemberMapper memberMapper,
         CompanyRepository companyRepository,
         MemberSessionRepository memberSessionRepository,
-        SimpMessageSendingOperations messagingTemplate
+        SimpMessageSendingOperations messagingTemplate,
+        AgendaRepository agendaRepository
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -68,6 +66,7 @@ public class MemberService {
         this.companyRepository = companyRepository;
         this.memberSessionRepository = memberSessionRepository;
         this.messagingTemplate = messagingTemplate;
+        this.agendaRepository = agendaRepository;
     }
 
     public MemberDTO createMember(MemberDTO memberDTO) {
@@ -151,6 +150,17 @@ public class MemberService {
             .findOneById(id)
             .ifPresent(
                 member -> {
+                    if (
+                        member.getMemberTypeEnum() != null &&
+                        member.getMemberTypeEnum().equals(MemberTypeEnum.SPEAKER) &&
+                        agendaRepository.findFirstBySpeaker(member).isPresent()
+                    ) {
+                        throw new BadRequestAlertException(
+                            "This Member already participates an another Agenda",
+                            "memberManagement",
+                            "existInAgenda"
+                        );
+                    }
                     memberRepository.delete(member);
                     log.debug("Deleted Member: {}", member);
                 }
