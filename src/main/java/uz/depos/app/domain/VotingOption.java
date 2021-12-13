@@ -10,8 +10,8 @@ import org.hibernate.annotations.Where;
  * Варианты решения для голосования
  */
 @Entity
-@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
-@Where(clause = "deleted=false")
+//@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
+//@Where(clause = "deleted=false")
 public class VotingOption extends AbstractAuditingEntity {
 
     @Id
@@ -28,7 +28,7 @@ public class VotingOption extends AbstractAuditingEntity {
     private Meeting meeting;
 
     // Привязка к повестки дня "agendaID"
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Agenda agenda;
 
     public VotingOption() {}

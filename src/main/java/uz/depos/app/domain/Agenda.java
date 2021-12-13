@@ -15,8 +15,8 @@ import uz.depos.app.domain.enums.AgendaTypeEnum;
  * Повестка дня - вопросы для голосование
  */
 @Entity
-@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
-@Where(clause = "deleted=false")
+//@SQLDelete(sql = "UPDATE project SET deleted=true WHERE id=?")
+//@Where(clause = "deleted=false")
 public class Agenda extends AbstractAuditingEntity implements Serializable {
 
     @Id
@@ -51,9 +51,9 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    // Варианты решения для голосования
-    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
-    private List<VotingOption> votingOptions;
+    //    // Варианты решения для голосования
+    //    @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL)
+    //    private List<VotingOption> votingOptions;
 
     // Доп инфо
     @Column(name = "extra_info")
@@ -155,13 +155,13 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
         this.extraInfo = extraInfo;
     }
 
-    public List<VotingOption> getVotingOptions() {
-        return votingOptions;
-    }
-
-    public void setVotingOptions(List<VotingOption> votingOptions) {
-        this.votingOptions = votingOptions;
-    }
+    //    public List<VotingOption> getVotingOptions() {
+    //        return votingOptions;
+    //    }
+    //
+    //    public void setVotingOptions(List<VotingOption> votingOptions) {
+    //        this.votingOptions = votingOptions;
+    //    }
 
     @Override
     public String toString() {
@@ -184,8 +184,8 @@ public class Agenda extends AbstractAuditingEntity implements Serializable {
             debateEnum +
             ", isActive=" +
             isActive +
-            ", votingOptions=" +
-            votingOptions +
+            //            ", votingOptions=" +
+            //            votingOptions +
             ", extraInfo='" +
             extraInfo +
             '\'' +

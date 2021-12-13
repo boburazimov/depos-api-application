@@ -12,6 +12,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Agenda;
+import uz.depos.app.domain.Company;
 import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.VotingOption;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
@@ -119,13 +120,11 @@ public class AgendaService {
             .map(Optional::get)
             .map(
                 agenda -> {
-                    List<VotingEditDTO> votingEditDTOS = new ArrayList<>();
-                    votingRepository
+                    List<VotingEditDTO> votingEditDTOS = votingRepository
                         .findAllByAgendaId(agenda.getId())
                         .stream()
                         .map(VotingEditDTO::new)
-                        .collect(Collectors.toList())
-                        .addAll(votingEditDTOS);
+                        .collect(Collectors.toList());
                     return new AgendaEditDTO(agenda, votingEditDTOS);
                 }
             );
@@ -184,29 +183,29 @@ public class AgendaService {
                     agenda.setActive(agendaDTO.getActive());
                     Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
                     log.debug("Changed Information for Agenda: {}", savedAgenda);
+                    agendaDTO
+                        .getVotingOptions()
+                        .forEach(
+                            votingEditDTO -> {
+                                if (votingEditDTO.getId() != null) {
+                                    votingService.updateVotingOption(votingEditDTO);
+                                } else {
+                                    votingService.createVotingOption(
+                                        new VotingDTO(votingEditDTO.getVotingText(), agenda.getMeeting().getId(), agenda.getId())
+                                    );
+                                }
+                            }
+                        );
                     return savedAgenda;
                 }
             )
             .map(
                 agenda -> {
-                    List<VotingEditDTO> votingEditDTOS = new ArrayList<>();
-                    agendaDTO
-                        .getVotingOptions()
+                    List<VotingEditDTO> votingEditDTOS = votingRepository
+                        .findAllByAgendaId(agenda.getId())
                         .stream()
-                        .map(
-                            votingEditDTO -> {
-                                if (votingEditDTO.getId() != null) {
-                                    return votingService.updateVotingOption(votingEditDTO);
-                                } else {
-                                    VotingDTO votingDTO = votingService.createVotingOption(
-                                        new VotingDTO(votingEditDTO.getVotingText(), agenda.getMeeting().getId(), agenda.getId())
-                                    );
-                                    return new VotingEditDTO(votingDTO.getId(), votingDTO.getVotingText());
-                                }
-                            }
-                        )
-                        .collect(Collectors.toList())
-                        .addAll(votingEditDTOS);
+                        .map(VotingEditDTO::new)
+                        .collect(Collectors.toList());
                     return new AgendaEditDTO(agenda, votingEditDTOS);
                 }
             );
@@ -254,6 +253,7 @@ public class AgendaService {
                 "meetingIsNotPending"
             );
         }
+        votingRepository.deleteAll(votingRepository.findAllByAgendaId(agenda.getId()));
         agendaRepository.findById(id).ifPresent(this::accept);
     }
 

@@ -16,7 +16,7 @@ public class AgendaEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long id;
 
-    @JsonView(value = { View.ModelView.External.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long meetingId;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
