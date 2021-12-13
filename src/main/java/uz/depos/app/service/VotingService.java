@@ -9,12 +9,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.VotingOption;
+import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.repository.AgendaRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.VotingRepository;
 import uz.depos.app.service.dto.VotingDTO;
 import uz.depos.app.service.dto.VotingEditDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
+import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
  * Service class for managing voting-option.
@@ -93,6 +95,11 @@ public class VotingService {
             .map(Optional::get)
             .map(
                 votingOption -> {
+                    if (
+                        votingOption.getMeeting() != null &&
+                        votingOption.getMeeting().getStatus() != null &&
+                        !votingOption.getMeeting().getStatus().equals(MeetingStatusEnum.PENDING)
+                    ) throw new BadRequestAlertException("Meeting status is not of PENDING", "votingManagement", "meetingIsNotPending");
                     votingOption.setVotingText(votingDTO.getVotingText());
                     VotingOption savedVotingOption = votingRepository.saveAndFlush(votingOption);
                     log.debug("Changed Information for VotingOption: {}", savedVotingOption);
@@ -108,7 +115,18 @@ public class VotingService {
      * @param id the id VotingOption
      */
     public void deleteVotingOption(Long id) {
-        votingRepository.findById(id).ifPresent(this::accept);
+        votingRepository
+            .findById(id)
+            .ifPresent(
+                votingOption -> {
+                    if (
+                        votingOption.getMeeting() != null &&
+                        votingOption.getMeeting().getStatus() != null &&
+                        !votingOption.getMeeting().getStatus().equals(MeetingStatusEnum.PENDING)
+                    ) throw new BadRequestAlertException("Meeting status is not of PENDING", "votingManagement", "meetingIsNotPending");
+                    votingRepository.findById(id).ifPresent(this::accept);
+                }
+            );
     }
 
     private void accept(VotingOption votingOption) {

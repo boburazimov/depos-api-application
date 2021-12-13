@@ -153,11 +153,7 @@ public class AgendaService {
             optionalMeeting.get().getStatus() != null &&
             !optionalMeeting.get().getStatus().equals(MeetingStatusEnum.PENDING)
         ) {
-            throw new BadRequestAlertException(
-                "Agenda can not be EDITED for Meeting of not PENDING status",
-                "agentManagement",
-                "meetingIsNotPending"
-            );
+            throw new BadRequestAlertException("Meeting status is not of PENDING", "agendaManagement", "meetingIsNotPending");
         }
         agendaRepository
             .findOneBySubjectIgnoreCaseContainsAndMeetingId(agendaDTO.getSubject(), agendaDTO.getMeetingId())
@@ -214,7 +210,7 @@ public class AgendaService {
     public Optional<AgendaDTO> switchAgendaStatus(AgendaDTO agendaDTO) {
         Optional<Meeting> optionalMeeting = meetingRepository.findById(agendaDTO.getMeetingId());
         if (optionalMeeting.isPresent() && optionalMeeting.get().getStatus().equals(MeetingStatusEnum.ACTIVE)) {
-            throw new BadRequestAlertException("Agenda can not EDITED for Meeting by ACTIVE status", "agentManagement", "meetingIsActive");
+            throw new BadRequestAlertException("Agenda can not EDITED for Meeting by ACTIVE status", "agendaManagement", "meetingIsActive");
         }
         return Optional
             .of(agendaRepository.findById(agendaDTO.getId()))
@@ -247,11 +243,7 @@ public class AgendaService {
             optionalMeeting.get().getStatus() != null &&
             !optionalMeeting.get().getStatus().equals(MeetingStatusEnum.PENDING)
         ) {
-            throw new BadRequestAlertException(
-                "Agenda can not be DELETED for Meeting status not PENDING",
-                "agentManagement",
-                "meetingIsNotPending"
-            );
+            throw new BadRequestAlertException("Meeting status is not of PENDING", "agendaManagement", "meetingIsNotPending");
         }
         votingRepository.deleteAll(votingRepository.findAllByAgendaId(agenda.getId()));
         agendaRepository.findById(id).ifPresent(this::accept);
