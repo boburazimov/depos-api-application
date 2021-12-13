@@ -25,7 +25,7 @@ public class AgendaEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Long speakerId;
 
-    @JsonView(value = { View.ModelView.External.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private AgendaTypeEnum typeEnum;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
@@ -34,7 +34,7 @@ public class AgendaEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private AgendaDebateEnum debateEnum;
 
-    @JsonView(value = { View.ModelView.External.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Boolean isActive;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
