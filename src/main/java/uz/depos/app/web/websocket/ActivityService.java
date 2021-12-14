@@ -121,7 +121,7 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(zoomDTO.getPassword());
                 MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
-                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
@@ -146,7 +146,7 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 memberSession.setZoom(false);
                 memberSession.setZoomPassword(null);
                 MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
-                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
@@ -158,14 +158,14 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(optionalManagerMemberSession.get().getZoomPassword());
                 MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
-                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), savedMemberSession);
+                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
             } else if (
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
                 optionalCurrentMemberSession.isPresent() &&
                 !optionalManagerMemberSession.isPresent()
             ) {
-                messagingTemplate.convertAndSend("/topic/get-zoom" + zoomDTO.getMeetingId(), optionalCurrentMemberSession.get());
+                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), optionalCurrentMemberSession.get());
             } else {
                 throw new BadRequestAlertException("Please check all fields in ZoomDTO", "ZoomDTOManagement", "fieldsHasSomeError");
             }

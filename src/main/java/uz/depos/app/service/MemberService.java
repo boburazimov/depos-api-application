@@ -318,7 +318,7 @@ public class MemberService {
                     MemberTypeEnum memberTypeEnum = member.getMemberTypeEnum();
                     boolean isManager = memberTypeEnum.equals(MemberTypeEnum.SECRETARY) || memberTypeEnum.equals(MemberTypeEnum.CHAIRMAN);
                     if (memberSession.isZoom() && memberSession.getZoomPassword() != null && isManager) messagingTemplate.convertAndSend(
-                        "/topic/get-zoom",
+                        "/topic/get-zoom/" + member.getMeeting().getId(),
                         new MemberSession(
                             memberSession.getId(),
                             member.getMeeting().getId(),
