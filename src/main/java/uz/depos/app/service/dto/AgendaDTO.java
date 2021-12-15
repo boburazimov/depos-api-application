@@ -41,7 +41,7 @@ public class AgendaDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })
     private Set<String> variants;
 
-    //    @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PATCH.class })
     private String extraInfo;
 
     private String userName;

@@ -218,8 +218,8 @@ public class AgendaService {
             .map(Optional::get)
             .map(
                 agenda -> {
-                    agenda.setActive(!agenda.getActive());
-                    if (ObjectUtils.isNotEmpty(agendaDTO.getExtraInfo())) agenda.setExtraInfo(agendaDTO.getExtraInfo());
+                    agenda.setActive(agendaDTO.getActive());
+                    agenda.setExtraInfo(agendaDTO.getExtraInfo() != null ? agenda.getExtraInfo() : null);
                     Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
                     log.debug("Changed Status Information for Agenda: {}", savedAgenda);
                     return savedAgenda;

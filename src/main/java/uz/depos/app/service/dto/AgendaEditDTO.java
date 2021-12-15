@@ -40,6 +40,7 @@ public class AgendaEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private List<VotingEditDTO> votingOptions;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private String extraInfo;
 
     public AgendaEditDTO() {}
