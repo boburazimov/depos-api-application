@@ -35,7 +35,7 @@ public class AgendaDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
     private AgendaDebateEnum debateEnum;
 
-    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class })
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private Boolean active;
 
     @JsonView(value = { View.ModelView.External.class, View.ModelView.Post.class })

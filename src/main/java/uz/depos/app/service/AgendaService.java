@@ -219,7 +219,7 @@ public class AgendaService {
             .map(
                 agenda -> {
                     agenda.setActive(agendaDTO.getActive());
-                    agenda.setExtraInfo(agendaDTO.getExtraInfo() != null ? agenda.getExtraInfo() : null);
+                    agenda.setExtraInfo(agendaDTO.getExtraInfo());
                     Agenda savedAgenda = agendaRepository.saveAndFlush(agenda);
                     log.debug("Changed Status Information for Agenda: {}", savedAgenda);
                     return savedAgenda;
