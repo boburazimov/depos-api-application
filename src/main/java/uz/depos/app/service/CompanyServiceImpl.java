@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,6 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.Company;
-import uz.depos.app.domain.Meeting;
 import uz.depos.app.domain.enums.CompanySearchFieldEnum;
 import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
@@ -118,44 +116,39 @@ public class CompanyServiceImpl implements CompanyService {
             .map(
                 company -> {
                     // Name
-                    if (StringUtils.isNoneBlank(companyDTO.getName())) company.setName(companyDTO.getName().toUpperCase());
+                    company.setName(companyDTO.getName().toUpperCase());
                     // Email
-                    if (StringUtils.isNoneBlank(companyDTO.getEmail())) company.setEmail(companyDTO.getEmail().toLowerCase());
+                    company.setEmail(companyDTO.getEmail().toLowerCase());
                     // Active
                     company.setActive(companyDTO.getActive());
                     // INN
-                    if (StringUtils.isNoneBlank(companyDTO.getInn())) company.setInn(companyDTO.getInn());
+                    company.setInn(companyDTO.getInn());
                     // Legal-Address
-                    if (StringUtils.isNoneBlank(companyDTO.getLegalAddress())) company.setLegalAddress(companyDTO.getLegalAddress());
+                    company.setLegalAddress(companyDTO.getLegalAddress());
                     // Description
-                    if (StringUtils.isNoneBlank(companyDTO.getDescription())) company.setDescription(companyDTO.getDescription());
+                    company.setDescription(companyDTO.getDescription());
                     // Postal-Address
-                    if (StringUtils.isNoneBlank(companyDTO.getPostalAddress())) company.setPostalAddress(companyDTO.getPostalAddress());
+                    company.setPostalAddress(companyDTO.getPostalAddress());
                     // Web-Page
                     company.setWebPage(companyDTO.getWebPage());
                     // Phone-number
-                    if (StringUtils.isNoneBlank(companyDTO.getPhoneNumber())) company.setPhoneNumber(companyDTO.getPhoneNumber());
+                    company.setPhoneNumber(companyDTO.getPhoneNumber());
                     // Image-URL
                     company.setImageUrl(companyDTO.getImageUrl());
                     // Chairman
-                    if (ObjectUtils.isNotEmpty(companyDTO.getChairmanId())) {
-                        //                                    memberRepository
-                        //                                        .findOneByUserId(user.getId())
-                        //                                        .ifPresent(
-                        //                                            member -> {
-                        //                                                if (!member.getMemberTypeEnum().equals(MemberTypeEnum.CHAIRMAN)) member.setMemberTypeEnum(
-                        //                                                    MemberTypeEnum.CHAIRMAN
-                        //                                                );
-                        //                                            }
-                        //                                        );
+                    if (companyDTO.getChairmanId() != null) {
                         userRepository.findById(companyDTO.getChairmanId()).ifPresent(company::setChairman);
+                    } else {
+                        company.setChairman(null);
                     }
                     // Secretary
-                    if (ObjectUtils.isNotEmpty(companyDTO.getSecretaryId())) {
+                    if (companyDTO.getSecretaryId() != null) {
                         userRepository.findById(companyDTO.getSecretaryId()).ifPresent(company::setSecretary);
+                    } else {
+                        company.setSecretary(null);
                     }
                     log.debug("Changed Information for Company: {}", company);
-                    return company;
+                    return companyRepository.saveAndFlush(company);
                 }
             )
             .map(CompanyDTO::new);
