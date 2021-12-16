@@ -40,4 +40,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findOneByMeetingIdAndUserIdAndMemberTypeEnum(Long meetingId, Long userId, MemberTypeEnum memberTypeEnum);
 
     Optional<Member> findOneByMeetingIdAndMemberTypeEnum(Long meetingId, MemberTypeEnum memberTypeEnum);
+
+    Optional<Member> findByMemberTypeEnumAndMeetingIdAndFromReestrFalse(MemberTypeEnum memberTypeEnum, Long meetingId);
 }

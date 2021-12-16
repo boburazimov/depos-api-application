@@ -42,7 +42,7 @@ public class ExcelHelpers {
     }
 
     /**
-     * Check if a file has Excel format or not.
+     * Check if a file has Excel  format or not.
      *
      * @param file file to check
      * @return true if it's equals to office format, or false if the format file is not office-document type.

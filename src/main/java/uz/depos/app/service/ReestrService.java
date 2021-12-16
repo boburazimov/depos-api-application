@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -44,7 +45,6 @@ public class ReestrService {
     private final MemberRepository memberRepository;
     private final ExcelHelpers excelHelpers;
     private final UserService userService;
-    private final CompanyRepository companyRepository;
     private final FilesStorageService filesStorageService;
     private final MailService mailService;
 
@@ -54,7 +54,6 @@ public class ReestrService {
         MemberRepository memberRepository,
         ExcelHelpers excelHelpers,
         UserService userService,
-        CompanyRepository companyRepository,
         FilesStorageService filesStorageService,
         MailService mailService
     ) {
@@ -63,17 +62,26 @@ public class ReestrService {
         this.memberRepository = memberRepository;
         this.excelHelpers = excelHelpers;
         this.userService = userService;
-        this.companyRepository = companyRepository;
         this.filesStorageService = filesStorageService;
         this.mailService = mailService;
     }
 
-    public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell) {
+    public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell, String chairmanPinfl) {
         // Check column to: null, type and cellLength, then return List of cell values.
         List<String> listOfCells = excelHelpers.CheckColumn(sheet, columnNumber, cellType, lengthValueCell);
 
         // Check list of cell by one column to duplicate.
         String duplicate = excelHelpers.DuplicateCells(listOfCells);
+        if (chairmanPinfl != null) {
+            boolean hasChairman = listOfCells.stream().allMatch(Predicate.isEqual(chairmanPinfl));
+            if (!hasChairman) {
+                throw new BadRequestAlertException(
+                    "Do not find a chairman from the list, which elect in Company",
+                    "reestrManagement",
+                    "notFoundChairman"
+                );
+            }
+        }
         if (duplicate != null) {
             throw new BadRequestAlertException("Column contains duplicate value: " + duplicate, "reestrManagement", "duplicateExist");
         }
@@ -183,7 +191,7 @@ public class ReestrService {
             member.setPosition(currentRow.getCell(7).getStringCellValue());
             member.setFromReestr(true);
             Member savedMember = memberRepository.save(member);
-            //            Meeting finalMeeting = meeting;
+
             new Thread(() -> mailService.sendInvitationEmail(savedUser, meeting, savedMember, isNew ? password : "")).start();
         }
         workbook.close();
@@ -193,8 +201,18 @@ public class ReestrService {
         Workbook workbook = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = workbook.getSheetAt(0); // Get first sheet from book.
 
-        checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14); // PINFL
-        checkerReestrColumn(sheet, 6, CellType.STRING, 0); // EMAIL
+        meetingRepository
+            .findById(meetingId)
+            .ifPresent(
+                meeting -> {
+                    if (meeting.getCompany() != null && meeting.getCompany().getChairman() != null) {
+                        String chairmanPinfl = meeting.getCompany().getChairman().getPinfl();
+                        checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14, chairmanPinfl); // PINFL
+                    } else {
+                        checkerReestrColumn(sheet, 6, CellType.STRING, 0, ""); // EMAIL
+                    }
+                }
+            );
 
         meetingRepository
             .findById(meetingId)

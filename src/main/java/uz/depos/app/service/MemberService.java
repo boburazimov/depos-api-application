@@ -17,10 +17,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import uz.depos.app.domain.Meeting;
-import uz.depos.app.domain.Member;
-import uz.depos.app.domain.MemberSession;
-import uz.depos.app.domain.User;
+import uz.depos.app.domain.*;
 import uz.depos.app.domain.enums.MemberSearchFieldEnum;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.repository.*;
@@ -368,12 +365,22 @@ public class MemberService {
                 Member member = optionalMember.get();
                 member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
                 Member savedMember = memberRepository.saveAndFlush(member);
+                Optional<User> optionalUser = companyRepository.findById(savedMember.getCompany().getId()).map(Company::getChairman);
+                if (optionalUser.isPresent()) {
+                    memberRepository.save(new Member(savedMember, optionalUser.get(), false));
+                } else {
+                    if (
+                        !memberRepository
+                            .findByMemberTypeEnumAndMeetingIdAndFromReestrFalse(MemberTypeEnum.CHAIRMAN, savedMember.getMeeting().getId())
+                            .isPresent()
+                    ) memberRepository.save(new Member(savedMember, savedMember.getUser(), false));
+                }
                 return memberMapper.memberToMemberDTO(savedMember);
             } else {
                 throw new BadRequestAlertException("By this Meeting Already has Chairmen!", "memberManagement", "existChairmen");
             }
         } else {
-            throw new BadRequestAlertException("Member must be fromReestr", "memberManagement", "notFromReestr");
+            throw new BadRequestAlertException("Member must be fromReestr is TRUE", "memberManagement", "notFromReestr");
         }
     }
 
@@ -381,7 +388,7 @@ public class MemberService {
         return memberRepository
             .findAllByUserIdAndMeetingId(userId, meetingId)
             .stream()
-            .filter(DistinctByKey.runT(Member::getMemberTypeEnum))
+            //            .filter(DistinctByKey.runT(Member::getMemberTypeEnum))
             .map(MemberTypeDTO::new)
             .collect(Collectors.toList());
     }
