@@ -22,13 +22,13 @@ import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
-import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
 import uz.depos.app.service.dto.AttachReestrDTO;
 import uz.depos.app.service.dto.DeposUserDTO;
 import uz.depos.app.service.mapper.ExcelHelpers;
+import uz.depos.app.service.utils.CheckElementInArray;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
 
 /**
@@ -47,6 +47,7 @@ public class ReestrService {
     private final UserService userService;
     private final FilesStorageService filesStorageService;
     private final MailService mailService;
+    private final CheckElementInArray checkElementInArray;
 
     public ReestrService(
         MeetingRepository meetingRepository,
@@ -55,7 +56,8 @@ public class ReestrService {
         ExcelHelpers excelHelpers,
         UserService userService,
         FilesStorageService filesStorageService,
-        MailService mailService
+        MailService mailService,
+        CheckElementInArray checkElementInArray
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -64,6 +66,7 @@ public class ReestrService {
         this.userService = userService;
         this.filesStorageService = filesStorageService;
         this.mailService = mailService;
+        this.checkElementInArray = checkElementInArray;
     }
 
     public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell, String chairmanPinfl) {
@@ -71,8 +74,9 @@ public class ReestrService {
         List<String> listOfCells = excelHelpers.CheckColumn(sheet, columnNumber, cellType, lengthValueCell);
 
         if (chairmanPinfl != null) {
-            boolean hasChairman = listOfCells.stream().allMatch(Predicate.isEqual(chairmanPinfl));
-            if (!hasChairman) {
+            Boolean present = checkElementInArray.checkStr(listOfCells, chairmanPinfl);
+            //            boolean hasChairman = listOfCells.stream().allMatch(Predicate.isEqual(chairmanPinfl));
+            if (!present) {
                 throw new BadRequestAlertException(
                     "Do not find a chairman from the list, which elect in Company",
                     "reestrManagement",
