@@ -278,7 +278,7 @@ public class MemberResource {
      */
     @PutMapping("/{id}")
     //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
-    @ApiOperation(value = "Switch isConfirmed", notes = "This method to switch member field isConfirmed which calculate for Kvorum")
+    @ApiOperation(value = "Switch isConfirmed", notes = "This method to switch member field isConfirmed which calculate for Quorum")
     public ResponseEntity<MemberDTO> switchMemberConfirmed(@PathVariable Long id) {
         log.debug("REST request to switch member field isConfirmed by ID: {}", id);
         MemberDTO memberDTO = memberService.turnOnConfirmed(id);

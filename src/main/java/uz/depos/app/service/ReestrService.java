@@ -211,8 +211,9 @@ public class ReestrService {
                         String chairmanPinfl = meeting.getCompany().getChairman().getPinfl();
                         checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14, chairmanPinfl); // PINFL
                     } else {
-                        checkerReestrColumn(sheet, 6, CellType.STRING, 0, null); // EMAIL
+                        checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14, null); // PINFL
                     }
+                    checkerReestrColumn(sheet, 6, CellType.STRING, 0, null); // EMAIL
                 }
             );
 
