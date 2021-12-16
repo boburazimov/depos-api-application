@@ -275,7 +275,7 @@ public class MemberService {
             Member member = optionalMember.get();
             Instant startRegistration = member.getMeeting().getStartRegistration();
             Instant now = Instant.now();
-            if (now.isBefore(startRegistration)) member.setConfirmed(true);
+            if (now.isAfter(startRegistration)) member.setConfirmed(true);
             return memberMapper.memberToMemberDTO(member);
         } else {
             throw new ResourceNotFoundException("Member not found my ID: " + memberId);
