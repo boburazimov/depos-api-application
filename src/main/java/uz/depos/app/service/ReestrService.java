@@ -70,8 +70,6 @@ public class ReestrService {
         // Check column to: null, type and cellLength, then return List of cell values.
         List<String> listOfCells = excelHelpers.CheckColumn(sheet, columnNumber, cellType, lengthValueCell);
 
-        // Check list of cell by one column to duplicate.
-        String duplicate = excelHelpers.DuplicateCells(listOfCells);
         if (chairmanPinfl != null) {
             boolean hasChairman = listOfCells.stream().allMatch(Predicate.isEqual(chairmanPinfl));
             if (!hasChairman) {
@@ -82,6 +80,10 @@ public class ReestrService {
                 );
             }
         }
+
+        // Check list of cell by one column to duplicate.
+        String duplicate = excelHelpers.DuplicateCells(listOfCells);
+
         if (duplicate != null) {
             throw new BadRequestAlertException("Column contains duplicate value: " + duplicate, "reestrManagement", "duplicateExist");
         }
@@ -209,7 +211,7 @@ public class ReestrService {
                         String chairmanPinfl = meeting.getCompany().getChairman().getPinfl();
                         checkerReestrColumn(sheet, 2, CellType.NUMERIC, 14, chairmanPinfl); // PINFL
                     } else {
-                        checkerReestrColumn(sheet, 6, CellType.STRING, 0, ""); // EMAIL
+                        checkerReestrColumn(sheet, 6, CellType.STRING, 0, null); // EMAIL
                     }
                 }
             );
