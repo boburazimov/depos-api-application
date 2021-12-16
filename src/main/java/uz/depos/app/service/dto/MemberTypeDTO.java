@@ -16,11 +16,14 @@ public class MemberTypeDTO {
 
     private MemberTypeEnum memberTypeEnum;
 
+    private Boolean fromReestr;
+
     public MemberTypeDTO() {}
 
     public MemberTypeDTO(Member member) {
         this.id = member.getId();
         this.memberTypeEnum = member.getMemberTypeEnum();
+        this.fromReestr = member.getFromReestr();
     }
 
     public Long getId() {
@@ -37,5 +40,13 @@ public class MemberTypeDTO {
 
     public void setMemberTypeEnum(MemberTypeEnum memberTypeEnum) {
         this.memberTypeEnum = memberTypeEnum;
+    }
+
+    public Boolean getFromReestr() {
+        return fromReestr;
+    }
+
+    public void setFromReestr(Boolean fromReestr) {
+        this.fromReestr = fromReestr;
     }
 }
