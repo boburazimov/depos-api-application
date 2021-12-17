@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -22,6 +21,7 @@ import uz.depos.app.domain.User;
 import uz.depos.app.domain.enums.MemberTypeEnum;
 import uz.depos.app.domain.enums.UserAuthTypeEnum;
 import uz.depos.app.domain.enums.UserGroupEnum;
+import uz.depos.app.repository.CompanyRepository;
 import uz.depos.app.repository.MeetingRepository;
 import uz.depos.app.repository.MemberRepository;
 import uz.depos.app.repository.UserRepository;
@@ -48,6 +48,7 @@ public class ReestrService {
     private final FilesStorageService filesStorageService;
     private final MailService mailService;
     private final CheckElementInArray checkElementInArray;
+    private final CompanyRepository companyRepository;
 
     public ReestrService(
         MeetingRepository meetingRepository,
@@ -57,7 +58,8 @@ public class ReestrService {
         UserService userService,
         FilesStorageService filesStorageService,
         MailService mailService,
-        CheckElementInArray checkElementInArray
+        CheckElementInArray checkElementInArray,
+        CompanyRepository companyRepository
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -67,6 +69,7 @@ public class ReestrService {
         this.filesStorageService = filesStorageService;
         this.mailService = mailService;
         this.checkElementInArray = checkElementInArray;
+        this.companyRepository = companyRepository;
     }
 
     public void checkerReestrColumn(Sheet sheet, int columnNumber, CellType cellType, int lengthValueCell, String chairmanPinfl) {
@@ -190,6 +193,26 @@ public class ReestrService {
             member.setInvolved(false);
             if (chairmanPinfl.equals(currentRowPinfl)) {
                 member.setMemberTypeEnum(MemberTypeEnum.CHAIRMAN);
+                if (meeting.getCompany().getChairman() != null) {
+                    boolean present = userRepository.findById(meeting.getCompany().getChairman().getId()).isPresent();
+                    boolean present1 = memberRepository
+                        .findByMemberTypeEnumAndMeetingIdAndFromReestrFalse(MemberTypeEnum.CHAIRMAN, meeting.getId())
+                        .isPresent();
+                    if (present && !present1) memberRepository.save(
+                        new Member(
+                            meeting,
+                            meeting.getCompany(),
+                            savedUser,
+                            true,
+                            false,
+                            false,
+                            MemberTypeEnum.CHAIRMAN,
+                            currentRow.getCell(3).getStringCellValue(),
+                            currentRow.getCell(7).getStringCellValue(),
+                            false
+                        )
+                    );
+                }
             } else {
                 member.setMemberTypeEnum(MemberTypeEnum.SIMPLE);
             }

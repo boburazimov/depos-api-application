@@ -108,6 +108,30 @@ public class Member extends AbstractAuditingEntity {
         this.fromReestr = fromReestr;
     }
 
+    public Member(
+        Meeting meeting,
+        Company company,
+        User user,
+        Boolean isRemotely,
+        Boolean isConfirmed,
+        Boolean isInvolved,
+        MemberTypeEnum memberTypeEnum,
+        String hldIt,
+        String position,
+        Boolean fromReestr
+    ) {
+        this.meeting = meeting;
+        this.company = company;
+        this.user = user;
+        this.isRemotely = isRemotely;
+        this.isConfirmed = isConfirmed;
+        this.isInvolved = isInvolved;
+        this.memberTypeEnum = memberTypeEnum;
+        this.hldIt = hldIt;
+        this.position = position;
+        this.fromReestr = fromReestr;
+    }
+
     public Long getId() {
         return id;
     }

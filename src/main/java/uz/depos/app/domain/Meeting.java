@@ -1,11 +1,11 @@
 package uz.depos.app.domain;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.Objects;
 import javax.persistence.*;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.Hibernate;
 import uz.depos.app.domain.enums.MeetingStatusEnum;
 import uz.depos.app.domain.enums.MeetingTypeEnum;
 
@@ -13,7 +13,6 @@ import uz.depos.app.domain.enums.MeetingTypeEnum;
  * Meeting of Company
  **/
 
-@EqualsAndHashCode(callSuper = true)
 @Getter
 @Setter
 @Entity
@@ -60,18 +59,6 @@ public class Meeting extends AbstractAuditingEntity {
     @Column(length = 256)
     private String description;
 
-    // Список наблюдателей в заседании
-    //    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL)
-    //    private List<Member> members;
-
-    // Прикрепляемы файлы для всего заседания
-    //    @OneToMany(cascade = CascadeType.ALL)
-    //    private List<Long> attachments;
-
-    // Привязка к повесткам дня
-    //    @OneToMany(mappedBy = "meeting", cascade = CascadeType.ALL)
-    //    private List<Agenda> agendas;
-
     // Доп инфо
     @Column(length = 128, name = "extra_info")
     private String extraInfo;
@@ -89,8 +76,6 @@ public class Meeting extends AbstractAuditingEntity {
         City city,
         String address,
         String description,
-        //        List<Member> members,
-        //        List<Agenda> agendas,
         String extraInfo
     ) {
         this.id = id;
@@ -103,8 +88,6 @@ public class Meeting extends AbstractAuditingEntity {
         this.city = city;
         this.address = address;
         this.description = description;
-        //        this.members = members;
-        //        this.agendas = agendas;
         this.extraInfo = extraInfo;
     }
 
@@ -188,22 +171,6 @@ public class Meeting extends AbstractAuditingEntity {
         this.description = description;
     }
 
-    //    public List<Member> getMembers() {
-    //        return members;
-    //    }
-    //
-    //    public void setMembers(List<Member> members) {
-    //        this.members = members;
-    //    }
-    //
-    //    public List<Agenda> getAgendas() {
-    //        return agendas;
-    //    }
-    //
-    //    public void setAgendas(List<Agenda> agendas) {
-    //        this.agendas = agendas;
-    //    }
-
     public String getExtraInfo() {
         return extraInfo;
     }
@@ -238,12 +205,23 @@ public class Meeting extends AbstractAuditingEntity {
             ", description='" +
             description +
             '\'' +
-            //            ", members=" + members +
-            //            ", agendas=" + agendas +
             ", extraInfo='" +
             extraInfo +
             '\'' +
             '}'
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Meeting meeting = (Meeting) o;
+        return id != null && Objects.equals(id, meeting.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
