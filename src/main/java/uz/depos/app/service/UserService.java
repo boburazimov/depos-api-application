@@ -530,7 +530,7 @@ public class UserService {
                     // INN
                     user.setInn(userDTO.getInn());
                     // Phone-number
-                    user.setPhoneNumber(userDTO.getPhoneNumber());
+                    user.setPhoneNumber(userDTO.getPhoneNumber() == null ? null : userDTO.getPhoneNumber());
                     this.clearUserCaches(user);
                     log.debug("Changed Information for User: {}", user);
                     return user;
