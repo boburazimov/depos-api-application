@@ -247,7 +247,7 @@ public class User extends AbstractAuditingEntity implements Serializable {
     }
 
     public void setPassport(String passport) {
-        this.passport = passport.toUpperCase();
+        this.passport = passport;
     }
 
     public String getPinfl() {

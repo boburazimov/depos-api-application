@@ -4,6 +4,12 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.chrono.ChronoZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -274,7 +280,7 @@ public class MemberService {
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
             Instant startRegistration = member.getMeeting().getStartRegistration();
-            Instant now = Instant.now();
+            Instant now = Instant.now().plus(5, ChronoUnit.HOURS);
             if (now.isAfter(startRegistration)) member.setConfirmed(true);
             return memberMapper.memberToMemberDTO(member);
         } else {
