@@ -518,7 +518,7 @@ public class UserService {
                     // FullName
                     if (StringUtils.isNoneBlank(userDTO.getFullName())) user.setFullName(userDTO.getFullName());
                     // Passport
-                    if (StringUtils.isNoneBlank(userDTO.getPassport())) user.setPassport(userDTO.getPassport().toUpperCase());
+                    user.setPassport(userDTO.getPassport());
                     // Pinfl
                     if (StringUtils.isNoneBlank(userDTO.getPinfl())) user.setPinfl(userDTO.getPinfl());
                     // GroupEnum
@@ -528,9 +528,9 @@ public class UserService {
                     // Resident
                     user.setResident(userDTO.isResident());
                     // INN
-                    if (StringUtils.isNotBlank(userDTO.getInn())) user.setInn(userDTO.getInn());
+                    user.setInn(userDTO.getInn());
                     // Phone-number
-                    if (StringUtils.isNoneBlank(userDTO.getPhoneNumber())) user.setPhoneNumber(userDTO.getPhoneNumber());
+                    user.setPhoneNumber(userDTO.getPhoneNumber());
                     this.clearUserCaches(user);
                     log.debug("Changed Information for User: {}", user);
                     return user;
