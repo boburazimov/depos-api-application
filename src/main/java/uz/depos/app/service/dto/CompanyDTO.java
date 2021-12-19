@@ -171,6 +171,22 @@ public class CompanyDTO {
         this.secretaryId = secretaryId;
     }
 
+    public User getChairman() {
+        return chairman;
+    }
+
+    public void setChairman(User chairman) {
+        this.chairman = chairman;
+    }
+
+    public User getSecretary() {
+        return secretary;
+    }
+
+    public void setSecretary(User secretary) {
+        this.secretary = secretary;
+    }
+
     @Override
     public String toString() {
         return (
@@ -208,8 +224,12 @@ public class CompanyDTO {
             '\'' +
             ", chairmanId=" +
             chairmanId +
+            ", chairman=" +
+            chairman +
             ", secretaryId=" +
             secretaryId +
+            ", secretary=" +
+            secretary +
             '}'
         );
     }
