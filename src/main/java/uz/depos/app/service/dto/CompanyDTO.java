@@ -3,6 +3,7 @@ package uz.depos.app.service.dto;
 import javax.validation.constraints.NotBlank;
 import org.apache.commons.lang3.ObjectUtils;
 import uz.depos.app.domain.Company;
+import uz.depos.app.domain.User;
 
 /**
  * A DTO representing a company table, with his authorities
@@ -40,7 +41,11 @@ public class CompanyDTO {
 
     private Long chairmanId;
 
+    private User chairman;
+
     private Long secretaryId;
+
+    private User secretary;
 
     public CompanyDTO() {}
 
@@ -57,6 +62,8 @@ public class CompanyDTO {
         this.phoneNumber = company.getPhoneNumber();
         this.imageUrl = company.getImageUrl();
         this.chairmanId = ObjectUtils.isNotEmpty(company.getChairman()) ? company.getChairman().getId() : null;
+        this.chairman = company.getChairman();
+        this.secretary = company.getSecretary();
         this.secretaryId = ObjectUtils.isNotEmpty(company.getSecretary()) ? company.getSecretary().getId() : null;
     }
 
