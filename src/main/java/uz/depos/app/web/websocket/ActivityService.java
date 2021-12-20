@@ -110,26 +110,26 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
             // получение сессии текущего ползователя который был создан при первом входе в сокет
             Optional<MemberSession> optionalCurrentMemberSession = memberSessionRepository.findOneByMemberId(zoomDTO.getMemberId());
 
-            if (
+            if ( // <------Secretary or Chairmen created Zoom----->
                 zoomDTO.isZoom() &&
                 StringUtils.isNotEmpty(zoomDTO.getPassword()) &&
                 optionalCurrentMemberSession.isPresent() &&
                 isManager &&
                 !optionalManagerMemberSession.isPresent()
-            ) { // <------Secretary or Chairmen created Zoom----->
+            ) {
                 MemberSession memberSession = optionalCurrentMemberSession.get();
                 memberSession.setZoom(true);
                 memberSession.setZoomPassword(zoomDTO.getPassword());
                 MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
                 messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
-            } else if (
+            } else if ( // <-----Secretary or Chairmen finished Zoom----->
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
                 isManager &&
                 optionalCurrentMemberSession.isPresent() &&
                 optionalManagerMemberSession.isPresent() &&
                 optionalManagerMemberSession.get().getSessionId().equals(optionalCurrentMemberSession.get().getSessionId())
-            ) { // <-----Secretary or Chairmen finished Zoom----->
+            ) {
                 memberSessionRepository
                     .findAllByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(zoomDTO.getMeetingId())
                     .ifPresent(
@@ -138,28 +138,20 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
                                 memberSession -> {
                                     memberSession.setZoom(false);
                                     memberSession.setZoomPassword(null);
-                                    memberSessionRepository.save(memberSession);
+                                    MemberSession savedSession = memberSessionRepository.saveAndFlush(memberSession);
+                                    messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedSession);
                                 }
                             )
                     );
-                MemberSession memberSession = optionalCurrentMemberSession.get();
-                memberSession.setZoom(false);
-                memberSession.setZoomPassword(null);
-                MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
-                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
-            } else if (
+            } else if ( // <-----Secretary or Chairmen or Simple joining to Zoom----->
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
                 optionalCurrentMemberSession.isPresent() &&
                 optionalManagerMemberSession.isPresent() &&
                 !optionalManagerMemberSession.get().getSessionId().equals(optionalCurrentMemberSession.get().getSessionId())
-            ) { // <-----Secretary or Chairmen or Simple joining to Zoom----->
-                MemberSession memberSession = optionalCurrentMemberSession.get();
-                memberSession.setZoom(true);
-                memberSession.setZoomPassword(optionalManagerMemberSession.get().getZoomPassword());
-                MemberSession savedMemberSession = memberSessionRepository.saveAndFlush(memberSession);
-                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), savedMemberSession);
-            } else if (
+            ) {
+                messagingTemplate.convertAndSend("/topic/get-zoom/" + zoomDTO.getMeetingId(), optionalManagerMemberSession.get());
+            } else if ( // <-----Zoom NOT started Secretary or Chairmen or Simple Check zoom status----->
                 !zoomDTO.isZoom() &&
                 StringUtils.isEmpty(zoomDTO.getPassword()) &&
                 optionalCurrentMemberSession.isPresent() &&
