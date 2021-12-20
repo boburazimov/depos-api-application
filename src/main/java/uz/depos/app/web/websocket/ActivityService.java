@@ -167,17 +167,23 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     }
 
     @MessageMapping("/topic/question")
-    @SendTo("/topic/answer")
-    public List<QuestionDTO> WsQuestion(@Payload QuestionDTO questionDTO) {
+    //    @SendTo("/topic/answer")
+    public void WsQuestion(@Payload QuestionDTO questionDTO) {
         log.debug("Save user question data {}", questionDTO);
 
         if (questionDTO != null && questionDTO.getUserId() == null && questionDTO.getMemberId() != null) {
             QuestionDTO questionDTO1 = questionService.addQuestionByMember(questionDTO);
-            return questionService.getQuestionsByMeetingId(questionDTO1.getMeetingId());
+            messagingTemplate.convertAndSend(
+                "/topic/answer/" + questionDTO1.getMeetingId(),
+                questionService.getQuestionsByMeetingId(questionDTO1.getMeetingId())
+            );
         } else if (questionDTO != null && questionDTO.getUserId() != null) {
             QuestionDTO questionDTO1 = questionService.updateQuestionAnswer(questionDTO).orElse(null);
             assert questionDTO1 != null;
-            return questionService.getQuestionsByMeetingId(questionDTO1.getMeetingId());
+            messagingTemplate.convertAndSend(
+                "/topic/answer/" + questionDTO1.getMeetingId(),
+                questionService.getQuestionsByMeetingId(questionDTO1.getMeetingId())
+            );
         } else {
             throw new BadRequestAlertException("Error in save question", "QuestionDTO", "QuestionSaveError");
         }
