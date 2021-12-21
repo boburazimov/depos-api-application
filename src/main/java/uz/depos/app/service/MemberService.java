@@ -281,8 +281,20 @@ public class MemberService {
             Member member = optionalMember.get();
             Instant startRegistration = member.getMeeting().getStartRegistration();
             Instant now = Instant.now().plus(5, ChronoUnit.HOURS);
-            if (now.isAfter(startRegistration)) member.setConfirmed(true);
-            return memberMapper.memberToMemberDTO(member);
+            if (now.isAfter(startRegistration)) {
+                member.setConfirmed(true);
+                memberRepository.save(member);
+            }
+            MemberDTO memberDTO = memberMapper.memberToMemberDTO(member);
+            memberRepository
+                .findAllByMeetingIdAndFromReestrTrue(memberDTO.getMeetingId())
+                .ifPresent(
+                    members -> {
+                        List<MemberDTO> memberDTOS = memberMapper.membersToMemberDTOs(members);
+                        messagingTemplate.convertAndSend("/topic/quorum/" + memberDTO.getMeetingId(), memberDTOS);
+                    }
+                );
+            return memberDTO;
         } else {
             throw new ResourceNotFoundException("Member not found my ID: " + memberId);
         }
