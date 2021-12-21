@@ -3,11 +3,10 @@ package uz.depos.app.service;
 import io.undertow.util.BadRequestException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
@@ -115,67 +114,41 @@ public class ReestrService {
             String currentRowPinfl = formatter.formatCellValue(currentRow.getCell(2)); // Get pinfl.
 
             // Try to get User by PINFL orElse create new User.
-            boolean isNew = !userRepository.findOneByPinfl(currentRowPinfl).isPresent();
-            User oldUser = !isNew ? userRepository.findOneByPinfl(currentRowPinfl).get() : new User();
+            Optional<User> optionalUser = userRepository.findOneByPinfl(currentRowPinfl);
+            boolean isNew = !optionalUser.isPresent();
 
-            DeposUserDTO user = new DeposUserDTO();
+            DeposUserDTO user;
+            user = optionalUser.map(DeposUserDTO::new).orElseGet(DeposUserDTO::new);
 
-            String password = RandomStringUtils.randomAlphanumeric(6);
-
-            // set ID
-            if (!isNew) userRepository.findOneByPinfl(currentRowPinfl).ifPresent(user1 -> user.setId(user1.getId()));
             // set Login
-            if (isNew) {
-                user.setLogin(userService.generateLogin(currentRowPinfl));
-            } else {
-                user.setLogin(oldUser.getLogin());
-            }
+            if (isNew) user.setLogin(userService.generateLogin(currentRowPinfl));
             // set Password
-            if (isNew) {
-                user.setPassword(password);
-            } else {
-                user.setPassword(oldUser.getPassword());
-            }
+            String password = RandomStringUtils.randomAlphanumeric(6);
+            if (isNew) user.setPassword(password);
             // set Email
             user.setEmail(currentRow.getCell(6).getStringCellValue());
             // set Activated
-            if (isNew) {
-                user.setActivated(true);
-            } else {
-                user.setActivated(oldUser.isActivated());
-            }
+            if (isNew) user.setActivated(true);
             // set FullName
-            user.setFullName(currentRow.getCell(1).getStringCellValue());
+            if (StringUtils.isNotEmpty(currentRow.getCell(1).getStringCellValue())) user.setFullName(
+                currentRow.getCell(1).getStringCellValue()
+            );
             // set Passport
-            user.setPassport(currentRow.getCell(4).getStringCellValue());
+            if (StringUtils.isNotEmpty(currentRow.getCell(4).getStringCellValue())) user.setPassport(
+                currentRow.getCell(4).getStringCellValue()
+            );
             // set PINFL
-            user.setPinfl(currentRowPinfl);
+            if (isNew) user.setPinfl(currentRowPinfl);
             // set GroupEnum
-            if (isNew) {
-                user.setGroupEnum(UserGroupEnum.INDIVIDUAL);
-            } else {
-                user.setGroupEnum(oldUser.getGroupEnum());
-            }
+            if (isNew) user.setGroupEnum(UserGroupEnum.INDIVIDUAL);
             // set AuthTypeEnum
-            if (isNew) {
-                user.setAuthTypeEnum(UserAuthTypeEnum.ANY);
-            } else {
-                user.setAuthTypeEnum(oldUser.getAuthTypeEnum());
-            }
+            if (isNew) user.setAuthTypeEnum(UserAuthTypeEnum.ANY);
             // set Resident
-            if (isNew) {
-                user.setResident(true);
-            } else {
-                user.setResident(oldUser.isResident());
-            }
-            // set INN
-            if (!isNew) user.setInn(oldUser.getInn());
+            if (isNew) user.setResident(true);
             // set Phone-number
-            if (isNew) {
-                user.setPhoneNumber(currentRow.getCell(5).getStringCellValue());
-            } else {
-                user.setPhoneNumber(oldUser.getPhoneNumber());
-            }
+            if (StringUtils.isNotEmpty(currentRow.getCell(5).getStringCellValue())) user.setPhoneNumber(
+                currentRow.getCell(5).getStringCellValue()
+            );
 
             User savedUser;
             if (isNew) {
