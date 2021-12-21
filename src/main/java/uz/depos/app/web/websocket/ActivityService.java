@@ -83,19 +83,18 @@ public class ActivityService implements ApplicationListener<SessionDisconnectEve
     }
 
     @MessageMapping("/topic/user-all")
-    @SendTo("/topic/user")
-    public List<MeetingLoggingDTO> sendToAll(@Payload MeetingLoggingDTO loggingDTO) {
+    public void sendToAll(@Payload MeetingLoggingDTO loggingDTO) {
         log.debug("Save Meeting logging data {}", loggingDTO);
         MeetingLoggingDTO meetingLoggingDTO = meetingLoggingService.addMeetingLogging(loggingDTO);
         if (meetingLoggingDTO != null) {
-            return meetingLoggingService.getAllLoggingsByMeeting(meetingLoggingDTO.getMeetingId());
+            List<MeetingLoggingDTO> allLoggingsByMeeting = meetingLoggingService.getAllLoggingsByMeeting(meetingLoggingDTO.getMeetingId());
+            messagingTemplate.convertAndSend("/topic/user/" + loggingDTO.getMeetingId(), allLoggingsByMeeting);
         } else {
             throw new BadRequestAlertException("Error in save logging", "LoggingDTO", "LoggingUnsaved");
         }
     }
 
     @MessageMapping("/topic/start-zoom")
-    @SendTo("/topic/get-zoom")
     public void zoom(@Payload ZoomDTO zoomDTO) {
         log.debug("Start and Stop Zoom-Meeting logging data {}", zoomDTO);
         if (

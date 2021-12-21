@@ -18,6 +18,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -50,17 +51,20 @@ public class MeetingResource {
     final MeetingRepository meetingRepository;
     final CompanyRepository companyRepository;
     final MeetingLoggingService meetingLoggingService;
+    final SimpMessageSendingOperations messageTemplate;
 
     public MeetingResource(
         MeetingService meetingService,
         MeetingRepository meetingRepository,
         CompanyRepository companyRepository,
-        MeetingLoggingService meetingLoggingService
+        MeetingLoggingService meetingLoggingService,
+        SimpMessageSendingOperations messageTemplate
     ) {
         this.meetingService = meetingService;
         this.meetingRepository = meetingRepository;
         this.companyRepository = companyRepository;
         this.meetingLoggingService = meetingLoggingService;
+        this.messageTemplate = messageTemplate;
     }
 
     /**
@@ -235,8 +239,9 @@ public class MeetingResource {
     @ApiOperation(value = "Change status of meeting", notes = "This method to set status by Meeting ID and statusEnum")
     public ResponseEntity<MeetingDTO> changeMeetingStatus(@RequestParam Long meetingId, @RequestParam MeetingStatusEnum statusEnum) {
         log.debug("REST request to set active status for meeting by ID: " + meetingId);
-
-        return ResponseEntity.status(HttpStatus.OK).body(meetingService.changeMeetingStatus(meetingId, statusEnum));
+        MeetingDTO meetingDTO = meetingService.changeMeetingStatus(meetingId, statusEnum);
+        messageTemplate.convertAndSend("/topic/meeting-status/" + meetingDTO.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(meetingDTO);
     }
 
     /**
