@@ -14,6 +14,7 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import uz.depos.app.domain.City;
@@ -50,6 +51,7 @@ public class MeetingService {
     final MeetingMapper meetingMapper;
     final UserMapper userMapper;
     final MeetingSpecification meetingSpecification;
+    final SimpMessageSendingOperations messageTemplate;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -60,7 +62,8 @@ public class MeetingService {
         AgendaRepository agendaRepository,
         MeetingMapper meetingMapper,
         UserMapper userMapper,
-        MeetingSpecification meetingSpecification
+        MeetingSpecification meetingSpecification,
+        SimpMessageSendingOperations messageTemplate
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -71,6 +74,7 @@ public class MeetingService {
         this.meetingMapper = meetingMapper;
         this.userMapper = userMapper;
         this.meetingSpecification = meetingSpecification;
+        this.messageTemplate = messageTemplate;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
@@ -296,7 +300,9 @@ public class MeetingService {
             } else {
                 meeting.setStatus(statusEnum);
                 Meeting savedMeeting = meetingRepository.saveAndFlush(meeting);
-                return meetingMapper.meetingToMeetingDTO(savedMeeting);
+                MeetingDTO meetingDTO = meetingMapper.meetingToMeetingDTO(savedMeeting);
+                messageTemplate.convertAndSend("/topic/meeting-status/" + meetingDTO.getId(), meetingDTO);
+                return meetingDTO;
             }
         } else {
             throw new BadRequestAlertException("Meeting not found by this ID " + meetingId, "MeetingManagement", "NotFoundMeeting");

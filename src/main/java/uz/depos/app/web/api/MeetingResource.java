@@ -240,7 +240,7 @@ public class MeetingResource {
     public ResponseEntity<MeetingDTO> changeMeetingStatus(@RequestParam Long meetingId, @RequestParam MeetingStatusEnum statusEnum) {
         log.debug("REST request to set active status for meeting by ID: " + meetingId);
         MeetingDTO meetingDTO = meetingService.changeMeetingStatus(meetingId, statusEnum);
-        messageTemplate.convertAndSend("/topic/meeting-status/" + meetingDTO.getId());
+        messageTemplate.convertAndSend("/topic/meeting-status/" + meetingDTO.getId(), meetingDTO);
         return ResponseEntity.status(HttpStatus.OK).body(meetingDTO);
     }
 
