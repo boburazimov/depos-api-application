@@ -84,12 +84,6 @@ public class DeposUserResource {
     public ResponseEntity<String> generateLogin(@ApiParam(value = "Length must be 14 characters!") @PathVariable String pinfl) {
         log.debug("REST request to generate login from PINFL : {}", pinfl);
 
-        if (pinfl != null) {
-            Optional<User> existingUserByPinfl = userRepository.findOneByPinfl(pinfl);
-            boolean present = existingUserByPinfl.isPresent();
-            if (present) throw new PinflAlreadyUsedException();
-        } else throw new NullPointerException("PINFL must not be null!");
-
         String login = userService.generateLogin(pinfl);
         return ResponseEntity.ok(login);
     }

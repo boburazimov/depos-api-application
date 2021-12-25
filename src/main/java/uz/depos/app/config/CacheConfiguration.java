@@ -46,6 +46,7 @@ public class CacheConfiguration {
         return cm -> {
             createCache(cm, UserRepository.USERS_BY_LOGIN_CACHE);
             createCache(cm, UserRepository.USERS_BY_EMAIL_CACHE);
+            createCache(cm, UserRepository.USERS_BY_PINFL_CACHE);
             createCache(cm, uz.depos.app.domain.User.class.getName());
             createCache(cm, uz.depos.app.domain.Authority.class.getName());
             createCache(cm, uz.depos.app.domain.User.class.getName() + ".authorities");

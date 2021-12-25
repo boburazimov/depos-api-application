@@ -126,6 +126,12 @@ public class UserService {
     }
 
     public String generateLogin(String pinfl) {
+        if (pinfl != null) {
+            Optional<User> existingUserByPinfl = userRepository.findOneByPinfl(pinfl);
+            boolean present = existingUserByPinfl.isPresent();
+            if (present) throw new PinflAlreadyUsedException();
+        } else throw new NullPointerException("PINFL must not be null!");
+
         // Generate new login from @PINFL by adding to begin bit-word "uz-"
         String bitWord = "uz-";
         StringBuilder login = new StringBuilder();
@@ -637,6 +643,11 @@ public class UserService {
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthoritiesByLogin(String login) {
         return userRepository.findOneWithAuthoritiesByLogin(login);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> getUserWithAuthoritiesByPinfl(String pinfl) {
+        return userRepository.findOneWithAuthoritiesByPinfl(pinfl);
     }
 
     @Transactional(readOnly = true)

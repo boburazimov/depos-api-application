@@ -48,6 +48,7 @@ class PublicUserResourceIT {
     public void setup() {
         cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE).clear();
         cacheManager.getCache(UserRepository.USERS_BY_EMAIL_CACHE).clear();
+        cacheManager.getCache(UserRepository.USERS_BY_PINFL_CACHE).clear();
     }
 
     @BeforeEach

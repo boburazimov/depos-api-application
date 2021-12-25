@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+  <head>
+    <title th:text="#{email.created.user.title}">Registration EDS account</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="icon" th:href="@{|${baseUrl}/favicon.ico|}" />
+  </head>
+  <body>
+    <p th:text="#{email.activation.greeting(${user.fullName})}">Dear</p>
+    <p th:text="#{email.created.user.text1}">Your Central Securities Depository account has been created.</p>
+    <p th:text="#{email.created.user.text2}">
+      We recommend that you change your temporary password in your personal account, please click on the URL below to access it:
+    </p>
+    <p>
+      <a th:with="url=(@{|${baseUrl}|})" th:href="${url}" th:text="${url}">evote.uz</a>
+    </p>
+    <p th:text="#{email.invite.text3(${user.login})}">Your login:</p>
+    <p th:text="#{email.invite.text4(${password})}">Your password:</p>
+    <p>
+      <span th:text="#{email.invite.text2}">Best regards, </span>
+    </p>
+  </body>
+</html>

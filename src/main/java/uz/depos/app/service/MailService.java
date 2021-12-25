@@ -115,6 +115,28 @@ public class MailService {
         sendEmailFromTemplate(user, "mail/creationEmail", "email.activation.title");
     }
 
+    @Async
+    public void sendEDSUserCreatedEmail(User user, String password) {
+        log.debug("Sending EDS User creation email to '{}'", user.getEmail());
+        sendEmailFromTemplate(user, "mail/createdUserEmail", "email.created.user.title", password);
+    }
+
+    @Async
+    public void sendEmailFromTemplate(User user, String templateName, String titleKey, String password) {
+        if (user.getEmail() == null) {
+            log.debug("Email doesn't exist for user '{}'", user.getLogin());
+            return;
+        }
+        Locale locale = Locale.forLanguageTag(user.getLangKey());
+        Context context = new Context(locale);
+        context.setVariable(USER, user);
+        context.setVariable(PASSWORD, password);
+        context.setVariable(BASE_URL, jHipsterProperties.getMail().getBaseUrl());
+        String content = templateEngine.process(templateName, context);
+        String subject = messageSource.getMessage(titleKey, null, locale);
+        sendEmail(user.getEmail(), subject, content, false, true);
+    }
+
     public void sendInvitationEmail(User user, Meeting meeting, Member member, String password) {
         log.debug("Sending invitation email to '{}'", user.getEmail());
         //        user.setPassword(password);

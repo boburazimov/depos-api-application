@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     String USERS_BY_EMAIL_CACHE = "usersByEmail";
 
+    String USERS_BY_PINFL_CACHE = "usersByPinfl";
+
     Optional<User> findOneByActivationKey(String activationKey);
 
     List<User> findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant dateTime);
@@ -45,6 +47,10 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @EntityGraph(attributePaths = "authorities")
     @Cacheable(cacheNames = USERS_BY_LOGIN_CACHE)
     Optional<User> findOneWithAuthoritiesByLogin(String login);
+
+    @EntityGraph(attributePaths = "authorities")
+    @Cacheable(cacheNames = USERS_BY_PINFL_CACHE)
+    Optional<User> findOneWithAuthoritiesByPinfl(String pinfl);
 
     @EntityGraph(attributePaths = "authorities")
     Optional<User> findOneWithAuthoritiesById(Long id);
