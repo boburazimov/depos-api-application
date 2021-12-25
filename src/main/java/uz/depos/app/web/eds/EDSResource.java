@@ -2,15 +2,13 @@ package uz.depos.app.web.eds;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.Api;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -78,16 +76,12 @@ public class EDSResource {
      * "/signrequest" GET method to get random value for put signature of client.
      *
      * @param request
-     * @param response
      * @param session
      * @return UUID String
      */
     @GetMapping("/signrequest")
-    public ResponseEntity<JSONObject> signRequest(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
+    public ResponseEntity<JSONObject> signRequest(HttpServletRequest request, HttpSession session) {
         log.debug("SIGNREQUEST by POST method Information for Auth by EDS: {}", request.getParameter("serialNumber"));
-        System.out.println("request: " + request);
-        System.out.println("response: " + response);
-        System.out.println("session: " + session);
         String serialNumber = request.getParameter("serialNumber");
 
         JSONObject json = new JSONObject();
@@ -229,6 +223,7 @@ public class EDSResource {
         User user;
         // try to find user by PINFL
         Optional<User> optionalUser = userService.getUserWithAuthoritiesByPinfl(pinfl);
+        Optional<User> optionalUser1 = userRepository.findOneByPinfl(pinfl);
 
         if (optionalUser.isPresent()) { // Check to present in DB current user, is it Old user.
             user = optionalUser.get();
@@ -242,7 +237,9 @@ public class EDSResource {
             userDTO.setPassword(password);
             userDTO.setEmail("ard_admin@mail.ru");
             userDTO.setActivated(true);
-            userDTO.setFullName(temporaryDTO.getFullName());
+            if (StringUtils.isNotEmpty(temporaryDTO.getFullName())) userDTO.setFullName(
+                temporaryDTO.getFullName().toLowerCase(Locale.ROOT)
+            );
             userDTO.setPinfl(pinfl);
             userDTO.setGroupEnum(UserGroupEnum.INDIVIDUAL);
             userDTO.setAuthTypeEnum(UserAuthTypeEnum.ERI);

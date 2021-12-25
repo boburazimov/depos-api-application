@@ -49,7 +49,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     Optional<User> findOneWithAuthoritiesByLogin(String login);
 
     @EntityGraph(attributePaths = "authorities")
-    @Cacheable(cacheNames = USERS_BY_PINFL_CACHE)
+    //    @Cacheable(cacheNames = USERS_BY_PINFL_CACHE)
     Optional<User> findOneWithAuthoritiesByPinfl(String pinfl);
 
     @EntityGraph(attributePaths = "authorities")
