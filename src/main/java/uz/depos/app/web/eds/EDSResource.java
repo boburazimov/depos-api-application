@@ -3,6 +3,8 @@ package uz.depos.app.web.eds;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.Api;
 import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -235,11 +237,20 @@ public class EDSResource {
             DeposUserDTO userDTO = new DeposUserDTO();
             userDTO.setLogin(generatedLogin);
             userDTO.setPassword(password);
-            userDTO.setEmail("ard_admin@mail.ru");
+            //            userDTO.setEmail("ard_admin@mail.ru");
             userDTO.setActivated(true);
-            if (StringUtils.isNotEmpty(temporaryDTO.getFullName())) userDTO.setFullName(
-                temporaryDTO.getFullName().toLowerCase(Locale.ROOT)
-            );
+            if (StringUtils.isNotEmpty(temporaryDTO.getFullName())) {
+                String fn = temporaryDTO.getFullName();
+                String collect = Arrays
+                    .stream(fn.toLowerCase().split(" "))
+                    .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1))
+                    .collect(Collectors.toList())
+                    .toString()
+                    .replace(",", "")
+                    .replace("]", "")
+                    .replace("[", "");
+                userDTO.setFullName(collect);
+            }
             userDTO.setPinfl(pinfl);
             userDTO.setGroupEnum(UserGroupEnum.INDIVIDUAL);
             userDTO.setAuthTypeEnum(UserAuthTypeEnum.ERI);
