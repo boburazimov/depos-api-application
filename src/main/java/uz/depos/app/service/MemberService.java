@@ -312,7 +312,7 @@ public class MemberService {
                 .ifPresent(
                     members -> {
                         List<MemberDTO> memberDTOS = memberMapper.membersToMemberDTOs(members);
-                        messagingTemplate.convertAndSend("/topic/quorum/" + memberDTO.getMeetingId(), memberDTOS);
+                        messagingTemplate.convertAndSend("/topic/getMember/" + member.getMeeting().getId(), memberDTOS);
                     }
                 );
             return memberDTO;
