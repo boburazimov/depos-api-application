@@ -308,7 +308,7 @@ public class MemberService {
             memberRepository.save(member);
             MemberDTO memberDTO = memberMapper.memberToMemberDTO(member);
             memberRepository
-                .findAllByMeetingIdAndFromReestrTrue(memberDTO.getMeetingId())
+                .findAllByMeetingId(member.getMeeting().getId())
                 .ifPresent(
                     members -> {
                         List<MemberDTO> memberDTOS = memberMapper.membersToMemberDTOs(members);
