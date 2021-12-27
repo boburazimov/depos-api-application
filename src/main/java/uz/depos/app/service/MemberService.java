@@ -300,6 +300,27 @@ public class MemberService {
         }
     }
 
+    public MemberDTO changeRemotely(Long memberId, Boolean remotely) {
+        Optional<Member> optionalMember = memberRepository.findById(memberId);
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            member.setRemotely(remotely);
+            memberRepository.save(member);
+            MemberDTO memberDTO = memberMapper.memberToMemberDTO(member);
+            memberRepository
+                .findAllByMeetingIdAndFromReestrTrue(memberDTO.getMeetingId())
+                .ifPresent(
+                    members -> {
+                        List<MemberDTO> memberDTOS = memberMapper.membersToMemberDTOs(members);
+                        messagingTemplate.convertAndSend("/topic/quorum/" + memberDTO.getMeetingId(), memberDTOS);
+                    }
+                );
+            return memberDTO;
+        } else {
+            throw new ResourceNotFoundException("Member not found my ID: " + memberId);
+        }
+    }
+
     public void setStatusForMember(Long memberId, Boolean isOnline, String sessionId) {
         if (memberId != null && isOnline && sessionId != null) {
             Optional<Member> byId = memberRepository.findById(memberId);

@@ -287,6 +287,22 @@ public class MemberResource {
     }
 
     /**
+     * {@code PUT /member} : Switch to isRemotely an existing member.
+     *
+     * @param id the member to switch.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated member.
+     * @throws ResourceNotFoundException {@code 400 (Bad Request)} if the subject not found.
+     */
+    @PutMapping("/remotely/{id}")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Switch isRemotely", notes = "This method to switch member field isRemotely")
+    public ResponseEntity<MemberDTO> changeRemotely(@PathVariable Long id, @PathVariable Boolean remotely) {
+        log.debug("REST request to change member field isRemotely by ID: {}", id);
+        MemberDTO memberDTO = memberService.changeRemotely(id, remotely);
+        return ResponseEntity.status(HttpStatus.OK).body(memberDTO);
+    }
+
+    /**
      * {@code POST /member} : Elect a chairman from members which is true fromReestr.
      *
      * @param id the member to elect.
