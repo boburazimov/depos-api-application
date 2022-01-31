@@ -13,4 +13,5 @@ public interface MemberSessionRepository extends JpaRepository<MemberSession, Lo
     Optional<MemberSession> findOneByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(Long meetingId);
     Optional<List<MemberSession>> findAllByMeetingIdAndZoomIsTrueAndZoomPasswordNotNull(Long meetingId);
     Optional<List<MemberSession>> findAllByMeetingIdAndMemberId(Long meetingId, Long memberId);
+    void deleteAllByMeetingId(Long meetingId);
 }

@@ -17,6 +17,7 @@ public interface MeetingLoggingRepository extends JpaRepository<MeetingLogging, 
 
     Optional<MeetingLogging> findByMeetingIdAndLoggingText(Long meetingId, String loggingText);
 
-    //    List<MeetingLogging> findAllByMeetingId(Long meetingId);
     List<MeetingLogging> findAllByMeetingId(Long meetingId);
+
+    void deleteAllByMeetingId(Long meetingId);
 }

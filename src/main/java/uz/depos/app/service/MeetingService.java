@@ -4,7 +4,6 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 import static org.springframework.data.domain.ExampleMatcher.matching;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -52,6 +51,12 @@ public class MeetingService {
     final UserMapper userMapper;
     final MeetingSpecification meetingSpecification;
     final SimpMessageSendingOperations messageTemplate;
+    final BallotRepository ballotRepository;
+    final VotingRepository votingRepository;
+    final MeetingLoggingRepository loggingRepository;
+    final QuestionRepository questionRepository;
+    final AttachmentRepository attachmentRepository;
+    final MemberSessionRepository memberSessionRepository;
 
     public MeetingService(
         MeetingRepository meetingRepository,
@@ -63,7 +68,13 @@ public class MeetingService {
         MeetingMapper meetingMapper,
         UserMapper userMapper,
         MeetingSpecification meetingSpecification,
-        SimpMessageSendingOperations messageTemplate
+        SimpMessageSendingOperations messageTemplate,
+        BallotRepository ballotRepository,
+        VotingRepository votingRepository,
+        MeetingLoggingRepository loggingRepository,
+        QuestionRepository questionRepository,
+        AttachmentRepository attachmentRepository,
+        MemberSessionRepository memberSessionRepository
     ) {
         this.meetingRepository = meetingRepository;
         this.userRepository = userRepository;
@@ -75,6 +86,12 @@ public class MeetingService {
         this.userMapper = userMapper;
         this.meetingSpecification = meetingSpecification;
         this.messageTemplate = messageTemplate;
+        this.ballotRepository = ballotRepository;
+        this.votingRepository = votingRepository;
+        this.loggingRepository = loggingRepository;
+        this.questionRepository = questionRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.memberSessionRepository = memberSessionRepository;
     }
 
     public MeetingDTO createMeeting(MeetingDTO request) {
@@ -208,28 +225,46 @@ public class MeetingService {
         return meetingRepository.findAll(pageable).map(MeetingDTO::new);
     }
 
-    public void deleteMeeting(Long id) {
+    /**
+     * Delete Meeting - while deleting meeting also deleted all entities which include them!
+     * 1. Ballots, 2. Voting_Options, 3. Agendas, 4. Loggings, 5. Questions, 6. Attachments, 7. Member_sessions, 8. Members, 9. Meeting.
+     */
+    public void deleteMeeting(Long meetingId) {
+        try {
+            ballotRepository.deleteAllByMeetingId(meetingId);
+            votingRepository.deleteAllByMeetingId(meetingId);
+            agendaRepository.deleteAllByMeetingId(meetingId);
+            loggingRepository.deleteAllByMeetingId(meetingId);
+            questionRepository.deleteAllByMeetingId(meetingId);
+            attachmentRepository.deleteAllByMeetingId(meetingId);
+            memberSessionRepository.deleteAllByMeetingId(meetingId);
+            memberRepository.deleteAllByMeetingId(meetingId);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         meetingRepository
-            .findOneById(id)
+            .findOneById(meetingId)
             .ifPresent(
                 meeting -> {
-                    Optional<List<Member>> allByMeetingIdAndFromReestrTrue = memberRepository.findAllByMeetingIdAndFromReestrTrue(
-                        meeting.getId()
-                    );
-                    allByMeetingIdAndFromReestrTrue.ifPresent(
-                        members -> {
-                            if (!members.isEmpty()) {
-                                throw new BadRequestAlertException(
-                                    "By this Meeting already has Reestr!",
-                                    "MeetingManagement",
-                                    "ReestrExist"
-                                );
-                            } else {
-                                meetingRepository.delete(meeting);
-                                log.debug("Deleted Meeting: {}", meeting);
-                            }
-                        }
-                    );
+                    meetingRepository.delete(meeting);
+                    log.debug("Deleted Meeting: {}", meeting);
+                    //                    Optional<List<Member>> allByMeetingIdAndFromReestrTrue = memberRepository.findAllByMeetingIdAndFromReestrTrue(
+                    //                        meeting.getId()
+                    //                    );
+                    //                    allByMeetingIdAndFromReestrTrue.ifPresent(
+                    //                        members -> {
+                    //                            if (!members.isEmpty()) {
+                    //                                throw new BadRequestAlertException(
+                    //                                    "By this Meeting already has Reestr!",
+                    //                                    "MeetingManagement",
+                    //                                    "ReestrExist"
+                    //                                );
+                    //                            } else {
+                    //                                meetingRepository.delete(meeting);
+                    //                                log.debug("Deleted Meeting: {}", meeting);
+                    //                            }
+                    //                        }
+                    //                    );
                 }
             );
     }

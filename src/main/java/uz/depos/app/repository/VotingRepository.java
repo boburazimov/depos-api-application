@@ -20,4 +20,6 @@ public interface VotingRepository extends JpaRepository<VotingOption, Long> {
     Page<VotingOption> findAllByAgendaId(Long agendaId, Pageable pageable);
 
     List<VotingOption> findAllByAgendaId(Long agendaId);
+
+    void deleteAllByMeetingId(Long meetingId);
 }

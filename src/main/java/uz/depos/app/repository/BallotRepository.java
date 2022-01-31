@@ -16,6 +16,10 @@ import uz.depos.app.domain.enums.BallotOptionEnum;
 public interface BallotRepository extends JpaRepository<Ballot, Long> {
     Page<Ballot> findAllByMeetingId(Long meetingId, Pageable pageable);
 
+    Optional<List<Ballot>> findAllByMeetingId(Long meetingId);
+
+    void deleteAllByMeetingId(Long meetingId);
+
     Page<Ballot> findAllByMemberId(Long memberId, Pageable pageable);
 
     Page<Ballot> findAllByAgendaId(Long agendaId, Pageable pageable);

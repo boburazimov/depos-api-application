@@ -22,4 +22,6 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findAllByMemberId(Long memberId);
 
     Optional<Question> findOneById(Long id);
+
+    void deleteAllByMeetingId(Long meetingId);
 }

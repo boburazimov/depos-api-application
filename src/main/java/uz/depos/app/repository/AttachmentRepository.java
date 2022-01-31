@@ -18,4 +18,6 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
 
     // Get Company logo file
     Optional<Attachment> findByCompanyIdAndMeetingIdIsNullAndIsReestrFalse(Long companyId);
+
+    void deleteAllByMeetingId(Long meetingId);
 }

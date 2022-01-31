@@ -18,4 +18,6 @@ public interface AgendaRepository extends JpaRepository<Agenda, Long> {
     Page<Agenda> findAllByMeetingId(Long meetingId, Pageable pageable);
 
     Optional<Agenda> findFirstBySpeaker(Member speaker);
+
+    void deleteAllByMeetingId(Long meetingId);
 }
