@@ -26,6 +26,8 @@ public interface BallotRepository extends JpaRepository<Ballot, Long> {
 
     Page<Ballot> findAllByVotingOptionId(Long votingId, Pageable pageable);
 
+    List<Ballot> findAllByVotingOptionId(Long votingId);
+
     Page<Ballot> findAllByOptions(BallotOptionEnum options, Pageable pageable);
 
     List<Ballot> findAllByAgendaIdAndMemberId(Long agendaId, Long memberId);

@@ -28,10 +28,7 @@ import tech.jhipster.web.util.ResponseUtil;
 import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.BallotRepository;
 import uz.depos.app.service.BallotService;
-import uz.depos.app.service.dto.ApiResponse;
-import uz.depos.app.service.dto.BallotDTO;
-import uz.depos.app.service.dto.MeetingLoggingDTO;
-import uz.depos.app.service.dto.VotingDTO;
+import uz.depos.app.service.dto.*;
 import uz.depos.app.service.view.View;
 import uz.depos.app.web.rest.errors.EmailAlreadyUsedException;
 import uz.depos.app.web.rest.errors.LoginAlreadyUsedException;
@@ -222,6 +219,15 @@ public class BallotResource {
         final Page<BallotDTO> page = ballotService.getBallotsByVoting(votingId, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/by-voting-details")
+    //    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    @ApiOperation(value = "Get ballots by voting", notes = "This method to get ballots by voting ID")
+    public ResponseEntity<List<BallotReportDTO>> getBallotsByVotingDetails(@RequestParam Long votingId) {
+        log.debug("REST request to get Ballots by Voting ID: " + votingId);
+        List<BallotReportDTO> list = ballotService.getBallotsByVotingDetails(votingId);
+        return ResponseEntity.status(HttpStatus.OK).body(list);
     }
 
     @GetMapping("/by-option")

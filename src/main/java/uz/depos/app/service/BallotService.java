@@ -16,6 +16,7 @@ import uz.depos.app.domain.enums.BallotOptionEnum;
 import uz.depos.app.repository.*;
 import uz.depos.app.service.dto.ApiResponse;
 import uz.depos.app.service.dto.BallotDTO;
+import uz.depos.app.service.dto.BallotReportDTO;
 import uz.depos.app.service.dto.MeetingLoggingDTO;
 import uz.depos.app.service.mapper.AgendaAndVotingMapper;
 import uz.depos.app.web.rest.errors.BadRequestAlertException;
@@ -195,6 +196,11 @@ public class BallotService {
     @Transactional(readOnly = true)
     public Page<BallotDTO> getBallotsByVoting(Long votingId, Pageable pageable) {
         return ballotRepository.findAllByVotingOptionId(votingId, pageable).map(BallotDTO::new);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BallotReportDTO> getBallotsByVotingDetails(Long votingId) {
+        return ballotRepository.findAllByVotingOptionId(votingId).stream().map(BallotReportDTO::new).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
