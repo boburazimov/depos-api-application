@@ -43,6 +43,9 @@ public class AgendaEditDTO {
     @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
     private String extraInfo;
 
+    @JsonView(value = { View.ModelView.External.class, View.ModelView.PUT.class, View.ModelView.PATCH.class })
+    private Boolean speakerStatus;
+
     public AgendaEditDTO() {}
 
     public AgendaEditDTO(Agenda agenda, List<VotingEditDTO> votingOptions) {
@@ -56,6 +59,7 @@ public class AgendaEditDTO {
         this.isActive = agenda.getActive();
         this.votingOptions = votingOptions;
         this.extraInfo = agenda.getExtraInfo();
+        this.speakerStatus = agenda.getSpeaker() != null ? agenda.getSpeaker().getRemotely() : null;
     }
 
     public Long getId() {
@@ -138,6 +142,14 @@ public class AgendaEditDTO {
         this.extraInfo = extraInfo;
     }
 
+    public Boolean getSpeakerStatus() {
+        return speakerStatus;
+    }
+
+    public void setSpeakerStatus(Boolean speakerStatus) {
+        this.speakerStatus = speakerStatus;
+    }
+
     @Override
     public String toString() {
         return (
@@ -164,6 +176,8 @@ public class AgendaEditDTO {
             ", extraInfo='" +
             extraInfo +
             '\'' +
+            ", speakerStatus=" +
+            speakerStatus +
             '}'
         );
     }
