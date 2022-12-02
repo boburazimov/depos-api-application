@@ -52,7 +52,7 @@ spring:
       # it can be set to any label, branch or commit of the configuration source Git repository
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5432/DeposApi
+    url: jdbc:postgresql://localhost:5432/deposapi
     username: DeposApi
     password:
     hikari:
